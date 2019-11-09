@@ -1,0 +1,3751 @@
+
+Notes, in no particular order.
+
+
+	will need a lot of tidying up
+
+===
+
+
+	Might try and format this up with 'Almost Plain Text' markup <APT>
+
+	{{{./aboutThisDocumentation.html}About this Documentation}}
+
+	{{Maven Notes}}
+
+	{{{./gitNotes.html}Git Notes}}
+
+	{{Some stuff on Oath2 and OpenID Connect}}
+
+	{{Doxia}}
+
+	{{GWT-Google Web Toolkit}}
+
+	{{Technology Glossary}}
+
+	{{Notes on Domain Driven Design}}
+
+=================================
+
+Bits and Pieces re eclipse
+
+	[[1]] vrapper - a wrapper for vi
+
+	Have installed this : seems to work ok. Gives the default edit vi-like propoerties.
+
+=================================
+
+
+	[[1]] Getting the implementation of a class to additionally implement an Interface not specifically modelled on the diagram
+
+		add an @implement annotaion into the user-doc section of the generated java code:
+
+---
+	 /**
+ 	 	* <!-- begin-user-doc -->
+		* An implementation of the model object '<em><b>My User Profile Mesg</b></em>'.
+		*
+		* @implements com.garmin.fit.UserProfileMesg NOT
+		*
+		* <!-- end-user-doc -->
+		*/
+---
+
+		You can do likewise with @extends, ( although since the generated class always will extend the and a class can only extend a single Class) then this seems to be of limited value.
+
+		I DO NOT THINK this ends up in the model files anywhere: I think it must be read from the java source files following regeneration - not absolutely sure on theis however.
+
+
+		[[1]] Classes drawn upon the diagram are normally:
+
+		a. implemented as an Interface
+		b. supplied with a template \*.Impl Class that implements that interface
+
+	This is a highly recommended Design Pattern.(See Effective Java).
+
+	[[1]] It is possible to change the way that code is generated such that each Diagrammed Class is implemented as a class.
+
+		open the \*.genmod file with the GenModel Editor
+
+			Model --> Suppress Interfaces --> TRUE
+
+	It seems that this will cause ALL modelled classes to be implemented as CLASSES. I have not found a way to allow just individual classes to be modelled as CLASSES: although I suspect is ought to be possible with some further clever annotations.
+
+
+	[[1]] IF you put code snippets in your model they HAVE to be syntactically correct code ; otherwise the generation will bomb out!.
+
+
+	[[1]] It is possible to sensibly represent External Interfaces ( i.e. interfaces supplied as part of the standard libraries, or third party libraries) on the diagrams. As long as these are marked as 'Interfaces', then the generator will not attempt any code generation for them, just the implementing/extending class.
+
+	IF you DO put a external class on the diagram, the generated code:
+
+		DOES NOT generate an INTERFACE for it.
+
+		DOES create an Implementation class for it (BUT ITS BROKEN)
+			The implementation
+				extends the standard <MinimalEObjectImpl.Container> Class, and implements the ExternalClass. However classes can't implement OTHER classes ( so this fails). Nor can they extend more than 1 class, and since we are already extending the standard <MinimalEObjectImpl.Container> Class this isn't an option.
+
+				( The <MinimalEObjectImpl.Container> Class is needed for other internal workings of the model).
+
+				In other words, the construct can't work.
+
+	IF you put an Internal Class on the Diagram, the generated code:
+
+		* DOES create an INTERFACE for it. ( That extends the standard internal root object EObject)
+
+		* DOES create a CLASS that implements the INTERFACE created. (It also extends the standard MinimalEObjectImpl.Container)
+
+	IF you put an External Interface on the Diagram, the generated code:
+
+		* DOES NOT create an INTERFACE for it  ( because it already exists somewhere)
+
+		* DOES NOT create a CLASS for it.
+
+	IF you put an Internal Interface on a Diagram, the generated code:
+
+		* DOES create an INTERFACE for it. (That extends the standard internal root object EObject)
+
+		* DOES NOT create a CLASS for it.
+
+
+		[[1]] IF you DO want to use an external CLASS as part of the model, then you need to represent it:
+
+		* as a Datatype. The advice seems to be that it is best to do this for only Simple types.
+
+		* They can be indirectly represented by effectively creating a Wrapper Interface. At first sight, this
+		approach seems to be fairly cumbersome. However it DOES represent a pretty solidly supported Design Pattern,
+		namely: <Favouring Composition over Inheritance>
+
+			Inheritance is a powerful way to archive code re-use, but it can lead to fragile software.
+
+			Inheriting from ordinary classes across package boundaries is considered dangerous.
+
+			(It is ok to use inheritance WITHIN a package though)
+
+			It is OK to inherit from Abstract Classes : these should have been designed specifically for that purpose.
+
+	It DOES require that a set of forwarding methods be written ( ie a method that basically just calls the method of the same name in the subOrdinate class).
+
+	Can be used to LIMIT the functionality of the sub-ordinate class, by choosing to forward only certain methods.
+
+	Can also use a Forwarding Class. This is useful if you have different object "inheriting" from your subOrdinate object.
+	THe forwarding class is essentially re-useable.
+
+	There is a choice to be made about whether the intance variable holdiung the subordinate Object should be private
+	or public.
+
+	If the subordinate Object is included in the Interface Definition, then essentailly all the methods on that
+	subordinate object become visible
+
+	If it is NOT then only the forwarding methods may be used to manipulate it, so you are effectively only exposing
+	a subset of its properties.
+
+		- Again this is a good thing. The more limited an objects properties are, the easier it is to test.
+
+
+Delegating and Forwarding
+
+
+		I have yet to find a way of sensibly using an actual concrete CLASS on the diagram that can be sensibly handled by the Code generator.
+
+	[[1]] The graphical editor has a few Annoying Foibles:
+
+		[[a]] If you amend stuff on the various Dialog boxes that pop up if you double click on an Item, then the changes do not take if you press 'OK' without moving out of the field you have just edited. You basically need to move the focus out of the edited field before pressing RETURN. Very Annoying.
+
+		[[b]] If you give Instance Class Name to a Class/Interface (thereby turning it into a proxy for an external class), then if you change your mind, and try and delete it then it doesn't work too well. Even thouh the field is empty it treats it as being modelled by an external Null Class []. You need to use a different editor to correct this (edit the .ecore model file with the Ecore Editor).
+
+
+	It is generally easier to refine items in the Ecore Editor once the basic Classes and Relationships have been
+	modelled graphically.
+
+
+
+	[[1]] Generating Failing with Unhandled Exceptions.
+
+		Occasionally these occur during generation. I THINK it happens when you change the name of an entity and regenerate.
+
+		It generally can be fixed by deleting the previously generated java files, HOWEVER be careful to save any custom code in these FIRST!
+
+
+
+		[[1]] Some Documentation Stuff
+
+	To see Documentation Boxes on the diagram editor, you need to have the documentation layer enabled.
+
+	Documentation can be unattached ( ie. not associated with any particular element)
+
+		- This makes its way into the .ecore Model file as a GenModel annotation of the Package with KEY = docuemntation and VALUES "Whatever documentation is".
+
+		 NB - It seems you can only have ONE piece of unattached Documentation. However, it does not stop you creating another, in which case it OVERWRITES the previous one WITHOUT WARNING!.
+
+
+	Documentation elements can be attached to the high level objects:
+			Classes
+			DataTypes
+			Enumerations
+
+	but not the lower level constructs ( operatios, attributes etc.)
+
+		- These make their way into the .ecore Model file as a GenModel annotation of the Class/Enum/DataType, again with the KEY=documentation
+		and VALUES "Whatever documentation is"
+
+	Again if you attempt to create a SECOND note attached to a CLASS it will OVERWRITE the first WITHOUT warning!
+
+	These get translated into the <!-- begin-model-doc-->   <!--end-model-doc --> section of the generated code
+
+	( Note you can stick some annotations in here ( @extends, @inherits etc, so this is a potentially useful thing
+	 to know about.)
+
+
+	Documentation for attributes/operations can be specified as
+		properties on the GUI modelling tool
+			- THese get reflected as 'GenModel' Annotations in the .ecore model in the same way as Entities above..
+
+
+	Note where snippets of code are entered: these do not form part of the .ecore file but as part of the .genModel file. Documentation
+	of code snippets also ends up here.
+
+
+
+	[[1]] The GenModel map is described by a URL
+		http://www.eclipse.org/emf/2002/GenModel   ( which doesn't seem to exist as a browsable thing?)
+
+		However it specifies what Key --> Value Mappings are valid for that GenModel Map.
+
+		The key 'Documentation' is valid within the scheme ( with its value being whatever the documentation is).
+
+		I don't know what other keys are legitimate.
+
+		NB KEY is unique you can't have two element with the same key attached to the element.
+
+		Nor can you make up arbitrary KEYS, they must be drawn from the domain specified by http://www.eclipse.org/emf/2002/GenModel.
+
+
+
+
+
+		[[1]] Constructors and Factory Methods
+
+	If you are running in the default configuration (Generating Interfaces and Implementing Classes), do not attempt to create explicit constructors on the diagram : in the context of a interface, they don't work.
+
+
+	I feel there ought to be a way of getting the thing to generate more than just the default constructor...but if there is I haven't worked it out yet!
+
+Backing out changes to Java Source.
+
+	[[1]] The editor automatically keeps a history of all incarnations of source code files it generates. There is also a really good tool for comparing files in the History to the current file. It also supplies really good support for back porting any text changes that you might want to back out.
+
+
+
+	[[1]] Representing Specific Generics, especially Collections, Lists etc
+
+	The modelling tool seems to provide a limited range of generic collections:
+		EEList<T>      --> org.eclipse.emf.common.util.Elist
+		EMap <K,V>		--> java.util.Map
+		ETreeIterator<T> --> org.eclipse.emf.common.util.TreeIterator
+
+		If you want use a specific external class in your mode, the obvious way would seem to define an Datatype much as you would for other external Classes. However this does not seem to work too well.
+
+		e.g.
+
+		Name:						 IterableOfSomeClass
+		Instance Class Name:  java.lang.Iterable
+		Instance Type Name:   java.lang.Iterable<SomeOtherclass>
+
+		This looks like it SHOULD work. However, in practise, this seems to get translated in the code to:
+		Iterable<Object>
+		and not
+		Iterable<SomeOtherClass>
+
+
+		However, it does seem to posssible to represent the required Collection as an Interface instead
+
+		Name:						 IterableOfSomeClass
+		Instance Class Name:  java.lang.Iterable
+		Instance Type Name:   java.lang.Iterable<SomeOtherclass>
+
+		Abstract: True
+		Interface: True
+
+		This DOES seem to get translated in the code as
+		Iterable<SomeOtherClass>
+
+=====
+
+
+JavaDoc and Eclipse
+
+	Java Comments conforming to a particular style and situated in specific places can be formatted into standard java-style documentation.
+
+	- IOt is written in HTML
+
+			<P> - paragraph
+			<B> Bold <\B>
+			<code>java keywords etc </code>
+			<UL>underline</UL>
+			<!-- Comment -->
+
+	- The block is started with the begin-comment delimiter /**  ( on its own line) and terminated in a
+	similar may (\*/)
+
+
+	- The block is located immediately before  class, field, constructor or method declarations. It is made up of two parts:
+	a description followed by block tags.
+
+	The description consists:
+		The first sentance. This should be a short summary description
+
+		The first line starting with an @ char will terminate the description block.
+
+	The block tags consist of a series of @tags, with the appropriate description attached.
+
+		@author (classes and interfaces only, is considered required by convention.)
+		@version (classes and interfaces only, is considered required by convention.)
+
+		@param (methods and constructors only)
+		@return (methods only)
+		@exception (@throws is a synonym added in Javadoc 1.2)
+		@see   ( references to #tags in this or other javadocs
+				@see #field
+				@see #Constructor(Type, Type...)
+				@see #Constructor(Type id, Type id...)
+				@see #method(Type, Type,...)
+				@see #method(Type id, Type, id...)
+				@see Class
+				@see Class#field
+				@see Class#Constructor(Type, Type...)
+				@see Class#Constructor(Type id, Type id)
+				@see Class#method(Type, Type,...)
+				@see Class#method(Type id, Type id,...)
+				@see package.Class
+				@see package.Class#field
+				@see package.Class#Constructor(Type, Type...)
+				@see package.Class#Constructor(Type id, Type id)
+				@see package.Class#method(Type, Type,...)
+				@see package.Class#method(Type id, Type, id)
+				@see package
+
+		@since
+		@serial (or @serialField or @serialData)
+		@deprecated (see How and When To Deprecate APIs)
+
+
+Eclipse Model Generator and JavaDoc.
+
+	The generator will generate default javadoc for each class/attribute/operation in the interfaces (
+	not much docuemntation seems to get auto-generted for the implemetation classes.
+
+	Documentation stored in the .genModel file ( NOT the .ecore file) is what get populated the
+	java doc. Although documentation in the .ecore file is not included directly, the tool does
+	copy the .core documentation --> .genModel file by default ( if the equivalent .GenModel documentation
+	does not already exist).
+
+---
+	<!---begin-model-doc -->
+			Contains Documentation entered under:
+					Properties --> Generation --> Documentation
+
+	<!--end-model-doc -->
+---
+
+	Documentation within <!---begin-user-doc --> <!--end-user-doc --> Constructs does not get overwritten
+	when the models are regenerated.
+
+
+Generating the HTML
+
+	* From eclipse
+			Projects --> Generate Javadoc
+
+	* From the command line
+			$JDK_HOME/bin/javadoc
+
+
+===
+
+
+Wildfly Stuff
+
+	New Installation downloaded ( wildfly-16.0.0 )
+
+	As user wildfly:wildfly unzipped to /apps/wildfly-16.0.0
+
+	As user kevin, tried to start it
+			bin/standalone.sh
+
+	..but threw various permissions errors
+
+	Frigged various directories to try and get it started as a different user ( kevin ). This is so that I can start it up and shut it down from within Eclipse.
+
+---
+		chmod g+w standalone
+		chmod g+w standalone/tmp
+		chmod g+w standalon/configuration
+		chmod g+r standalon/configuration/\*
+		chmod g+r standalon/deployment
+---
+
+	Had to move existing deployment out out of the way.
+
+---
+		mv /apps/wildfly-16.0.0.Final/standalone/deployment /apps/wildfly-16.0.0.Final/standalone/deployment.old
+---
+
+	Instance would then start ok...
+
+	Added 2 users: 1 Admin and 1 Normal as follows:
+
+		Admin User:
+
+---
+	./add-user.sh
+
+		a) Management User (mgmt-users.properties)
+
+		Username : kevin
+		What groups do you want this user to belong to? (Please enter a comma separated list, or leave blank for none)[  ]:
+		About to add user 'kevin' for realm 'ManagementRealm'
+		Added user 'kevin' to file '/apps/wildfly-16.0.0.Final/standalone/configuration/mgmt-users.properties'
+		Added user 'kevin' to file '/apps/wildfly-16.0.0.Final/domain/configuration/mgmt-users.properties'
+		Added user 'kevin' with groups  to file '/apps/wildfly-16.0.0.Final/standalone/configuration/mgmt-groups.properties'
+		Added user 'kevin' with groups  to file '/apps/wildfly-16.0.0.Final/domain/configuration/mgmt-groups.properties'
+		Is this new user going to be used for one AS process to connect to another AS process? No
+---
+
+		Normal User:
+
+---
+	./add-user.sh
+
+		b) Application User (application-users.properties)
+		Using realm 'ApplicationRealm' as discovered from the existing property files.
+		Username : kevin
+		What groups do you want this user to belong to? (Please enter a comma separated list, or leave blank for none)[  ]:
+		About to add user 'kevin' for realm 'ApplicationRealm'
+		Added user 'kevin' to file '/apps/wildfly-16.0.0.Final/standalone/configuration/application-users.properties'
+		Added user 'kevin' to file '/apps/wildfly-16.0.0.Final/domain/configuration/application-users.properties'
+		Added user 'kevin' with groups  to file '/apps/wildfly-16.0.0.Final/standalone/configuration/application-roles.properties'
+		Added user 'kevin' with groups  to file '/apps/wildfly-16.0.0.Final/domain/configuration/application-roles.properties'
+		Is this new user going to be used for one AS process to connect to another AS process? No.
+---
+
+		Once all the above was done, the Server could be at least started from eclipse.
+
+ 		...But not stop!. (Actually this is a bit of a red herring - eclipse reports that it has not stopped, but all the external signs are that it does.)
+
+
+* Using Wildfly with Maven.
+
+	Jboss (or possibly other third parties) provide a convneient plugin for use in Maven projects to help manage a server during the build and/or deployment processes.
+
+	The plugin, <<wildfly-maven-plugin>>,  provides facilities to deploy/undeploy applications, start/stop webservers execute wildfly cli commands.
+
+		example goals:
+
+			* wildfly:deploy;
+
+			* deploy:undeploy;
+
+			* wildfly:startup;
+
+			* wildfly:run (basically startup and deploy).
+
+
+* Using a Maven Build archetype
+
+	In order to provide a basic environment to evaluate and develop on from, built up an initial project based on a jboss/wildfly provided maven archetype.
+
+	Note the version : v 8.2.0.Final
+
+---
+	mvn archetype:generate \
+	-DgroupId=uk.co.pegortech.apps \
+	-DartifactId=wildflyDemo2 \
+	-DarchetypeArtifcactId=wildfly-javaee7-webapp-archetype:8.2.0.Final \
+	-Dversion=1.0-SNAPSHOT \
+	-DinteractiveMode=No
+---
+	Then build and run as follows:
+
+---
+	mvn package
+
+	mvn wildfly:run
+---
+
+NB This seems to download and install its own versio of wildfly under target.???
+
+	This build up quite an extended example encorporating
+		Java Server Faces;
+		JPA - Java Persistance Architecture
+		EJB - Enterprise Java beans
+		JAX-RS - Java API for Restful Web SERVICES
+
+
+
+===========
+
+{Maven Notes}
+
+	[[1]] Maven is a tool for tool for Building and Managing any Java Based Project (NB really only Java - not so good with C etc.).
+
+	[[1]] Maven is a Yiddish word meaning 'accumulation of knowledge'.
+
+	[[1]] It tries to provide:
+
+		* An easy build process
+
+		* a UNIFORM build process
+
+		* quality project information
+
+		* guidlines on best practises.
+
+
+	[[1]] Features
+
+		* simple project setup that follows best practices.
+
+		* consistent usage across projects
+
+		* superior dependency management
+
+		* large repository of libraries
+
+		* model based builds
+
+		* release management and ditribution
+
+		* dependency management
+
+	[[1]] It is embedded within Eclipse, but I don't think that it is used by default for all Eclipse projects. You have to choose to set up your eclipse project as an Maven Project
+
+	[[1]] Had some difficulty working out how it is configured/used from within Eclipse, so installed it standalone outside of Eclipse.
+
+	[[1]] Down loaded as a tar-ball and untarred it as root under /apps/maven ( v3.6.1)
+
+	[[1]]	Added /apps/maven/apache-maven-3.6.1/bin to my path in .bash_profile, and confirmed that JAVA_HOME was set ( where IS this actually set??)
+
+* General Configuration
+
+	In general, Maven does not need a lot of configuration: it works pretty well out of the box. Should you need to tweak anything, its behaviour is largeley controlled by:
+
+		* ${MAVEN_HOME}/conf/settings.xml;
+
+		* ~/.m2/settings.xml.
+
+	One thing that you may with to change is the location of any loacl repositories used by Maven. By default, these will be in ~/.m2/repository. However, you may wish to use a project specific or company global one.
+
+
+* Generation of a Project Structure using archetypes
+
+	First, create a File structure for your project.  Maven emphasises the use of standard project layouts: but allows for different Types of project to have different layouts. It does this via the concept of a Project Archetype : this is basically a template specifying the directory structure for your project, plus a pom.xml with some suitable dependencies and plugins configured.
+
+	A whole bunch of Standard Archetypes are available via an online repository, so its just a question of choosing what is most approriate for your project.  By default, the tool uses the repository defined at Maven Central and does not have to be configured. However, should you wish to, yiou can configure a custome archetype repository by creating a sutiable entry in the maven <settings.xml> file.
+
+	Maven has a specific plugin (maven-archetyp-plugin) that can be used to interogate teh online repository. This is well documented at {{https://maven.apache.org/archetype/maven-archetype-plugin/index.html}}
+	The tool can work in a predominantly interactive manner. Just typing:
+
+---
+mvn archetype:generate
+---
+
+	will trigger a conversation with the server. In brief, it will list the totality of archetypes available, and either ask you to choose one, or some specify some filter criteria to narrow it down.
+
+	Alternatively, if you know exactly what you want, you can specify everything you need in batch mode.
+
+	So, for example:
+
+---
+mvn archetype:generate -B \
+		-DarchetypeGroupId=org.maven.archetype
+		-DarchetypeArtifactId=maven-archetype-quickstart \
+		-DarchetypeVersion=1.4 \
+		-DgroupId=uk.co.pegortech \
+		-DartifactId=tester \
+		-Dversion=1.0-SNAPSHOT
+---
+
+	This will generates a project bases on the maven-archetype-quickstart archetype
+	of name: tester
+
+	The classes will be organised in a hiearachy reflecting the originating company:
+
+			src/main/uk/co/pegortech/\*.java
+
+			test/main/uk/co/pegortech/\*.java
+
+	It will also generate a pom.xml ( Project Object Model ) which contains all the info needed to build the project, including which tools are needed for each step of the process.  Note that every pom will INHERIT its values from any parent pom it might have, possibly overriding some of them.  There is also a system-wide SUPER POM, which is part of the installation itself. Every project ultimately inherits values from this.
+
+	The 'tools' used to process any given step in the build process is a 'plug-in' to the maven. These are configured into the pom.xml ( again, downloaded as part of the archetype).
+
+	During the build, the plugins are downloaded and installed if they are not already part of the configuration.
+
+		e.g.
+
+				maven-compiler-plugin:	will drive the java compilation process
+
+				maven-jar-plugin:			will drive the building of jar files
+
+				maven-install-plugin:	will drive the installation process
+
+				maven-project-info-reports-plugin:  Will provide reporting etc.
+
+
+* Goals
+
+		Maven uses the concept of goals to represent granular tasks : e.g. compile
+
+		Goals are packaged within plug-ins which are essentially just a collection of goals.
+
+		Goals are specified to maven as follows:
+
+			mvn <plugin>:<goal>
+
+		So,  mvn clean:clean
+
+		will execute the 'clean' goal of the 'clean' plugin
+
+
+* Lifecycles
+
+		A lifecyle is made up of a sequence of Phases and the lifecycle will define the ORDER of phases.
+
+		Maven has 3 built in Lifecycles:
+
+			* Default - compiling, packaging, deploying
+
+			* Clean - Basically for removing all generated artifacts.
+
+			* Site  - Is used to create the sites documentation.
+
+
+** Default LifeCycle
+
+		The Default LifeCycle consists of the following major phases ( NB there are other less important phases not listed below):
+
+			* Validate phase - checks the project and that all dependencies are available;
+
+			* Compile phase - compiles all source;
+
+			* Test phase - Runs Unit tests using frameworks;
+
+			* Package phase - assembles compiled code into a WAR, JAR or whatever;
+
+			* Verify phase - Run any checks to verify the package is valid and meets quality criteria;
+
+			* Install phase - Installs the package to a local repository;
+
+			* Deploy Phase - pushes the build to a remote repository for use by other teams/projects.
+
+
+** Clean LifeCycle
+
+		The Clean Lifecyclei comprises the following phases:
+
+			* pre-clean;
+
+			* clean;
+
+			* post-clean.
+
+** Site Lifecycle
+
+		The Site Lifecycle comprises the following:
+
+			* pre-site;
+
+			* site;
+
+			* post-site;
+
+			* site-deploy.
+
+
+* Phase Processing
+
+		By invoking a maven phase, e.g.
+
+---
+mvn package
+---
+		all phases up to the package phase will be invoked. Note that phases can be pipelined as single command e.g.:
+
+---
+mvn clean deploy site-deploy
+
+mvn verify
+---
+
+		Each phase is associated with one or more goals of a plugin, and the phase just delegates to the associated goals.
+
+		Some phases have goals bound to them by default:
+
+
+		Packaging = jar/war/ejb/ejb3/par/rar
+
+			clean phase 	--> clean:clean   plugin/goal
+
+			compile phase 	--> compile:compile plugin/goal
+
+			test phase		--> surefire:test plugin/goal
+
+			package phase --> jar:jar OR
+									war:war OR
+									ejb:ejb OR
+
+			install phase --> install:install
+
+			deploy phase --> deploy:deploy
+
+
+
+* Plugins
+
+		There are 2 types of plugins:
+
+			* Build plugins     - configured under the <build> section of the pom;
+
+			* Reporting plugins     - configured under the <reporting> section of the pom.
+
+		Each plug will publish the goals it supports, so Maven becomes aware of them as they are plugged in.
+
+		e.g. the maven-compiler-plugin offers the compile and testCompile goals.
+
+		The modello plugin binds its goal modello:java to the generate-sources phase
+
+		It is also possible to manually bind plugin-goals to particular phases via entries in the pom.xml file.
+
+
+* Dependencies
+
+		The external dependencies required for a particular project must be configured into the POM.xml
+
+		The dependencies themselves are held within one or more local maven repositories.
+
+		If an dependency does not exist in the local repository, a remote Maven repository will be
+		contacted and the dependency downloaded to the local repository from there.
+
+		The remote repository or repositories to use are specified in the Settings.xml file (either
+		global or local).
+
+		By default, the local repository is ~/.m2/repository (and local settings file ~/.m2/settings.xml)
+
+		In order to facilitate sharing of repositories, say within an organisation, very often a repository
+		manager (such as Sonatype Nexus) sits between the global and local repositories. In these cases,
+		maven gets its dependencies from the repository manager, and the repository manager talks to the
+		external repository.
+
+		There are a wide range of external repositories available that can supply dependencies (jar files, plugins) etc.
+		The default is {{{http://central.maven.org/maven2/} Maven Central}}, but most of the major players have their own.
+
+		The dependency is specified by 4 things:
+
+			* groupId: 	The owner of the artifact;
+
+			* artifcatId:	The name of the artifact;
+
+			* version:		The particular version;
+
+			* scope:  e.g. compile, provided, runtime, test, system, import ( ie where and how the dependency is used).
+
+		The <<scopes>> may be variously:
+
+			* compile - default. will be available in all classpaths of project;
+
+			* provided - like compile, but indicates you expect the JDK or a container to provide the dependency at runtime;
+
+			* runtime - not required for compilation, but is required to execute;
+
+			* test - not required for normal use of the app, just for testing phases;
+
+			* system - similar to provided except the JAR which contains it needs to be specifically stated (it is not looked up in the repository);
+
+			* import - ???
+
+		You only have to specify primary dependencies : the secondary dependencies ( transitive dependencies) are
+		managed automatically by the tool.
+
+		I'm not sure quite how you work out what libraries you actually need. Obviously you can look at the
+		classes themselves...
+
+				javax.servlet.GenericServlet
+
+		However there are loads of .jar files that actually supply this.
+
+			{{https://search.maven.org/classic/#advancedsearch}}
+
+		can be used to trackdown possiblities.
+
+		Plugging in javax.servlet finds 39 options of which this seems the most appropriate to the wildfly container I have.
+
+---
+		GroupId			org.jboss.spwc.javax.servlet
+		ArtifactId		jboss-servlet-api_4.0_spec
+		LatestVersion	1.0.0.Final
+---
+		You can see the how Maven will expand out the transitive dependencies using the following:
+
+---
+			mvn dependency:tree
+---
+
+		This will print out a nice formatted list of all the library/jars that are depended upon.
+
+
+* Customising a build process
+
+	Whenever you need to customize the build, you do it by adding or reconfiguring plugins.
+
+	There are a wide variety of plugins available in the repository.
+
+	e.g. wildfly-maven-plugin provides facilities to deploy/undeploy applications, start/stop webservers
+	execute wildfly cli commands.
+
+	example goals:
+
+		* wildfly:deploy
+
+		* deploy:undeploy
+
+		* wildfly:startup
+
+		* wildfly:run (basically startup and deploy)
+
+
+	What each plugin defines as goals and how and where it integrates them into the Maven Lifecyle is up to the plugin concerned. You must refer to the documentaiton of that plugin for specifics.
+
+* Custom plugins
+
+	If a plugin does not exist for what you want to do, you can write your own!
+
+
+* Dealing with Multiple Projects as Modules.
+
+	Bigger projects are usually split into multiple modules, with each module responsible for generating their own
+	artifacts, quite often of differnt types.
+
+	Maven supports this by allowing multiple projects to be nested under a single Parent project
+
+	Define the master project
+
+---
+			mvn archetype:generate -DgroupId=uk.co.pegortech -DartifactId=testMasterProject -DarchetypeArtifactId=pom-root -DarchetypeVersion=1.4
+---
+
+	This basically downloads not much more than a pom.xml
+
+	Now use mvn to create the subprojects from within the master project
+
+---
+		cd testMasterProject
+
+		mvn archetype:generate -DgroupId=uk.co.pegortech -DartifactId=tester1 -DarchetypeArtifactId=maven-archetype-quickstart -DarchetypeVersion=1.4
+		mvn archetype:generate -DgroupId=uk.co.pegortech -DartifactId=tester2 -DarchetypeArtifactId=maven-archetype-quickstart -DarchetypeVersion=1.4
+---
+
+
+  This does two additional things of note:
+
+  [[a]] it adds the new modules tester1, tester2 to the pom.xml of the master project;
+
+  [[b]] it adds the testMasterProject to the pom.xml of the two subordinate projects.
+
+
+  Now when you run phases or goals against the master project it will run it against all sub-projects.
+
+
+* Parent-Child relationships in Maven
+
+	Do not confuse <<composition>> relationships in Maven with <<Inheritance>> Relationships
+
+	Declaring a sub-module (B) in a project(A) is just a means of organising it from a <<<build>>> perspective : it does <NOT> mean that the PARENT of the module B is necessarily A. B can have an entirely different parent module.
+
+	A module X which declares Y as its parent module, will <<inherit>> the identifiers dependencies, plugins, plugin configuration and plugin execution from its parent without having to declare them itself.
+
+
+
+* Grouping Dependencies
+
+	It is considered good practice to group together sets of dependencies that might be shared in a project, and stick them in a 'project' of it own.  Anything that need to use that can then just declare it as a dependency.
+
+
+* Adding Maven Dependencies Under eclipse
+
+		Adding Dependencies to the POM
+
+		Right Click on the Maven Project concerned and use
+			Maven --> Add Dependency
+
+		Added the details above in.  This updated the POM accordingly.
+
+		However, maven failed to locate and download the requested resource. When examining the pow in the xml
+		editor, it suggested that it could not find the dependency in any of the configured repositories.
+
+		It also suggested a fix, which was to add a new repository. When I selected the fix it opened a
+		Settings.xml editor. I was able to add a jboss repository and that sorted things out.
+
+		I have never been able to find that settings editor subsequently(!).
+
+
+====
+
+{Doxia}
+
+	This is an Apache content generation framework. It essentially renders text documents in a variety of markup
+	languages ( APT ( Almost Pure Text), Markdown etc ) to HTML.
+
+	The easiest way to use it is via a specific maven Archetype : maven-archetype-site
+
+		This uses the 'maven-site-plugin' plugin in order to to the conversions --> html from whatever markup language is in use
+
+	Supported goals: There are 7 goals available, but these are probably the most useful.
+
+	mvn site:site : will generate the html in the target/site directory.
+
+	mvn site:deploy : will transfer the generated stuff to a location of your choice. This is configured in the
+			<distributionManagement> section of the pom.xml
+
+	site:jar : bundles the site to a jar so that it can be deployed to a repository.
+
+	site:run : will startup the site in Jetty. The documentation can be viewed in
+				http://localhost:8080/
+
+
+
+	The Site descriptor : the site.xml file defines the standard layout of the documentation generated by the plugin. It is basically a means of indexing to the documents etc available on the site. It defines a particular layout understood by the plugin, but can be configured with banners, custom text etc.
+
+	It is possible to include different skins in order to transform the overall look and feel of the website.
+
+	Also it is possible to include different css files ( cascading Style Sheets) to further customise look and feel. Eclipse has an editor to help with this.
+
+	And likewise the Velocity Templates that the document is based on.
+
+
+* Some basics for writing documentation using Apache Doxia
+
+	[[1]] Official Documentation is {{https://maven.apache.org/doxia/references/apt-format.html}} here}
+
+	[[1]] Any lines not seperated by a blank line are considered part of the same paragraph, so you need 2 hard-returns ( i.e. a blank line)) to creates one.
+
+	[[1]] Anything <<NOT>> indented is considered a Section heading.
+
+	[[1]] Section Sub-headings are <<NOT>> indented, and start *, **, *** for various levels of heading. If the compiler finds a leap from, say, level 2 to level 4, it
+	will complain. When that happens, check that you haven't accidentally included some non-indented text that it is inadvertently treating as a new Section.
+
+	[[1]] Contrary to the documentation, it does seem necessary to include the file suffix in referenced Figures etc.
+
+	[[1]] Horizontal Lines (=======) does not seem to work.
+
+
+
+=====
+
+{GWT-Google Web Toolkit}
+
+	Documentation : {{http://www.gwtproject.org/}}
+
+	Is a google provided SDK, providing a core set of Java API's and Widgets for the construction of browser-based UI.
+
+	The name is possibly derived from the AWT classes used on thick-client java applications.
+
+	It allows you to write AJAX applications in Java, and then compile them to JavaScript rather (than byte code). The JavaScript is downloaded by the browser and interpreted like javaScript anywhere.
+
+	Can be used in any browser, including on mobile devices.
+
+
+	AJAX - Ansyncronous JavaScript and XML  - is a set of web development techniques. ( Basically Web applications send and receive data asynchrounously ( in the background) without interfering with display or behaviour of the browser page.)  These days, JSON is used as much as XML.
+
+	DOM - Document Object Model
+
+	Serializable - allows the content of a dataobject to be moved out of a piece of running code and, either:
+		a) Transmitted to another piece of running code
+		b) Stored outside the application
+
+	GWT uses RPC to transmit objects as parameters or Return Types, so they MUST be serializable.
+
+	Deferred Binding - the compiler creates many versiojns of code at compile time: differnt versions for different browsers, different versions for different langauges. The appropriate version for a particular situation is determined at runtime.
+
+	As well as the java objects, the SDK provides a number of tools to aid the development process.
+
+		[[1]] The GWT developer plugin - this spans the gap between java byte code in the debugger and the JavaScript in the browser. This means you can effectively make c ode changes on the fly, and see them immediately reflected in the browser.
+
+		[[1]] The GWT compiler - highly optimized compiler for converting java to javascript. Includes Speed Tracer for diagnosing performance problems in the browser.
+
+
+
+=====
+
+* Creating a GWT project with the Eclipse Plugin
+
+	Can do this in 2 ways via the supplied Wizard. In each case, a starter direcory layout is created and populated with
+	the bare minimum set of files:
+
+		* a html page to launch the generated javaScript;
+
+		* a css file to support cascading style;
+
+		* Deployment Descriptor ( web.xml);
+
+		* Example Client and Server Classes.
+
+	The number and nature of files differs slightly depending whether you have chosen to create a Maven Project or not.
+
+		* without Maven Support:
+
+			* an External Dependency on the GWT SDK is configured
+
+		* with Maven Support:
+
+			* a pom.xml file is generated which referencoed the dependencies ion the SDK, but it does not down load those
+			  to the local Maven Repositor at this stage.
+
+
+			Had to  Change the Project Nature --> Maven
+
+				Configure --> Convert to Maven Project
+
+				( Little M appeared)
+
+			Had to add in the www prefix...
+
+			  <!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.7.0//EN" "http://gwtproject.org/doctype/2.7.0/gwt-module.dtd">
+		-->
+			  <!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.7.0//EN" "http://www.gwtproject.org/doctype/2.7.0/gwt-module.dtd">
+
+
+
+		Creating a GWT project with a Maven Archetype
+
+---
+mvn archetype:generate \
+	-DarchetypeGroupId=org.codehaus.mojo \
+	-DarchetypeArtifactId=gwt-maven-plugin \
+	-DarchetypeVersion=2.8.1 \
+	-DgroupId=uk.co.pegortech \
+	-DartifactId=mavenGwtProject \
+	-Dversion=1.0-SNAPSHOT \
+	-Dpackage=uk.co.pegortech.apps.mavenGwt \
+	-Dmodule=Main \
+	-DinteractiveMode=N
+---
+
+		This will generate the following basic files:
+
+---
+./pom.xml
+
+./src/main/java/uk/co/pegortech/apps/mavenGwt/client/GreetingService.java
+./src/main/java/uk/co/pegortech/apps/mavenGwt/client/Main.java
+./src/main/java/uk/co/pegortech/apps/mavenGwt/client/Messages.java
+./src/main/java/uk/co/pegortech/apps/mavenGwt/server/GreetingServiceImpl.java
+./src/main/java/uk/co/pegortech/apps/mavenGwt/shared/FieldVerifier.java
+./src/main/resources/uk/co/pegortech/apps/mavenGwt/client/Messages_fr.properties
+./src/main/resources/uk/co/pegortech/apps/mavenGwt/Main.gwt.xml
+./src/main/webapp/Main.css
+./src/main/webapp/Main.html
+./src/main/webapp/WEB-INF/web.xml
+
+./src/test/java/uk/co/pegortech/apps/mavenGwt/client/GwtTestMain.java
+./src/test/resources/uk/co/pegortech/apps/mavenGwt/MainJUnit.gwt.xml
+---
+		These are largely the same file that are generated using the GWT wizard from within eclipse.
+
+---
+Directories:
+	./.settings  - Note: this is an empty directory.
+
+Source Tree
+	./src
+	./src/main
+	./src/main/java
+	./src/main/java/uk
+	./src/main/java/uk/co
+	./src/main/java/uk/co/pegortech
+	./src/main/java/uk/co/pegortech/apps
+	./src/main/java/uk/co/pegortech/apps/mavenGwt
+	./src/main/java/uk/co/pegortech/apps/mavenGwt/client
+	./src/main/java/uk/co/pegortech/apps/mavenGwt/server
+	./src/main/java/uk/co/pegortech/apps/mavenGwt/shared
+	./src/main/resources
+	./src/main/resources/uk
+	./src/main/resources/uk/co
+	./src/main/resources/uk/co/pegortech
+	./src/main/resources/uk/co/pegortech/apps
+	./src/main/resources/uk/co/pegortech/apps/mavenGwt
+	./src/main/resources/uk/co/pegortech/apps/mavenGwt/client
+	./src/main/webapp
+	./src/main/webapp/WEB-INF
+
+Testing Tree
+	./src/test
+	./src/test/java
+	./src/test/java/uk
+	./src/test/java/uk/co
+	./src/test/java/uk/co/pegortech
+	./src/test/java/uk/co/pegortech/apps
+	./src/test/java/uk/co/pegortech/apps/mavenGwt
+	./src/test/java/uk/co/pegortech/apps/mavenGwt/client
+	./src/test/resources
+	./src/test/resources/uk
+	./src/test/resources/uk/co
+	./src/test/resources/uk/co/pegortech
+	./src/test/resources/uk/co/pegortech/apps
+	./src/test/resources/uk/co/pegortech/apps/mavenGwt
+
+Build Tree
+	./target
+	./target/generated-sources
+	./target/generated-sources/gwt
+	./target/generated-sources/gwt/uk
+	./target/generated-sources/gwt/uk/co
+	./target/generated-sources/gwt/uk/co/pegortech
+	./target/generated-sources/gwt/uk/co/pegortech/apps
+	./target/generated-sources/gwt/uk/co/pegortech/apps/mavenGwt
+---
+	It can be manipulated outside of Eclipse as follows:
+
+---
+mvn package    ( By default the gwt:compile goal is bound to the prepare-package phase)
+---
+
+
+	For full details, see the on-line documentation at:
+
+	{{https://gwt-maven-plugin.github.io/gwt-maven-plugin}}
+
+
+*	Importing into Eclipse.
+
+		Use Import --> and select the Maven --> Existing Maven Project Wizard.
+
+		This will create:
+
+			.project    file
+
+			.classpath  file
+
+			.settings   filled with loads of config files
+
+
+		A Warning will show against the Module Descriptor File  ( the .gwt.xml file), because it doesn't, by default include a schema Defininition line. This can be added in, as above:
+
+---
+<!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.7.0//EN" "http://www.gwtproject.org/doctype/2.7.0/gwt-module.dtd">
+---
+
+		In the directory layout favoured by the gwt-maven-plugin archetype, the Module Description File is held within the resources directory of the tree. This differs from projects created directly through eclipse ( where it is held under the source tree).
+
+		This can cause problems during Building if the Module Description File cannot be found. Normally, the resources dir DOES lie on the classpath normally searched during the Compilation.
+
+		<<HOWEVER>> - the imported Maven Configuration Does seem to explicitly hide any files along the resources branch of the class path and so it cannot be found. In order to fix this, you need to amend the build path on the project so that these files are unhidden.
+
+		Properties --> Java Build Path --> Source
+			Amend the Excusion Filter on Both Resource Paths from \*\* --> \*.java
+
+			( This will allow the .gwt.xml file to be found along the Classpath)
+
+
+		Also, it is necessary to create a launch configuration for the imported applicaton. The gwt-maven-plug provides a specific goal for this.
+
+		Use the gwt-maven-plugin to generate a Launch configuration for the application
+
+---
+mvn gwt:eclipse
+---
+
+		This will create a .launch post-fixed xml file. This can be imported into eclipse
+
+			Import --> Run/Debug --> Launch Configurations
+
+
+		This will create a Run Configuration based on the module name (e.g. Main.html) that will fire up the application in GWT Developemnt Mode ( i.e. using com.google.gwt.dev.DevMode as the main class, in super developemtn mode, and running the module (uk.co.pegortech.apps.mavenGwt.Main, for instance)
+
+		Note that there is nothing provided to deploy the application proper to a webserver...
+
+
+		The main goals of interest provided by the gwt-maven-plugin are:
+
+---
+mvn gwt:clean
+
+gwt:compile
+
+gwt:help
+
+gwt:run
+---
+
+
+		Note that the compilation proper is tied into the prepare-package phase
+
+---
+mvn prepare-package
+---
+
+
+		For information, under the hood this is launching a shell script that basically runs:
+
+			java -cp gwt-dev.jar com.google.gwt.dev.Compiler <module>
+
+
+
+===
+
+*	The Newer version of the GWT-Maven-plugin
+
+	Although the org.codehaus.mojo version of the gwt-maven-plugin is what is configure by eclipse, this is now considered outdated. There is a new version that is now recommended for use in all projects:
+
+---
+groupID = net.ltgt.gwt.maven
+<artifactId>gwt-maven-plugin</artifactId>
+	<version>1.0-rc-10</version>
+	<extensions>true</extensions>
+---
+
+	It theorettically provides better support for multi-module projects, and provides for a a much cleaner seperation of client side code ( i.e. the stuff that get compiles down to JavaScript), the backend webserver, and the classes that are shared between the two.
+
+
+	The plugin itself is available at:
+
+		{{https://tbroyer.github.io/gwt-maven-plugin/index.html}}
+
+
+	Likewise, the archetypes used by the plugin have changed a fair bit from that used by the older plugin, most notably, the 3 sub-project created by default, and then a slightly different layout within each
+
+	The archetype is created:
+
+---
+mvn archetype:generate \
+		-DarchetypeGroupId=net.ltgt.gwt.archetypes \
+		-DarchetypeVersion=LATEST \
+		-DarchetypeArtifactId=<artifactId>
+---
+
+	where the available <artifactIds> are:
+
+  	  * modular-webapp;
+
+  	  * modular-requestfactory;
+
+  	  * dagger-guice-rf-activities.
+
+	(I haven't yet played with anything but the modular-webapp)
+
+---
+mvn archetype:generate \
+	-DarchetypeGroupId=net.ltgt.gwt.archetypes \
+	-DarchetypeVersion=LATEST \
+	-DarchetypeArtifactId=modular-webapp \
+	-DgroupId=uk.co.pegortech \
+	-DartifactId=newGWTplugin \
+	-Dversion=1.0-SNAPSHOT \
+	-Dpackage=uk.co.pegortech.apps.newGWTplugin \
+	-Dmodule=Module1 \
+	-Dmodule-short-name=mod1 \
+	-DinteractiveMode=N
+---
+
+
+	This creates a project with 3 sub-projects:
+
+	test1-client:
+
+		* contains the GWT client code, describing the UI ( ie. what gets transformed to JavaScript);
+
+		* the \*.gwt.xml file describing the rentry point and various other things - need to understand this better I think
+
+	test1-server:
+
+		* contains the simple RemoteServiceServlet implementing the GreetingService interface (  GreetingServiceImpl.java );
+
+		* misc css, xml, html files ( including web.xml and index.html).
+
+	test1-shared:
+
+		* contains the main Business Logic required by the app;
+
+		* FieldVerifier Class;
+
+		* GreetingResponse Class;
+
+		* GreetingService Interface.
+
+
+	This creates the same demonstration app that is bundled with the previous plugin archetype, but is code has been re-arranged for this new layout.
+
+
+**	Test Compiling/Running/Debugging the Client Side code.
+
+		The gwt modules, remember, eventually get compiled to JavaScript. However the AWT toolset provides a platform that will <emulate> the Javascript behaviour just by interpreting the .java files. This is quite nice, because once the various servers ( codeserver/webserver see below) are up and running, then all you need to do is save any change to the source file and refresh the browser in order to see your changes : you <don't need to compile the java at all>.
+
+		The toolset provides 2 versions of this development platform (both Java Objects):
+
+			CodeServer (com.google.gwt.dev.codeserver.CodeServer): This is what is preferred by the maven plugin. According to it documentation it is EXPERIMENTAL. I starts a code server in so called "Super Dev" Mode, a replacement for devmode that has the advantage of NOT requireing the use of Plugins in the browser to use it. However, it does not have support for authentication, data encryption etc.
+
+			It also does not have a built-in Jetty.
+
+			DevMode ( com.google.gwt.dev.DevMode): Running on this platform does not have Super Dev mode capablity and so will require a plugin inthe browser (GWT Developer Plugin) for it to run. It does, however, have an embedded webserver.
+
+			( For completeness, the actual compiler is also a java object ( com.google.gwt.dev.Compiler )
+
+		Each of these has a full set of command line options that might be specified ( documented both on the AWT site  {{http://gwt-plugins.github.io/documentation/index.html}} and available as good old JavaDoc)
+
+
+
+		The recommended use of the plugin for development and debugging (at the command line) is to use the following plugin goals from the root POM:
+
+			a. in one terminal window:
+
+---
+mvn gwt:codeserver -pl \*-client -am
+---
+
+				This invokes the <codeserver> goal on the plugin. The other arguments are <maveni> arguments:
+					-pl is --projectList and so restricts the processing to just the 'client' sub-project,
+					-am is --also-make, and so will pull in any dependencies from other projects ( in this case the "shared" sub-project.
+
+				This will start up the codeserver java object, which will serve 'java object' when requested by a webserver.
+
+
+		  b. in a second window fire up jetty:
+
+---
+mvn jetty:run -pl \*-server -am -Denv=dev
+or
+mvn tomcat7:run pl \*-server -am -Denv=dev
+---
+			<NB: the -Denv=dev is important!> This amends the profile active on the \*server build. The prod profile is active by default. Unless the dev profile is active, we won't get the proper interaction with the codeserver, and so java interpretationi doesn't happen.
+
+			If you don't get the 'Compiling App'
+
+			You can then point your web browser at the jetty/tomcat server
+
+					by default : 127.0.0.1:8080/index.html   ( although the name of the initial page will vary per applicaiton)
+
+			This will speak to the codeserver ( on 127.0.0.1:9876 )
+
+
+		The gwt:codeserver goal invokes the execution of the maven lifecycle phase: process-classes.
+
+		There are various options to control logging etc that can be added into the pom.xml as required.
+
+
+		In theory, it should be possible to add options to the maven command line too.
+
+			mvn awt:codeserver -DcodeserverArgs="-startupUrl /index.html"
+
+		..although I've not managed to get that to work yet.
+
+
+		There is full documentation of the plugin options on the plugin website, and help is available via the help goal:
+
+			mvn gwt:help -Ddetail=true -Dgoal=<some-goal>
+
+
+		It is usually a good idea to specify Mavens <<--ProjectList>> and <<--Also-make>> options in order to restrict compilation to just the '\*-client' project contain the AWT source.
+
+
+		Note that it is also possible to use the gwt:devmode goal in order to compile/run gwt source. This fires up the GWT DevMode class with its build in webserver. However it does need a few more configuration steps:
+
+			[[a]] It need the <startupUrl>/index.html</startupUrl> configuring into the pom.xml file.
+
+			[[b]] It need the war:exploded goal running on the \*-server part of the application.
+
+			[[c]] Make sure that the startupUrl is available along the public path of the module ( not sure what this is, but it is defined within \*.gwt.xml)
+
+		However, even then, I have not been able to get this to reliably work!  Quite often, you just get a 404: Not found Error when looking for /index.html
+
+
+* Running/Debugging Using the Eclipse Plugin
+
+	A little misleadingly, the compile/debug/run functionality is available under:
+
+			Right Click --> Debug as --> GWT Development Mode with Jetty			( basically gwt:devmode )
+											 --> GWT Development Mode							( basically gwt:codeserver)
+											 --> GWT Legacy Development Mode with Jetty
+
+			Presumably, with a correctly configured maven, it would be possible to do a
+					mvn jetty:run -pl \*-server -am -Denv=dev    or
+					mvn tomcat7:run -pl \*-server -am -Denv=dev
+
+			And in fact, this seems to work ok.
+
+			Annoyingly, I have yet to find a way of configuring Maven to run:
+			 		- a gwt:codeserver with the right parameters, or
+					- a jetty:run with the right parameters
+
+	With the Debug as running with Jetty, we can now right click on the URL within the 'Development Mode' Pane ( using the Jboss perspective). We can now launch the Chrome Browser with JavaScript Debug Support..
+
+	Right clicking on the displayed page will allow us to inspect elements wetc to aid in laying out etc).
+
+
+
+* Packaging.
+
+		The Maven plugin provides 2 new packaging directive specifically for client-side GWT sources. These sit alongside alongside the usual ones ( war, jar, pom, era etc), and are specified in the pom for the sub-project in the usual way:
+
+					<packaging>gwt-app</packaging>
+
+
+			gwt-app : For client-side GWT code that will ONLY be compiled through to jacaScript via the GWT Compiler
+
+			gwt-lib : For client-side GWT code that needs to be packaged in BOTH compiled and source form. Not sure what would need this, though??
+
+		Note that shared code (i.e. \*-shared sub-project) is just a standard jar packaging, while the \*-server code is usually a war.
+
+
+
+*	GWT Basics
+
+		GWT code gets sent over a network in response to a user request, where it runs as JavaScript inside their browser.
+		This put some restrictions on the Java libraries and code constructs that you can use in a AWT file.
+
+		GWT modules are stored on a webserver as a set of JavaScript and related files. In order to run a module, it must be loaded from a web-page of some sort. Any HTML page can include a GWT application via a SCRIPT tag. This page is known as the HOST PAGE.
+
+		Individual Units of GWT configuraion are called Modules. A module bundles all the configuration that a GWT project needs.
+
+		Modules are defined in XML  ( \*.gwt.xml) and it is recomended that these are placed in the root package of the standard project layout. Typically the xml files will specify:
+
+			* The Entry Point Classes. These are constructed WITHOUT parameters and are instantiated wheniever the module gets loaded. The classes onModuleLoad() method then get called.
+
+			* Source Path. The module will specifiy which sub-packages also contain GWT source. Only these files are candidates for translation to JavaScript.
+
+		Modules is one way that code is re-used within GWT: ie modules can act as libraries.
+
+		Typically, a top-level XML definition will <include> all the libraries needed and then this will compile
+		into a single set of JavaScript output.
+
+		System Modules are provided to do things like:
+
+			Provide unit test frameworks : JUnit.gwt.xml
+			Provide JSON support: JSON.gwt.xml
+
+
+		Entry Point classes implement the Entry Point Interface, which require just one method: onModuleLoad()
+		Typically the onModuleLoad() method is used to:
+				* create user interface components
+				* setup event handlers attached to those components
+				* modifiy the browser DOM ( Document Object Model)
+
+
+		Useful:
+			GWT.log("") can be used to flash debug messages while running in Development Mode ( They get optimised out
+			when running Production Mode).
+
+
+
+* Client Server Communication Basics
+
+		* when the browser based code needt to interact with the server it makes an HTTP request using a Remote
+		Procedure Call.
+
+		* The RPC is then processed on the server.
+
+		* Can use a variety of RPC mecanisms ( JSON, JSNI, or third parety)
+
+		* Fundamental difference between AJAX apps and traditional HTML apps is that AJAX does not need to fetch new HTML pages while tey execute. ( On traditional HTML servers, the page is assembled (via JSP or similar) on the server and then sent and rendered ont eh browser: with AJAX the UI logic all happens on the browser). They just need to ship data.
+
+		* It is <NOT> Simple Object Access Protocol (SOAP).
+
+
+*	Creating Services
+
+		To define your RPC interface, you need to:
+
+			* Define a ServerSide interface for your Service that Extends RemoteService, and lists the required methods;
+
+			* Define a ServerSide class to extend RemoteServiceServlet and implements the interface defined above;
+
+			* Define a ClientSide synchronous interface to the service. However, this CANNOT be used directly by
+			 the client ( AJAX - AYNCHRONOUS JavaScript and XML), so as well...
+
+			* Define a Client Side asynchronous interface to the service, based on the above, that CAN then be called from the client side code.
+
+		It is essential that the synchronous and asynchronous interfaces to conform to a NAMING standard: the compiler depends upon it.
+
+				Synchronous Interface = Xxxxx
+
+				Asynchronous Interface - XxxxxAsync
+
+		They also NEED to have the same methods, except that the corresponding method in the Async interface will have an
+		extra AsyncCallback<string> as its final parameter, e.g.
+
+---
+interface MyService {
+	public void myMethod( String s);
+}
+
+and
+
+interface MyServiceAsync {
+	public void myMethod( String s, AsyncCallback<String> callback);
+}
+---
+
+		They have to be in the same package.
+
+
+		The Server side code which implements the services are based on the Servlet Architecture.
+
+		The service implementation extends RemoteServiceServlet (which itself extends HttpServlet)
+		and implements the sysncronous version of the interface.
+
+
+
+		The process of making a call follows the same 3 steps:
+
+			instantiate the service interface using factory method GWT.create() ( This is known
+			as the service proxy)
+			e.g.
+
+				MyEmailServiceAsync emailService = (MyEmailServiceAsync) GWT.create(MyEmailService.class);
+
+					Note: we create a instance of the class of the sync interface, and cast it to the async interface.
+
+			Create an asynchronous callback object to handle the result
+
+---
+	AsyncCallback callback = new AsyncCallback() \{
+  		public void onSuccess(Void result) \{ some stuff \}
+  		public void onFailure(Throwable caught) \{ \}
+  };
+---
+
+			Make the actual call:
+
+---
+  emailService.emptyMyInbox(fUsername, fPassword, callback);
+---
+
+			NB The service proxy can be created as an attribut in the EntryPoint Class, rather than recreating
+			it in each method.
+
+
+		Handling Exceptions
+
+			RPC are open to all sorts of failures : Network failures, server crashes, slow performance etc.
+
+			Important therefore to catchand handle these situations
+
+
+		Server Calls are Asynchronous.
+
+			Remember that calls to the server will NOT block. The lines of code immeditely following will execute.
+			The onSuccess and andFailure Code will execute only when the callback completes.
+
+
+
+		Some interesting features to be aware of:
+
+			History : Typically applications run in a single page, so attemping to use the 'back' button to step back
+			in the application does not work. There are features available to emulate this though.
+
+			Internationalisation Support
+
+			Scheduling Activity : Timers etc.
+
+			JSON processing faciliites and Overlay Types
+
+			Using Native JavaScript as well as generated Java Script
+
+
+* Playing around creating interfaces.
+
+**The Root Panel
+
+	The Root Panel is essentially the base container for the dynamic elements in your application. It will be at the top of user interface hierachy.  It can be used in 2 ways:
+
+		a) to generate the <entire> body of its host html page
+		b) to generate specific <elements> within its host html page.
+
+		In the parlance, teh Root panel either wraps the <\<body\>> element of the HTLM page or it can wrap any html element that you have given a specific id to.
+
+	 		So, for example if you have a couple of table elements in a table row:
+
+---
+				\<tr\>
+					\<td id="elementOne">\</td>
+					\<td id="elementTwo">\</td>
+				\<tr\>
+---
+
+		you would wrap those elements in code similar to:
+
+---
+			RootPanel.get("elementOne").set( addSomethingIn );
+			RootPanel.get("elementTwo").set( addSomethingElseIn );
+---
+
+		A host page whose entire \<body\> element is to be wrapped would be considered:
+
+---
+			RootPanel.get().set( addSomethingElseIn );
+---
+
+		It is possibly for an html page to have more than one Root Page ( but I don't see how??).
+
+		<NB. The Root Panel comes in at least 2 variant:  RootPanel and RootLayoutPanel>
+
+		If you try laying things out in a RootPanel, then it will not work. In these circumstances you need to use the RootLayoutPanel version. <This took me a whole day to figure out!>
+
+
+**The Host Page.
+
+	Every application needs to be hosted from a bog-standar HTML file.
+
+	The javascript file responsible for the dynamic content would normally be referenced as part of the html \<head\> element, which might also reference a style sheet to be used for the app (as a link in the below).
+
+---
+		<html>
+			<head>
+					...
+					<script type="text/javascript" language="javascript" src="someJavaScript.nocache.js"></script>
+					<link type="text/css" rel="stylesheet" href="someStyleSheet.css">
+			</head>
+---
+
+		The dynamic content may be bound the entire body:
+
+---
+			<body></body>
+---
+
+		or bound to a particular data element with in the body:
+
+---
+			<body>
+				<h1>Some Heading<h1>
+				<div id="someDivision"></div>
+				...
+			</body>
+---
+
+
+=====
+
+Getting Started with Spring.
+
+
+	Created a new Eclipse Workspace for playing around with various Spring related stuff till I've
+	reached a point where I am comfortable with it
+
+		~kevin/eclipseSpringPlayground
+
+
+	As ever, the first step seems to be creating a suitable directory structure to hold your project. There
+	seem to be several ways of setting up a spring project, most of them variations on the same theme...
+
+	a) By creating on from a Maven Archetype
+
+			There are loads of them available in the various repositories, but the ones baring
+			the org.springframework.boot GroupId are probably the ones to go for, since they are produced by
+			Pivotal itself
+
+			There are loads: most aligned to on or more Spring Modules ( Projects), and most of
+			them boot projects of one form or another
+
+
+			These can be built directly with maven:
+
+---
+mvn archetype:generate \
+   -DarchetypeGroupId=org.springframework.boot \
+   -DarchetypeVersion=LATEST \
+   -DarchetypeArtifactId=spring-boot-sample-jetty-archetype \
+   -DgroupId=uk.co.pegortech.apps \
+   -DartifactId=sampleProject2 \
+   -Dversion=1.0-SNAPSHOT \
+   -Dpackage=uk.co.pegortech.apps.sampleProject2 \
+   -DinteractiveMode=N
+---
+
+
+			Central to these are the inclusion of:
+
+---
+spring-boot-maven-plugin
+---
+
+			and the following dependencies
+
+---
+spring-boot-starter
+spring-boot-starter-jetty
+spring-webmvc
+spring-boot-starter-test
+---
+
+			Most of the Compiling/Linking is provided by default by Maven via ists usual lifecycles phases
+
+---
+mvn clean
+mvn package
+mvn validate
+---
+
+			The one goal of interest provided by the spring-boot-maven-plugin
+
+					mvn spring-boot:run    ( which kicks off the Spring Boot Container and serves the app)
+
+
+		b) This can be done in the same way through Maven in Eclipse
+
+			File --> New --> Other --> Maven --: Maven Project
+
+			You then get a wizard that you can use to select the same artifact as above.
+
+			They build by invokoking the same Maven goals
+
+			There is a specific 'Run as Spring boot app' to invoke the spring-boot:run goal.
+
+
+		c) Spring itself provides an online Spring Initializr in order to get you kickstarted with a prokject strucure.
+
+			This is available via
+
+					{{http://start.spring.io}}
+
+			and is a little gui that will let you choose all the spring dependencies you need.
+
+			This downloads as a zip file
+
+			When unzipped you can build and run as before
+
+				mvn verify
+
+				mvn spring-boot:run
+
+
+		d) IF you really want to you can fetch the starter strucure via curl.
+
+				curl https://start.spring.io/starter.tgz -d style=web -d name=simple | tar -xzvf -
+
+
+
+		e) The Spring Initailiser is also, and most conveniently available through the Spring Plugin for
+			Eclipse
+
+				File --> New --> Other --> Spring Boot --> Spring Starter Project
+
+			This fires up a wizard that lets you choose all the available spring dependencies based
+			on the problem at in hand.
+
+			A proper Maven Project is then created nicely within eclipse.
+
+			THIS IS THE METHOD OF CHOICE I THINK.
+
+		f) It is alos possible to create a template using the spring commad shell ( if it is
+		installed)
+
+				spring init
+
+		This will download a demo.zip file from spring.io, and it can be unzipped and used. Other dependendencies
+		c an be added in by specifying various -D options.
+
+	Of particulare usefulness is a little wizard that will help you build all of the 'Getting Started Guides'.
+	This looks really useful and will look at this furhter shortly.
+
+====
+
+{Some stuff on Oath2 and OpenID Connect}
+
+	There is some good useful stuff on OKTA's website about what these 2 are and how they work, including a
+	good You Tube presentation
+
+		{{https://www.youtube.com/watch?time_continue=32&v=996OiexHze0}}
+
+ of which this is a brief summary:
+
+ Oath2 and OpenId Connect are both PROTOCOLS, not physical products. Various products do exist out there
+ however which DO implement them as Products/services.
+
+	Oath2 and OpenId Connect are not the same thing: OpenId connect is best viewed as an extension to the the Oath2 protocols specifically to deal with Authentication. Oauth2 was primarily designed to deal with Authorisation, i.e. granting controlled, gradations of access to various resources that may be held in different places on the web e.g.
+	*granting access to google contacts to another applications
+	*granting access to facebook posts to third party applications
+	*granting access to linked in data to third party applications
+
+	However it then started to be used for things for which it wasn't designed : eg for just for Authentication. This was considered poor because Oath2 does not define any standard ways of giving back userInformation: Oath2 doesn;t really care who you are, it standardises scopes (i.e. what information you have access to).
+
+	OpenId Connect is an extension to Oath2 designed to standardise in this area:  It adds a standard ID token that must be provided, and provides UserInfo endpoint that can be queried for basic user information.
+
+
+Basics of Oath2 functioning.
+
+	Delegated Authorisation : how can I let a website access MY data WITHOUT giving it my password. In historic times, if you wanted to give an application access to your data held on other services, you would give your password for each of those remote services to the application that wants access to the data. It would then effectively log in as you in order to retrieve that data. There are obvious security concerns about this.
+
+Oath Flows
+
+* Authorization Flow
+
+	When a web app needs access to say your Google data,
+		the app redirects to a Google website ( with a request for access to particular resources)
+		the user logs in AT GOOGLE
+		GOOGLE asks the user whether to grants access to the resources in question
+		IF the user consents the, then Google redirects back to the originating application (callback) with a Token
+		The application can then use that token to query various GOOGLE endpoints to get the info it was seeking
+
+* Terminology
+			Resource Owner  : basically the ordinary end user who owns the data in question ( NB not google, facebook etc)
+			Client : The application seeking access to that resources
+			Authorization Server : The service which speaks to the resource owner and establishes whether access should be granted ( this will be a google, facebook, linkled in or whatever service)
+			Resource Server: This is the service which provides the resources to which access has been granted. Often, but not always this will be the same as the Authorisation Server.
+			Authorisation grant: This is the message/token that indicates that authority has been granted.
+			Redirect URI: This is the point in the Client Application that the Authorization Server will redirect back to.
+			Access Token: The Authorization Grant is EXCHANGED for an Access Token, and this is what is passed to the Resource Server in order to get hold of the resources.
+
+		How these things operate is shown diagrammatically in {{{Figure 1} Figure 1}}
+
+[images/Oauth2CodeFlow.png] {Figure 1} some stuff
+
+		The various permissions that may be granted by the Authorisation Server are known as SCOPES. A user may be granted
+		access to one or more scopes, and these control what resources can be accessed, and what they can DO with resources (read it write it, delete it). Note it can be more than data : e.g. permission to write on a users Facebook wall.
+
+		The Reason why a Authorisation code is exchanged for a Access Token is to enhance security. Oauth2 describes 2 channels:
+
+		* The Back Channel: is a highly secure communication channel typically between 2 ServerSide. (SSL encrypted, SSL etc);
+
+		* The Front Channel is a less secure channel typically between a Browser and a Server. Browers are sort of secure, not so much: any tokens etc stored in the browser are visible anyone able to look at the page source code etc - so are potentially more stealable).
+
+		The browser does not itelf exchange the token: it gets its backend server do do that for it securely. The backend
+		server will present the Authorization Grant to the Authorisation Server along with some Secret known only by itself and that Authorisation Server and recieve an Access Token in return. (The Application Server will have to have registered the Secret with the Authorization Server beforehand).
+
+
+		Implicit Flow
+
+		Note that some applications run entirely in a browser : they do not have a backend server. In these circumstances
+		the Access Token is requested from the Authorization Server Directly, rather than a Authorization grant. This is known as the Implicit Flow
+
+		OKTA provide a nice little Tool which lets you test requesting Access Codes / Tokens etc.
+
+		{{https://oauthdebugger.com/}}
+
+
+* OpenID connect
+
+		This protocol is specifically for Authentication. ( People used to use Oath2 for this too, but it is a bit of a hack). It came about when people started adding Facebook, Google etc button to their app. Everyone was doing it in different ways ( but using Oauth2) : hece the extension to Oath2 known as OpenID Connect.
+
+		OpenID Connect adds some standard things:
+
+			* Standard ID token;
+
+			* a specific UserInfo endpoint for getting more userInformation;
+
+			* a standard set of SCOPES;
+
+			* standardised Implementation.
+
+
+		It has its own flow, but is practically the same as for Oath: the only difference is that you ask for the access token with the openID Scope specified.
+
+		OKTA also have a tool for looking at OpenID Connects:
+
+		{{https://oidcdebugger.com/}}
+
+
+		The Authorisation Grant is in this case, exchanged for an IdToken rather than an AccessToken.
+
+		IdTokens are basically a JSON Web Token ( JWT known as jot)
+
+		These can be pasted into something like
+
+		{{http://jsonwebtoken.io}}
+
+		in order to decode it into something intelligable for debugging purposes etc.
+
+		The tokens are usually 'signed' - so we can verify that tokens have not been tampered with in any way.
+
+
+		So in summary:
+
+			* For Simple login ---> OpenID Connect;
+
+			* Single Sign-On across sites --> OpenID Connect;
+
+			* Mobile App Login   ---> OpenID Connect;
+
+			* Delegated authorization   ---> (OAuth2)
+
+		If you want to grant access to different parts of your app, or grant access to data in other systems, it is Oath2
+		that is used.
+
+
+* OpenId Connect services
+
+			OpenId Connect is a just a protocol ( owned by the OpenId Foundation). There are multiple implemetentations Available for it, and the OpenId Foundation will certify whether a given implementation is compliant or not.
+
+			This can be software
+				- Gluu - Is a certified openSource implementation of OpenId that can downloaded and implemented for free. It
+				runs on Linux and provides SSO, access Management, identity management, social logins.
+
+
+			Or cerified implemetentation:
+
+				* Auth0;
+
+				* Glu;
+
+				* GOOGLE;
+
+				* Amazon Web Services;
+
+				* OKTA;
+
+				* Paypal;
+
+
+			Or service providers. These will typically provide:
+
+				*	Account creation Services;
+
+				* Account Management services;
+
+				* Sign on via Sociual Media providers;
+
+
+* Some OpenId Connect Providers
+
+				* Auth0   ( allows 7000 Active Users, up to 2 social identity providers for free);
+
+			  * Amazon Cognito ( Allows 50,0000 Monthly Active Users ( Ort is that Usages));
+
+				* Okta  ( allows up to 1000 Acitve USers, User managment, 5 OICD client for free);
+
+				* GitLab ( Basic Service - users need to have a GitHub account,bu tbasically free);
+
+				* Google ( Basic Service - will authenticate using a users Google Account, but not setup external ones)
+
+				Note: Facebook is not.
+
+
+====
+
+
+
+
+* Resurrecting an old Oath Project.
+
+	When I was first playing around with Spring a few years ago, I build something that would authenticate using Oath2 reaources against Google.  This was built in the Intellij Tool, and no longer seems to be working out of that installation.
+
+	Am going to try and concentrate on Eclipse, so have decideded to try and get it working again with Eclipse/Maven
+
+	It is a spring boot application
+
+
+=====
+
+Notes on Spring Boot
+
+	At the moment I have 2 information sources dedicated to Spring Boot:
+		Spring Boot in Action : is OK
+		Spring Boot Reference Guide ( i.e. th official Documentation) : is Better. As long as you are reasonably comfortable with Spring Concepts then this is pretty good.
+
+
+	Installed the Spring Boot CLI
+
+		brew tap pivotal/tap
+
+		brew install springboot
+
+		spring --version
+
+			==> 2.1.4.release
+
+
+
+* What is Spring Boot?
+
+ 	Have been struggling to understand exactly what spring boot is.   It does not necessarily seem to be the natural starting point for learning boot.  Although I think it is indended to get a project up and running with spring quickly, it doesn't really teach too many principles : you probably need to take a step back and read some non-boot materail on Spring generally until you understand what it is is doing with stuff like;
+
+		* Dependency Injection;
+
+		* annotations;
+
+		* Bean and Containers;
+
+		* Wiring via XML, Java or auto;
+
+		* Aspects
+
+	Only once you have understood all that will SpringBoot make any sense.
+
+	When you do however, this is what Spring Boot specifically brings:
+
+		- Starter Dependencies.  Basically boot provides a whole bunch of maven/gradle artifcacts that make it easier
+		to pull together the various jars/libraries that yyou might need to support a particular type of projects
+
+		Firstly there is a definitive Parent Maven POM : spring-boot-starter-parent
+
+		If you remember, properties in a maven pom tree get inherited from their parent (if they are not over-ridden). By
+		inheriting from this you get a solid maven configuration starting point. spring-boot-starter-parent itself
+		inherits as follows:
+
+				spring-boot-build
+					--> spring-boot-dependencies
+							--> spring-boot-starter-parent
+
+		A major advantage of this is that the items making up this list have been heavily curated by Spring: they are collections
+		whose particular versions are know to work together.
+
+		Consequently,
+
+				YOU DO NOT NORMALLY NEED TO SPECIFY THE VERION OF AN ARTIFACT THAT YOU WANT TO INCLUDE IN YOUR PROJECT. IT
+				WILL INHERIT THE VERSION KNOWN TO WORK FROM THE SPRING PARENT POM.
+
+		It also brings in and configures the appropriate plugins to work the more usual build processes:
+
+			* e.g. compiling;
+
+			* running tests;
+
+			* buildings jars/wars etc.;
+
+			* deploying to webservers etc.
+
+		Most of these are just bog-standard third party plugins commonly used in java development generally.
+		However Spring Boot does provide one custom plugin:
+
+			spring-boot-maven-plugin
+
+		This will package your application as an executable jar.  One of the dependencies pulled into the -starter- Configurations is an embedded tomcat server ( see below).
+
+		Consequently the packaged jar does not have to be run inside a webserver: it can be just run from the command
+		line:
+
+				java -jar <someSpringJar>
+
+		The maven plugin can also be used to do the same thing using the spring-boot:run goals
+
+				mvn spring-boot:run
+
+
+		So it basically gives you a decent lifecycle.
+
+
+		Secondly it provides a whole set of starter dependency sets to work with.
+
+		These are all available from the maven/gradle repositories and generally have a name
+
+				spring-boot-starter-<something>
+
+		These are just collections of dependencies ( jars/libraries) that commonly get used together.
+
+		For example the spring-boot-starter-web dependency collects together:
+
+    	* org.springframework.boot:spring-boot-starter:jar:2.1.4.RELEASE:compile;
+
+    	* org.springframework.boot:spring-boot-starter-json:jar:2.1.4.RELEASE:compile;
+
+    	* org.springframework.boot:spring-boot-starter-tomcat:jar:2.1.4.RELEASE:compile;
+
+    	* org.hibernate.validator:hibernate-validator:jar:6.0.16.Final:compile;
+
+    	* org.springframework:spring-web:jar:5.1.6.RELEASE:compile;
+
+    	* org.springframework:spring-webmvc:jar:5.1.6.RELEASE:compile;
+
+
+		Each of these has its OWN dependecies which are then pulled in using Maven transitive dependency processing
+
+		You can see the full expnaded list of stuff that will be pulled in Using
+
+---
+			mvn dependency:tree
+
+				[INFO] \- org.springframework.boot:spring-boot-starter-web:jar:2.1.4.RELEASE:compile
+				[INFO]    +- org.springframework.boot:spring-boot-starter:jar:2.1.4.RELEASE:compile
+				[INFO]    |  +- org.springframework.boot:spring-boot:jar:2.1.4.RELEASE:compile
+				[INFO]    |  +- org.springframework.boot:spring-boot-autoconfigure:jar:2.1.4.RELEASE:compile
+				[INFO]    |  +- org.springframework.boot:spring-boot-starter-logging:jar:2.1.4.RELEASE:compile
+				[INFO]    |  |  +- ch.qos.logback:logback-classic:jar:1.2.3:compile
+				[INFO]    |  |  |  +- ch.qos.logback:logback-core:jar:1.2.3:compile
+				[INFO]    |  |  |  \- org.slf4j:slf4j-api:jar:1.7.26:compile
+				[INFO]    |  |  +- org.apache.logging.log4j:log4j-to-slf4j:jar:2.11.2:compile
+				[INFO]    |  |  |  \- org.apache.logging.log4j:log4j-api:jar:2.11.2:compile
+				[INFO]    |  |  \- org.slf4j:jul-to-slf4j:jar:1.7.26:compile
+				[INFO]    |  +- javax.annotation:javax.annotation-api:jar:1.3.2:compile
+				[INFO]    |  +- org.springframework:spring-core:jar:5.1.6.RELEASE:compile
+				[INFO]    |  |  \- org.springframework:spring-jcl:jar:5.1.6.RELEASE:compile
+				[INFO]    |  \- org.yaml:snakeyaml:jar:1.23:runtime
+				[INFO]    +- org.springframework.boot:spring-boot-starter-json:jar:2.1.4.RELEASE:compile
+				[INFO]    |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.9.8:compile
+				[INFO]    |  |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.9.0:compile
+				[INFO]    |  |  \- com.fasterxml.jackson.core:jackson-core:jar:2.9.8:compile
+				[INFO]    |  +- com.fasterxml.jackson.datatype:jackson-datatype-jdk8:jar:2.9.8:compile
+				[INFO]    |  +- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.9.8:compile
+				[INFO]    |  \- com.fasterxml.jackson.module:jackson-module-parameter-names:jar:2.9.8:compile
+				[INFO]    +- org.springframework.boot:spring-boot-starter-tomcat:jar:2.1.4.RELEASE:compile
+				[INFO]    |  +- org.apache.tomcat.embed:tomcat-embed-core:jar:9.0.17:compile
+				[INFO]    |  +- org.apache.tomcat.embed:tomcat-embed-el:jar:9.0.17:compile
+				[INFO]    |  \- org.apache.tomcat.embed:tomcat-embed-websocket:jar:9.0.17:compile
+				[INFO]    +- org.hibernate.validator:hibernate-validator:jar:6.0.16.Final:compile
+				[INFO]    |  +- javax.validation:validation-api:jar:2.0.1.Final:compile
+				[INFO]    |  +- org.jboss.logging:jboss-logging:jar:3.3.2.Final:compile
+				[INFO]    |  \- com.fasterxml:classmate:jar:1.4.0:compile
+				[INFO]    +- org.springframework:spring-web:jar:5.1.6.RELEASE:compile
+				[INFO]    |  \- org.springframework:spring-beans:jar:5.1.6.RELEASE:compile
+				[INFO]    \- org.springframework:spring-webmvc:jar:5.1.6.RELEASE:compile
+				[INFO]       +- org.springframework:spring-aop:jar:5.1.6.RELEASE:compile
+				[INFO]       +- org.springframework:spring-context:jar:5.1.6.RELEASE:compile
+				[INFO]       \- org.springframework:spring-expression:jar:5.1.6.RELEASE:compile
+---
+
+
+				The Boot Reference Manual gives a good indication of what -starter- to use in any given situation.
+
+
+				If you need to exclude something that wouyld be brought in automatically by any of this, then you
+				can specify this in your Maven Configuration
+
+				e.g.
+
+---
+					<dependency>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-starter-web</artifactId>
+						<exclusions>
+							<exclusion>
+								<groupId>com.fasterxml.jackson.core</groupId>
+							</exclusion>
+						</exclusions>
+					</dependency>
+---
+
+
+
+		Configuration CLASSES
+			Spring favours JAVA-based Configurarion
+
+			It is generally recomended that a single Configuration Class be used.
+
+			Often the class that defines the main() method is a good place as the primary
+			@Configuration class. This can be used to import other configuration CLASSES
+			as needed.
+
+
+
+
+		AutoConfiguration
+
+			This is an attempt by SpringBoot to cut down the amount of configuration a projects needs. Typically, non-boot Projects
+			can need a lot of configuration : either in XML or Java.
+
+			Spring-Boot auto-configuration is a runtime process ( more accurately, at application startup)
+
+			It is based on the jar dependencies that have been configured. Basically Spring-Boot will scan the class Path
+			and try to define and configure any beans it thinks it might need.
+
+			YOU NEED TO OPT INTO AUTO CONFIGURATION - IT DOES NOT HAPPEN BY default:
+
+				You do this with either of these annotations:
+					@EnableAutoConfiguraton
+					@SpringBootApplication ( which includes the @EnableAutoConfiguration)
+
+			There is a JAR file called spring-boot-autoconfigure that contains several other configuraiton classes. When
+			autoconfigure is enabled, any or all of these will contribute to the auto-configuration.
+
+			Note that configuration is CONDITIONAL - basically configuration can be available in an applicaiton but
+			not applied unless certain conditions are met. Usually these conditions are expressed as @annotations
+			in the usual Spring way.
+
+			Most of the AutoConfiguration constructs use the @ConditionalOnMissingBean annotation. This means they ONLY
+			get used when a Bean has NOT already been configured.
+
+			TO FIND OUT WHAT AUTO-CONFIGURATION IS BEING APPLIED AND WHY, START THE APP WITH THE
+			--DEBUG switch
+
+				This will list out a report e.g.
+
+---
+				============================
+				CONDITIONS EVALUATION REPORT
+				============================
+
+
+				Positive matches:
+				-----------------
+
+ 			CodecsAutoConfiguration matched:
+				- @ConditionalOnClass found required class 'org.springframework.http.codec.CodecConfigurer' (OnClassCondition)
+
+ 			CodecsAutoConfiguration.JacksonCodecConfiguration matched:
+				- @ConditionalOnClass found required class 'com.fasterxml.jackson.databind.ObjectMapper' (OnClassCondition)
+
+ 			CodecsAutoConfiguration.JacksonCodecConfiguration#jacksonCodecCustomizer matched:
+				- @ConditionalOnBean (types: com.fasterxml.jackson.databind.ObjectMapper; SearchStrategy: all) found bean 'jacksonObjectMapper' (OnBeanCondition)
+
+			...
+---
+
+
+			These do tend to be quite lengthy.
+
+
+		Note that if you manually start to add configuration then that part of the auto configuration will no
+		longer be applied
+
+		Specific auto-configurations can be disaled by using the exclude attribute on the @EnableAutoConfiguraton annotations
+
+		Note: Configuration Classes are just classes, and are documented with javadoc in the usual way.
+
+
+
+		IT is also possibly to tweak the behaviour of autoconfigured beans without supplying your own version: you can do THIS
+		by configuring particular application properties. Spring has a list of about 300 properties that can be amended/adjusted as
+		required. This can happen in a number of places, in order of precedence:
+
+			1 Command-line arguments
+			2 JNDI attributes from java:comp/env
+			3 JVM system properties
+			4 Operating system environment variables
+			5 Randomly generated values for properties prefixed with "random.\*" (referenced when setting other properties, such as ${random.long})
+			6 An application.properties or application.yml file outside of the application
+			7 An application.properties or application.yml file packaged inside of the application
+			8 Property sources specified by @PropertySource
+			9 Default properties
+
+		The application.propertied or applicaiton.yml files can sit in several places:
+			1 Externally, in a /config subdirectory of the directory from which the application is run
+			2 Externally, in the directory from which the application is run
+			3 Internally, in a package named “config”
+			4 Internally, at the root of the classpath
+
+
+*Spring Boot features
+
+			SpringApplication Class.
+
+				- is a convenient way to bootstrap a Spring web application that is started from a main() method.
+				- It has a simple static method SpringApplication.run(Class, String), which you just use to pass your application class and any command line paramters you would liek to use.
+
+---
+	public class Application {
+
+  	public static void main(String[] args) {
+      SpringApplication.run(Application.class, args);
+    }
+	}
+---
+ 			It creates a suitable Spring ApplicationContext, loads all the singletonm beans, and makes commandline paramters available.
+
+			If you need to customise how your application needs to run, just create an instance of the SpringApplication class, tweak it as required, then invoke the run method.
+
+			i.e. to get rid of banners etc...
+
+---
+	public static void main(String[] args) {
+		SpringApplication app = new SpringApplication(MySpringConfiguration.class);
+		app.setBannerMode(Banner.Mode.OFF);
+		app.run(args);
+	}
+---
+
+			For more complicated situations, you can use a Builder Class to generate ones
+
+---
+	new SpringApplicationBuilder()
+			.sources(Parent.class)
+			.child(Application.class)
+			.bannerMode(Banner.Mode.OFF)
+			.run(args);
+---
+
+			If you need to access command line arguments within your application, inject a ApplicationArguments bean. This will be wired in
+
+				e.g.
+
+---
+	public class MyBean {
+
+		public MyBean(ApplicationArguments args) {
+			boolean debug = args.containsOption("debug");
+			List<String> files = args.getNonOptionArgs();
+			// if run with "--debug logfile.txt" debug=true, files=["logfile.txt"]
+		}
+	}
+---
+
+
+			If you need to run some application code once the applicaiton has started, you can implement the ApplicationLineRunner or CommandLineRunner interfaces:
+
+				e.g.
+
+---
+	public class MyBean implements CommandLineRunner {
+		public void run(String... args) {
+			// Do something...
+		}
+	}
+---
+
+			Likewise if you need to execute something at shutdown , or return specific codes, etc that is all possible.
+
+
+* The Spring Command Line INTERFACE
+
+	Spring boot has an optional Command Line Interface that you can download and install. It is essentailly a shell like environment. Once entered, you can actually run stuff interactively; although it not likely to be used this way.
+
+				spring shell
+
+	More usually it would be used to run scripts: it is an interpreter of Groovy syntax
+
+	Consequently you can write scripts, store them in the file system, and have the CLI run them:
+
+				spring run ./someGroovyFile.Groovy
+
+	There is command line help Available
+
+				spring --help
+
+
+* The Spring Actuator
+
+	An actuator is a manufacturing term that refers to a mechanical device for moveing or controlling something.
+
+	Adding the actuator to a spring application exposes a set of endpoints that let youi monitor and interact with your application. Each moay be sepeprately enabled or disabled.
+
+	To add an actuator to a Maven Project add the Dependency
+
+---
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+---
+
+	There are a whole load of things that can be examined
+		- auditevents
+		- beans ( a complete list of bean in the app)
+		- conditions that were evaluated on configuration/auto configuration and why or not they matched
+		- health
+		- request Mappings
+		- shutdown swith
+
+	Endpoints are exposed either via HTTP or JMX. Usually it is HTTP and the endpoint is exposed along /actuator/health
+	(for the health endoint).
+
+Standard Spring Techniques with Spring Boot
+
+	- ComponetScan
+	- Autowiring
+
+
+	@SpringBootApplication is equivalent to
+		@EnableAutoConfiguraton
+		@ComponentScan
+		@Configuration
+
+
+
+	The Spring-boot-devtools package is *not required* for spring boot, but provides some features that may be useful in a develoepmtn settings
+
+* Deployment options.
+
+	Out of the box, SpringBoot is built as a standard jar file, with an embedded tomcat server. Consequently it
+	runs just as a standard jars
+
+			java -jar <applicaton.jar>
+
+	This is known as a FAT jar - basically it contains ALL the jar files needed by the app ( including, in this case, the application server)
+
+	To prefer Jetty,
+
+		add an exclusion to you maven files
+
+-----
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-web</artifactId>
+				<exclusions>
+					<exclusion>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-starter-tomcat</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+-----
+
+		...and add in the jetty servers
+
+-----
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-jetty</artifactId>
+			</dependency>
+-----
+
+  IF you are deploying to an existing webserver ( tomcat, wildfly etc....)
+	 a. Change from a jar packaging to a war Packaging in the pom.xml
+	 b. Remove or comment out the spring-boot-maven-plugin in the pom.xml
+	 c. Add a web entry point to your application. This is done by making the Application class ( or whatever it might be called), extend the SpringBootServletInitializer and override its configure() method
+
+---
+			@Configuration
+			@ComponentScan
+			@EnableAutoConfiguration
+
+			public class Application extends <SpringBootServletInitializer> {
+
+ 				private static Class\<Application> applicationClass = Application.class;
+
+ 				public static void main(String[] args) {
+		 			SpringApplication.run(applicationClass, args);
+ 				}
+
+ 				@Override
+	 			protected SpringApplicationBuilder <configure>(SpringApplicationBuilder application) {
+			 		return application.sources(applicationClass);
+	 			}
+		}
+---
+
+
+Cloud deployment.
+
+	How this is deployed will vary depending on the facilities provided by the particular provider:
+
+	Many require you to bring your own container : so the fat jar is ok for them, albeit wrapped in some way to make it fit on the platfoem in question e.g.
+
+		CloudFoundry (an openSource Technology) implemenations employ a buildpack approach : the build pack wraps the jars
+
+		Heroku (SalesForce) employs something similar similar
+
+	Quite like the idea of Deploying to a standard implementation: at the moment this ties me to IBM or Pivotal (see below)
+
+
+
+
+====
+====
+
+Working through some 'Getting Started Guides'
+
+	Have picked out a series of Spring Boot starter projects to work through (from the spring.io site). Basically I am going to build these up in turn, and comment them, as heavily as I need to ensure that I understand whats going on. I may in fact try to customize some of them as I go in an attempt to learn something or make them more interesting. If so I'l comment below.
+
+	Note: these are all held withing the eclipseSpringPlayground workspace.
+
+	Most of these profect have gradle bits and pieces in them too, but I removed all that before working the project.
+
+
+
+	1. ags1-spring-boot : Building an Application with Spring Boot
+
+		A simple 2 class web application using Restful API, and absolutely no HTML element, but still demonstrates lots of useful stuff about Spring. I've heavily documented it to:
+
+		* explain what @SpringBootApplication annotation actually does : i.e. its composite nature, and what its component annotations do: @Configuration, @EnableAutoConfiguration, @ComponentScan, @Component;
+
+		* What is happening when you configure a Maven POM.XMl to use SpringBoot;
+
+		* explain how SpringBoot uses the classpath in its AutoConfiguration;
+
+		* usage of the SpringApplication class to bootstrap a Tomcat embedded webservers and how to configure the startup process, including how to run bits of code on startup;
+
+		* How to query the ApplicationContext;
+
+		* Creation and autowiring of a very simple bean;
+
+		* Explain what the @RestController annotation does, and how that implies @ResponseBody and how that routes the return output of the methods of the class it is applied to (i.e. via MessageConverters);
+
+		* Explains how the @RequestMapping annotation causes the Dispatcher to route Requests to methods to handle them;
+
+		* Illustrate that @RequestMappping functions can take arguments widely varied in both NUMBER and TYPE;
+
+		* Likewise illustrates the return values of @RequestMappping functions can be vary in TYPE and INTERPRETATION;
+
+		* It also explains what the impliedd @EnableMvc behaviour and hints at how a webMvc configuratoin may be customised;
+
+		* Demonstrates the Actuator feature and shows how it can be used to get useful information out of a running application;
+
+		* Shows use of a properties file to reconfigure the behaviour of the actuator and expose its endpoint on HTTP rather than JMX;
+
+		* explain what the Junit @Runwith() annotation does;
+
+		* explain what @SpringBootTest does, esp how it leads to the configuration of either a real or Mock webserver for Testing;
+
+		* explains what the MockMvc class is and how to perform() tests with it;
+
+		* draws attention to the useful MockMvcResultMatchers Class;
+
+		* discusses how to set up and run unit tests with maven;
+
+		* discusses how to set up a Real Webserver for Integration Testing;
+
+		* discusses how to run Integration Tests with Maven;
+
+
+		1.	ags2-serving-web-content : Serving Web Content with Spring MVC
+
+		This is another springBoot application, and again is up an running with minimal configuration. It exhibits much of the characteristics of the previous demo app, and has a few features of note of its own:
+
+		* Shows a variation on the way the SpringApplication can be fired up in order to provide custom Banner;
+
+		* Illustrates the use of the Logger Interface (and Apache log4j class) in order to write output to the console;
+
+		* Demonstrates the use of a @Bean creation method with the Application @Configuration, and the injection of a Logger Bean into the Greeting RestController both via Constructor injection and Field Injection;
+
+		* How we can make the variable injected to be final ( Good Practice);
+
+		* How we can instead create our own implementation of Logger, annotate it as a @component and have the framework inject it;
+
+		* The @GetMapping as a specialisation of the @RequestMapping in mapping URL to functions;
+
+		* Pattern matching on Paths Mapped;
+
+		* Capturing segments of the URL as @PathVariables;
+
+		* Use of @GetMapping at method and controller class level;
+
+		* use of @RequestParam to binf explicit parameters given on the URL to method parameters;
+
+		* introduction of the Model interface to capture the data elements to be rendered in the HtmlResponse;
+
+		* using the Logger mechanism to display the elements in the model to the console;
+
+		* The method return value as the nem of the View to render the model;
+
+		* The templating sub-system Thymeleaf, and how it is wired into SPRING;
+
+		* The functioning of the View and ViewResolver Interfaces ( See notes elsewhere with regard to Thymeleaf);
+
+
+
+
+
+Thymeleaf Templating System
+
+	[[1]] M Thymeleaf is a HTML based templating system that has specific support in Spring.
+
+	 * Firstly, Standard HTML5 documents are created either manually, or with tool support.
+
+	 * Secondly, specific HTML5 elements are then further annotated with Thymeleaf specific tags.
+
+	 * These tags have no meaning to a browser, so the tagged up HTML can be viewed in a browser as though the thymeleaf tags were not there.
+
+	 * The thymeleaf tags essentially allow you to work more effectivley with the model data that will eventually sit inside the page: be it formatting, support for selection and iteration, data capture etc.
+
+	 * The thymeleaf marked up .html file is loaded up with data from the Model and rendered.
+
+
+Options for Web hosting
+
+	- Google App Engine
+
+			{{https://cloud.google.com/appengine/docs}}
+
+			{{https://cloud.google.com/products/}}
+
+			Offerings:
+				- Compute – basically a virtual linux box
+
+				-	App Engine – Provides various Application Environments /  Frameworks for hosting application services ( app services, databases etc ). Seems to imply there is a free quota before charges start being applied. Might be worth looking at.
+
+				- Cloud Datastore – NoSql storage
+				- Cloud SQL – relation db Mysql
+				- Cloud Storage – object storage
+
+				AppEngine –  Appear to be 4 standard offering
+					Python  ( with webapp2 and Jinja2 frameworks )
+					Java  (with maven )
+					PHP ( with Cloud SQL )
+					GO
+
+					In order to remain chargeless, needs to use the noSql datastore. ( BigTable ??) SQL databases will incur charges. ( Don’t think MongoDb will ).
+
+
+		- OpenShift – possibly an option ( seems to be the Red Hat option )
+
+		- Amazon Web Services -  There are decent options free for a year. But then it gets quite complicated...
+
+		- Heroku - (SalesForce company) looks quite Good. Free Optionm that sleeps after 30 mins, plus a cheap hobby setting where you only pay for when the application is running ( if ran continuously it would cost $7 a month.) Will need to pay for database too ( postGres)
+
+		- Google Cloud
+
+		- CloudFoundry providers: this is an openSource system. Some Providers
+			- Pivotal - Offers $80 of credit, and then pay-as-you use (about $20 per month)
+			- IBM
+
+
+
+
+
+=======
+
+Redhat OpenShift
+
+	Created a new account kevin.crocombe@blueyonder.co.uk in order to play around.
+
+		{{https://console.starter-us-east-1.openshift.com/console}}
+
+	This, I think, uses an OpenConnect ID in order to logon. If no active session is in progress, the user will be re-directed to a login page.
+
+	It is possible to login either:
+			via login id ( kcrocombe)
+			via email address ( kevin.crocombe@blueyonder.co.uk)
+
+	Once logged in a OpenConnect ID toke will be issued, which can be used to give access to a command line session via oc (sess below).
+
+
+	Communicate with the platform via either:
+
+		A command line interface : the <oc tool>
+
+		The web console - available of te redhat platform itself.
+
+	Both methods comminicate with RH via the same REST API
+
+ 		{{https://docs.openshift.org/latest/rest_api/index.html}}
+
+	There are alsop plugins for various IDE's including eclipse:
+
+		{{https://tools.jboss.org/features/openshift.html}}
+
+
+	 The underlying orchestration system is <Kubernetes>, which RedHat have enhanced in a few areas.
+
+	 Is a <container> application platform.
+
+	 		oc login
+
+
+	 Easiest way to deploy an application is to use a Docker-Formated Image
+
+* Some Terminology
+
+	 <Container Image> : a container image is a standard unit of software, that packages up all its code, libraries and dependencies so that the application can run quickly and reliably from one computer environment to another. Container Images, in essence, are just files, so may be held in <Repositories> for deployment, much like any other file.
+
+	 <Docker Container Image> : is such a particular type of container image : namely one intended to run on the <Docker> platform. Docker images are lightweight, standalone, executable packages. They include code, libraries, system tools, setting. They are in essence virtual software environments.
+
+	 <Container> : Container images become containers at runtime i.e. when they become assosiated with a platform to support them. Docker Container Images become Docker Containers when they run on a Docker Platform. Different  Containers may communicate between themselves via well-defined channels.
+
+	 <Docker Engine> : is a software product, produced by Docker, that provides OS-level virtualisation : i.e. in whcih the kernel allows the existence of multiple isolated user-space instances. These instances called Containers by Docker, but variously refered to as Zones, Partitions, Virtual Environements in other implementations, look like real computers from the point of view of the software running inside them.
+
+	 Docker runs all containers on a single operating system. This makes them more lightweight than full virtual servers (which also have a virtualised os running in the image.)
+
+	 <Kubernetes> (Greek for "governor") is an open source container <orchestration system> : it automates application deployment, configuration. scaling and management. It was originally designed by Google. It works with a wide range of container tools, including Docker. Many cloud services now offer Kubernetes-based platforms, and many vendors now provide their own branded Kubernetes Solutions (e.g. OpenShift).
+
+	 Kubernetes exerts control over compute and storage resources by defining such resources as Objects, which can then be managed as such. The key objects are:
+
+	 	<Pods> : the basic Kubernetes scheduling unit. A pod consists of one or more containers that are co-located on a single host machine and that can share resources. A pod can define a <volume> e.g. a local disk and expose it to the containers within the pod.  Each pod has a unique IP-address within the cluster by which other pods can address it. Containers within a pod can reference each other via 'localhost'.
+
+		<Services> - A Kubernetes service is a set of pods that work together : e.g. as one tier in a multi-tier application. The set of pods that constitute a service are defined via a label-selector. A Service has assigned a stable IP address ( it persists across restarts, unlike pod iP-addresses which make get re-assigned on restart.) A service, by default, is not exposed outside of the cluster. To make it visible from outside, and so usable by clients, it needs to be explicitly exposed. Pods may be replicated underneath a service, and the Service will load balance between the pods.
+
+		<Volumes> - Filesystems in a Container are volatile by default: if the container is restarted, the contents will be lost. A Kubernetes Volume provides persistent storage. These are mounted a specific mount points within the container and available to all containers within a pod.
+
+
+
+* Documentation
+
+		Documentation for OKD is available {{https://docs.okd.io/index.html}}
+
+
+
+
+* Interactive Learning Portal
+
+	There are a number of demonstration scenarios on the learn.openshift website. These provide a simulated environemnt that can be used to step through a number of scenarios throiugh which the OpenShift Platform can be used. I have stepped through some of those scenarios below, making notes as I have done so.
+
+	The scenarios are available at {{https://learn.openshift.com/introduction}}.
+
+
+** Getting Started with OpenShift for Developers
+
+	 		Create a Project
+
+			Add to Project
+					Deploy Image
+						openshiftroadshow/parksmap-katacoda:1.0.0
+							Create
+
+		Need to <create a route> in order for the deployed application to be accessible.
+
+		Often applications will have backend services to support them.
+
+		It is possible to deploy to RedHat direct from GitHub. This is done via the Source-to-Image tool (S2I).
+
+		S2I is a tool for building reproducible Docker images. It takes an existing Docker image, injects 'Builder' sources code and assembles a new Docker image which incorporates both.
+
+		Open-shift is S2I enbaled.
+
+
+		If the backend is written in say Python, add python to the project from the systems catalog.
+
+		Specify the name of the application and git-hub loctaion.
+
+
+		Minishift
+
+			Minishift is a completer OpenShift environemnt that can be run locally.
+
+				{{http://www.openshift.org/vm}}
+
+
+** Logging in to an OpenShift Cluster
+
+	To logon via a specific user:
+
+			oc login --username collaborator --password collaborator
+
+			oc get projects
+
+			oc whoami
+
+	In order to make life easier in the early stages, the password to my kcrocombe RedHat account has been set as an environment variable. Consequentyl I should be able to logon as:
+
+		oc login -u kcrocombe -p $OSPWD
+
+
+
+* Deploying Application Components using the ODO tool
+
+	<NB - The commands used in the demo version of odo do not seem to work with the latest version of the tool. In particular the syntax of the command used to create the application:>
+
+		<<<$ odo app create wildwest>>>
+
+	<does not seem to work any more. This is noted in the text below, and the new version of the command indicated (at least as best as I have been able to find out.)>
+
+	<THIS NEEDS ATTENTION!>
+
+	Documentation is available at {{https://openshiftdo.org/}}
+
+
+** Introduction
+
+	Odo (OpenShift Do) is a CLI tool to help build and deploy applications to OpneShift.
+
+	I suspect it is a front-end to the sourceToImage tool (and possibly oc) : basically just providing a convenient way to perform the more typical packaging and deployment activities ( although I donlt know this for sure).
+
+	Consider the following Scenario: an application consisting of:
+		a back-end web service (developed say in spring)
+		a front-end (developed say in node.js)
+
+	We could deploy the application as 2 seperate components as described in what follows.
+
+** Deploying the backend
+
+	Logon to openshift
+
+---
+		odo login -u developer -p developer
+			Login successful.
+
+			You have one project on this server: "default"
+
+			Using project "default".
+---
+	Create your project
+
+---
+		odo project create myproject
+			OK  New project created and now using project : myproject
+---
+	Create an application:
+
+	From the tutorial material, it seems that an application used to be created explicitly and then various components added to it, as in:
+
+---
+
+		$ odo app create wildwest
+ 				Creating application: wildwest in project: myproject
+				Switched to application: wildwest in project: myproject
+---
+	<However, this does not seem to work with the version of odo that I have: <<odo app create>> no longer seems to be a valid commands. Instead the 'application', such that it is, is created as a bi-product of building a configuration. (see later on)>
+
+
+	Create the Java Backend
+
+	This is a java backend, so the necessary components will need to be available to it. This can be checked:
+
+---
+		$ odo catalog list components
+
+				NAME        PROJECT       TAGS
+				dotnet      openshift     2.0,latest
+				httpd       openshift     2.4,latest
+				java        openshift     8,8-1.5,8-1.6,latest
+				nginx       openshift     1.10,1.12,1.8,latest
+				nodejs      openshift     0.10,10,4,6,8,8-RHOAR,latest
+				perl        openshift     5.16,5.20,5.24,5.26,latest
+				php         openshift     5.5,5.6,7.0,7.1,latest
+				python      openshift     2.7,3.3,3.4,3.5,3.6,latest
+				ruby        openshift     2.0,2.2,2.3,2.4,2.5,latest
+				wildfly     openshift     10.0,10.1,11.0,12.0,13.0,8.1,9.0,latest
+---
+
+	As you can see java is one of the services available within OpenShift.
+
+
+	Build your application jar files in the usual way:
+
+---
+		mvn package
+---
+
+	Configure a container ready for deployment atop the Java Application Server. This will create a <component> named "Backend" of <component-type> java.  The process scans the source and target parts of the infrastructure and if all seems ok, creates a configureation (.yaml file) in a .odo subdirectory.
+
+---
+		odo create java backend --binary target/wildwest-1.0.jar --app wildwest
+			Checking component
+			Checking component version
+			Creating component backend
+---
+
+	The Component container can then be deployed to the server. This seems to read the .yaml file previously created, and uploads it to the server:
+
+---
+		odo push
+
+			Pushing changes to component: backend
+			 ✓   Waiting for pod to start
+			 ✓   Copying files to pod
+			 ✓   Building component
+			 OK  Changes successfully pushed to component: backend
+---
+
+		The 'application' can then be viewed. It think application is a bit of a false construct. I think an applicaiton is just a collection of objects carrying the same 'app=' tag.
+
+---
+	 	$ odo app list
+			The project 'myproject' has the following applications:
+			ACTIVE     NAME
+			*          wildwest
+---
+
+
+
+** The Front-End component
+
+	Likewise, create a application component for the frontend. Remember, Node.js is an interpreted language, so there is no compilation. Again a configuration file is written to .odo :
+
+---
+		odo create nodejs frontend
+ 			✓   Checking component
+ 			✓   Checking component version
+ 			✓   Creating component frontend
+ 			OK  Component 'frontend' was created and port 8080/TCP was opened
+ 			OK  Component 'frontend' is now set as active component
+			To push source code to the component run 'odo push'
+---
+	..and deploy it
+
+---
+		odo push
+			Pushing changes to component: frontend
+		 	✓   Waiting for pod to start
+		 	✓   Copying files to pod
+		 	✓   Building component
+		 	OK  Changes successfully pushed to component: frontend
+---
+
+	Create a Service Account for the backend to use.
+
+---
+		Console --> Dashboard
+---
+
+
+	Create a link between the front and the backend...
+
+---
+		odo link backend --component frontend --port 8080
+ 			OK  Component backend has been successfully linked to component frontend
+---
+
+ 	Create a url in order to access the front end. This updates the .odo configuration file
+
+---
+		odo url create frontend
+			Adding URL to component: frontend
+ 			OK  URL created for component: frontend
+
+			frontend - http://frontend-wildwest-myproject.2886795334-80-cykoria05.environments.katacoda.com
+---
+		... and then push the configuration to the server
+---
+		odo push
+---
+	It is also possible to set up a background process that will monitor for changes to any of the source files, and redeploy them automatically should any one of them change. Its unclear whether this just works with interpreted files, or whether it will trigger maven type builds too...
+
+---
+		odo watch &
+			[1] 32707
+			$ Waiting for something to change in /root/frontend
+---
+
+	 Should you need to be reminded of what the URL is for your application:
+
+---
+	 	odo url list
+			Found the following URLs for component frontend in application wildwest:
+			NAME         URL                                                                                      PORT
+			frontend     http://frontend-wildwest-myproject.2886795277-80-rhsummit1.environments.katacoda.com     8080
+---
+
+		Note that odo needs to be able to read its .odo configuration files for this, so you need to be in the correct directory.
+
+
+* Deploying my own example
+
+** A java Example
+
+---
+		odo create java app1 --binary target/gs-spring-boot-0.1.0.jar --app hello
+		✓  Checking component
+		✓  Checking component version
+		✓  Creating java component with name app1
+		✓  Initializing 'app1' component
+		✓  Creating component app1
+		✓  Successfully created component app1
+		✓  Applying component settings to component: app1
+		✓  The component app1 was updated successfully
+		✓  Successfully updated component with name: app1
+		✓  Pushing changes to component: app1 of type binary
+		✓  Waiting for component to start
+		✓  Copying files to component
+		✓  Building component
+		✓  Changes successfully pushed to component: app1
+
+		odo push
+		 ✓  Checking component
+		 ✓  Checking component version
+		 ✓  Creating java component with name app1
+		 ✓  Initializing 'app1' component
+		 ✓  Creating component component1
+		 ✓  Successfully created component app1
+		 ✓  Applying component settings to component: app1
+		 ✓  The component app1 was updated successfully
+		 ✓  Successfully updated component with name: app1
+		 ✓  Pushing changes to component: app1 of type binary
+		 ✓  Waiting for component to start
+		 ✓  Copying files to component
+		 ✓  Building component
+		 ✓  Changes successfully pushed to component: app1
+
+odo url create --component app1 --port 8080 --app kjc-application
+
+odo push
+
+odo url list --app kjc-application --component app1
+Found the following URLs for component app1 in application kjc-application:
+NAME                URL                                                                                          PORT
+app1-8080     http://component1-8080-kjc-application-project2.1d35.starter-us-east-1.openshiftapps.com     8080
+
+curl http://app1-8080-kjc-application-project2.1d35.starter-us-east-1.openshiftapps.com
+
+	Greetings from Spring Boot!
+---
+
+
+** Deploying a Wildfly app1
+
+		Created a wildfly project from the supplied demo (see wildfly stuff above)
+
+---
+		odo project create kjc-wildflyDemo2
+		✓  New project created and now using project : kjc-wildfly
+
+		odo create wildfly wildfly-component --binary ./wildfly-javaee7-webapp-archetype.war --app wildfly-app
+		I0512 20:42:17.135144    2764 create.go:138] wildfly-javaee7-webapp-archetype.war
+		 ✓  Checking component
+		 ✓  Checking component version
+
+		odo url create --port 8080 --app wildfly-app
+ ✓  URL created for component: wildfly-component
+
+		odo push
+		✓  Checking component
+	  ✓  Checking component version
+	  ✓  Creating wildfly component with name wildfly-component
+	  ✓  Initializing 'wildfly-component' component
+	  ✓  Creating component wildfly-component
+	  ✓  Successfully created component wildfly-component
+	  ✓  Applying component settings to component: wildfly-component
+	  ✓  Checking URL wildfly-component-8080
+	  ✓  Successfully created URL for component: wildfly-component
+	  ✓  http://wildfly-component-8080-wildfly-app-kjc-wildfly.1d35.starter-us-east-1.openshiftapps.com
+	  ✓  The component wildfly-component was updated successfully
+	  ✓  Successfully updated component with name: wildfly-component
+	  ✓  Pushing changes to component: wildfly-component of type binary
+	  ✓  Waiting for component to start
+	  ✓  Copying files to component
+	  ✓  Building component
+	  ✓  Changes successfully pushed to component: wildfly-component
+
+		odo url --list --app wildfly-app
+		Found the following URLs for component wildfly-component in application wildfly-app:
+		NAME                       URL                                                                                                PORT
+		wildfly-component-8080     http://wildfly-component-8080-wildfly-app-kjc-wildfly.1d35.starter-us-east-1.openshiftapps.com     8080
+
+		Content was available along:
+			http://wildfly-component-8080-wildfly-app-kjc-wildfly.1d35.starter-us-east-1.openshiftapps.com/wildfly-javaee7-webapp-archetype
+
+---
+
+** Deployment of the standard GWT starter example.
+
+	This is the starter poject that comes as part of the <modular-webapp> archetype (groupId: net.ltgt.gwt.Archetypes) which are recomended for use alongside the newer gwt-maven-plugin (groupID: net.ltgt.gwt.maven) referenced above.
+
+	In theory, it structures the project into 3 sub-projects (client, shared, server).  At the moment, what is not clear to me is what parts of this need to be deployed where in a working system.
+
+	So for a project test2 generated as follows:
+
+---
+	mvn archetype:generate \
+		-DarchetypeGroupId=net.ltgt.gwt.archetypes \
+		-DarchetypeVersion=LATEST \
+		-DarchetypeArtifactId=modular-webapp \
+		-DgroupId=uk.co.pegortech \
+		-DartifactId=test2 \
+		-Dversion=1.0-SNAPSHOT \
+		-Dpackage=uk.co.pegortech.apps.newGWTplugin \
+		-Dmodule=Module1 \
+  	-Dmodule-short-name=mod1 \
+		-DinteractiveMode=N
+---
+
+	...the system was built up in the usual maven way:
+
+---
+		mvn package
+---
+
+	This resulted in 2 .war packages and a jar package:
+
+		* server - test2-server/target/test2-server-1.0-SNAPSHOT.war
+
+		* client - test2-client/target/test2-client-1.0-SNAPSHOT.war
+
+		* shared - test2-shared/target/test2-shared-1.0-SNAPSHOT.jar
+
+	What was unclear to me was what and how each of these was to be deployed to wildfly. Just looking at the .war files it appeared that all the obviously required components where in there. So started by deploying this as follows:
+
+---
+	odo login -u kcrocombe -p $OSPWD
+
+	odo project create gwt-project
+
+	odo create wildfly backend --binary ./test1-server-1.0-SNAPSHOT.war --app gwt-test
+
+	odo push
+
+	odo url create --component backend --port 8080 --app gwt-test
+
+	odo push
+
+	odo url list
+		NAME             URL                                                                                   PORT
+		backend-8080     http://backend-8080-gwt-test-gwt-project.1d35.starter-us-east-1.openshiftapps.com     8080
+---
+
+	Browsing to this URL revealed a fully functioning app: in other words nothing needed to be done with the client or shared parts of the app. (...so, what's their purpose??).
+
+
+
+
+
+
+* Downloading and Installing the Command Line Tools
+
+	These are available from the Help Menu of the Application Console (they do not seem to be available from any more traditional Download page or Support Page).   This was downloaded as a tar bundle, and untarred to /apps/OpenShift/bin
+
+	The contents is a single executable:
+
+			oc
+
+** Logging in
+
+	I suspect that authentication to Redhat is via a OpenConnect ID. In order to login via the command line, we need to present a token that authenticates us as a valid user.
+
+	In order to get hold of that token, plus the correct URL for your RedHat area you must logon to the console. At the top-right of the Application Console, under your username, there will be an option to capture the required details, inlcluding:
+
+		The URL : https://api.starter-us-east-1.openshift.com
+		The authentication token 2aT2XT-2mlvMU4xrxifRkVVIiRynbDuhR9_5marwNQU
+
+	You can then login via the command line:
+
+		oc login https://api.starter-us-east-1.openshift.com --token=2aT2XT-2mlvMU4xrxifRkVVIiRynbDuhR9_5marwNQU
+
+	The token will typically last for 24 hrs or so, and then needs to be refereshed.
+
+		You can view the token for your session
+
+			oc whoami -t
+
+	If you don't have a token and don't want to logon to the console for some reason, then a valid token can be dispensed here:
+
+			{{https://api.starter-us-east-1.openshift.com/oauth/token/request]}}
+
+	(I don't quiote understand why this doesn't prompt you for a username password: there must be some cookie somwhere?)
+
+
+** Downloading and Installing the odo tools
+
+	Not too sure about the status of this. According to its comments on GitHub, it may still be Beta tested only. However downloaded it anyway:
+
+		{{https://github.com/openshift/odo}}
+
+	This downloaded the source code as as a zip file.
+
+	Unzipped it and ran the install.sh script.
+
+	This installed odo to /usr/local/bin
+
+
+====
+* Deploying Applications from Images using the CLI (oc).
+
+	When using OpenShift there are a number of different ways you can add an application. The main methods are:
+
+		- Deploy an application from an existing Docker-formatted image.
+		- Build and deploy from source code contained in a Git repository using a Source-to-Image builder.
+		- Build and deploy from source code contained in a Git repository from a Dockerfile.
+
+	What is described below is the first of these: deployment from an existing <Docker-formatted image>.
+
+
+** Create a Project
+
+	Within OpenShift, all resources ( except nodes) exist within the concept of a project. Projects have members, and roles and authorities over resources within that project. The names of resoources are unque within that project.
+
+---
+$ oc login -u developer -p developer
+Login successful.
+
+$ oc new-project myproject
+Now using project "myproject" on server "https://172.17.0.45:8443".
+---
+
+** Create an application within the project.
+
+	First, confirm that the name of the image to be deployed is valid. Images may exist in a number of places. The below assumes that the image is already located in a public repository (I believe these can be of three types:
+			- docker images
+			- stored Templates
+			- Image streams
+			)
+
+---
+oc new-app --search openshiftkatacoda/blog-django-py
+Docker images (oc new-app --docker-image=<docker-image> [--code=<source>])
+
+openshiftkatacoda/blog-django-py
+ Registry: Docker Hub
+ Tags:     latest
+---
+
+	Then create the application for real. The application exists really as a set of resource objects:
+	 -An Imagestream (is)
+	 -A Deployment Configurations (dc)
+	 -A Replication Controller (rc)
+	 -A Service (svc)
+	 -A Pod (po)
+
+	In creating the application, one each of these objects is created.
+
+---
+$ oc new-app openshiftkatacoda/blog-django-py
+--> Found Docker image 14077cf (5 weeks old) from Docker Hub for "openshiftkatacoda/blog-django-py"
+
+--> Creating resources ...
+	 imagestream "blog-django-py" created
+	 deploymentconfig "blog-django-py" created
+	 service "blog-django-py" created
+--> Success
+	 Run 'oc status' to view your app.
+---
+
+	These objects can be viewed...
+
+---
+$ oc get all
+
+NAME                DOCKER REPO                                  TAGS      UPDATED
+is/blog-django-py   172.30.22.11:5000/myproject/blog-django-py   latest    22 minutes ago
+
+NAME                REVISION   DESIRED   CURRENT   TRIGGERED BY
+dc/blog-django-py   1          1         1         config,image(blog-django-py:latest)
+
+NAME                  DESIRED   CURRENT   READY     AGE
+rc/blog-django-py-1   1         1         1         22m
+
+NAME                 CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+svc/blog-django-py   172.30.133.184   <none>        8080/TCP   22m
+
+NAME                        READY     STATUS    RESTARTS   AGE
+po/blog-django-py-1-6lczq   1/1       Running   0          22m
+---
+
+	To make the applcation accessible to external clients,we need to expose the service...
+
+---
+$ oc expose service/blog-django-py
+
+route "blog-django-py" exposed
+---
+
+	...and the URL that can be used can be revealed
+
+---
+$ oc get route/blog-django-py
+
+NAME             HOST/PORT                                                                  PATH      SERVICES         PORT  TERMINATION   WILDCARD
+blog-django-py   blog-django-py-myproject.2886795315-80-simba02.environments.katacoda.com             blog-django-py   8080-tcp                None
+---
+
+
+** Openshift Routing
+
+	An OpenShift URL exposes a service at a host name, e.g. www.example.com, so that external clients can reach it by name.  <<NEED TO FINISH THIS BIT OFF>>
+
+** Importing Application Images
+
+	Where an application image is to be deployed to multiple containers, possibly to provide the service over multiple nodes, then we need to deploy the same image stream several times.
+
+	In these circumstances it makes sense to import the image first.
+
+---
+$ oc import-image openshiftkatacoda/blog-django-py --confirm
+The import completed successfully.
+
+Name:                   blog-django-py
+Namespace:              default
+Created:                Less than a second ago
+Labels:                 <none>
+Annotations:            openshift.io/image.dockerRepositoryCheck=2019-05-09T11:57:18Z
+Docker Pull Spec:       172.30.203.78:5000/default/blog-django-py
+Image Lookup:           local=false
+Unique Images:          1
+Tags:                   1
+---
+
+	This creates just the image stream Object
+
+---
+$ oc get all -o name
+imagestreams/blog-django-py
+---
+
+	The application can then be deployed (as blog1) from the existing imagestream as follows:
+
+---
+$ oc new-app blog-django-py --name blog-1
+
+--> Found image 14077cf (5 weeks old) in image stream "default/blog-django-py" under tag "latest" for "blog-django-py"
+
+--> Creating resources ...
+    deploymentconfig "blog-1" created
+    service "blog-1" created
+--> Success
+---
+
+	..and a second container deployed ( as blog-2)
+
+---
+$ oc new-app blog-django-py --name blog-2
+
+--> Found image 14077cf (5 weeks old) in image stream "default/blog-django-py" under tag "latest" for "blog-django-py"
+
+--> Creating resources ...
+    deploymentconfig "blog-2" created
+    service "blog-1" created
+--> Success
+---
+
+** Deleting an Application
+
+	As alluded to above, an application exists only really as a collection of resource. However, we can make use of labels in order to identify all objects that belong to an application. We can make use of that label in the delete
+	command in order to remove all resource carrying that label.
+
+---
+$ oc delete all --selector app=blog-django-py
+imagestream "blog-django-py" deleted
+deploymentconfig "blog-django-py" deleted
+route "blog-django-py" deleted
+service "blog-django-py" deleted
+pod "blog-django-py-1-vrq5t" deleted
+
+$ oc get all -o name
+---
+=====
+
+* Deploying Applications from Source.
+
+	This is the second of out three ways of deploying an application to openshift. Here we shall deploy from source code held in a Git Repository using Source-to-Image Builder. This relies on a Build Configuration : i.e. an object that informs the infrastrucure as to how executable objects should be constructed.
+
+	There are several options for this, but most will either be:
+		a Docker build
+		a Source-To-Image build (S2I)
+
+	This demo illustrates the S2I option.
+
+
+	The following will deploy an application from the github repository {{https://github.com/openshift-katacoda/blog-django-py}}. It will be deployed using the S2I builder for the latest version opf Pythn available on the platform.
+
+	The application will use the name "blog" rather then the defualt.
+
+---
+	$ oc new-app python:latest~https://github.com/openshift-katacoda/blog-django-py --name blog
+--> Found image 2db34dd (5 weeks old) in image stream "openshift/python" under tag "latest" for "python:latest"
+
+--> Creating resources ...
+    imagestream "blog" created
+    buildconfig "blog" created
+    deploymentconfig "blog" created
+    service "blog" created
+--> Success
+    Build scheduled, use 'oc logs -f bc/blog' to track its progress.
+    Run 'oc status' to view your app.
+---
+
+	The build of the application will proceed in the background. The progress can be monitored via
+
+---
+	oc logs -f bc/blog
+---
+	As usual, the end-point then has to be exposed to the external world
+
+---
+$ oc expose service/blog
+route "blog" exposed
+
+$ oc get route/blog
+NAME      HOST/PORT                                                      PATH      SERVICES   PORT       TERMINATION   WILDCARD
+blog      blog-default.2886795448-80-simba02.environments.katacoda.com             blog       8080-tcp                 None
+---
+
+	Note that once the infrastructure knows how to build an application, rebuilds can be triggered as follows
+
+---
+$ oc start-build blog
+build "blog-2" started
+
+---
+
+* Installing Minishift
+
+	Minishift is a tool that help you run OpenShift on your local machine inside a Virtual Machine.
+
+	Minishift documentation is {{{https://docs.okd.io/latest/minishift/index.html} here}}.
+
+---
+brew install docker-machine-driver-xhyve
+
+sudo chown root:wheel /usr/local/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
+
+sudo chmod u+s /usr/local/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
+
+brew cask install minishift
+---
+
+
+MORE STUFF TO GO IN HERE...
+
+
+===============
+
+{{Notes on Domain Driven Design}}
+
+* Background.
+
+	Whilst researching how to persist java to RDMS's have encountered a number of terms that were unfamiliar to me, and were occuring sufficiently frequently as to make me feel that it needed some inverstigation. The terms appeared most often in discussions of Object Relationship Mapping : ie. the process of persisting the various classes in your application to an RDBMS. Was sufficiently intrigued to do some digging into the background, and most of the terms seem to have their origin in a Design paradigm known as <Domain Driven Design>.
+
+	This seems to cover the requirements collection, analysis and design phases of development.
+
+	Core ideas in this approach are:
+
+	* A focus on the core domain data;
+
+	* To explore models in creative collaboration of doamin practitioners and software practitioners;
+
+	* To speak a <Ubiquitous Language> within an explicitly <Bounded Context>.
+
+
+	Most of this has been taken from three books:
+
+	* Domain Driven Design - Tackling Complexity at the heart of Software : Eric Evans
+
+	* Domain Driven Design Reference : Eric Evans
+
+	* Implementing Domain Driven Design : Vaughn Vernon
+
+
+	These books are concerned with the collaborative process of building up a system model with business area experts (Domain Users), so is wider than just the representational aspect of modelling. It does define some concepts that appear elsewhere though.
+
+  This is just a quick outline of these concepts, as they pertain particularly to the persistence of data to repositories. There seems to be a reasonable amount of other useful stuff in there too however.
+
+* Domain Driven Design Terms and Concepts
+
+	These words get used throughout all three texts>
+
+** Ubiquitous Langauge
+
+	A language strucured around the domain model and used by all team memebrs (technical and business) wind a Bounded Contecto to connect all the activities of the team with the software.
+
+	The model is used as the backbone of the language used by EVERYONE to communicate about the project EVERYWHERE (in the model, in documents, in meetings)
+
+** Bounded context.
+
+	A description of a boundary (typically a subsystem, or activity of a particular team) within which a particular modle is defined an is applicable.
+
+	Multiple models are in play in any large project. Teams may be working independently on differnt aspets of the project. Consequently it is important to define explicitly the context within which a model applies, and the Ubiquitous Langauge being in used in it.
+
+
+** Entities
+
+	Objects that are not fundamentally defined by their attributes, but rather by a thread of continuity and identity. They have lifecycle. Their representation can change over time, but still be the same Object. In some sense, we want to keep track of them.
+
+	They have Business significance
+
+	It is an object primarily distinuished by its Identity rather than just the values of its attributes. (Note: All objects <can> have identity if we choose to give it : the important point is whether that identity is important in the context of the model in question.)
+
+	Identity will usually not be intrinsic to the object : it is something superimposed on it because it is useful (People don't have names : they exist without (at birth) and then a name is given).
+
+
+	Their form may change through a lifecycle.
+
+	e.g. 2 deposits, of the same amount, on the same day are STILL distict transactions : they have identity and are ENTITITIES.
+
+	However, the amount attributes of those transactions (50, pounds) may be instances of some MONEY object. These have no identity ( there is no usefulness in distinuishing between them) and are not Entities, but Value objects.
+
+	Note that a value object can serve (and often does serve) as the unique identity.
+
+	Have <mutable> characteristics.
+
+	The identifier is immutable however.
+
+	Sometimes it may be necessary to track changes to an Entity over its lifetime. One way to do this is via Domain Events and an Event Store. We create a unique Event type for every important state-altering command executed against every Aggregate that domain experts care about. The combination of the Event name and its properties makes the record of change explicit. The Events are published as the command methods complete. A subscriber registers to receive every Event produced by the model. When received, the subscriber saves the Event to the Event Store.
+
+	Entities often can carry a version number that can be incremented before an item is commited to the database in order to acertian whether it is stale or not.
+
+** Value objects
+
+	Not every object in the domain model will map to an Entity : some, as many as possible, should be treated as Value Objects.
+
+	Such objects:
+
+		* Objects Have no conceptual identity;
+
+		* Describe or compute some characteristic of some things : often a measure or description;
+
+		* model a conceptual whole by composing related attributes as an integral unit. A Value object may possess just one, a few, or a number of individual attributes, each of which is related to others.
+
+		* Should be treated as immutable (i.e. CONSTANTS);
+
+		* Will be completely replaced when a it, or a component of it, must change;
+
+		* Operations should be SIDE-EFFECT free;
+
+		* can be compared with other value objects using VALUE equality : if the types of two vlaue objects are the same, and the attributes of the object are the same then the values are considered equal (but not necessarily the same object).
+
+
+	Model using Value Objects wherever possible : they are easier to create, test, use, optimize and maintain.
+
+	(Domain Driven Design seems to be distinguish between <attributes> and <properties> : I would tend to treat these things as the same thing, but DDD seems to suggest that attributes are perhaps atomic in nature? (my interpretation)).
+
+
+	Examples: Colour, Phnoe Numbers, String, Age, Integer, Date, Co-ordinates, Address (possibly an Entity in some situations) and PostCode.  Think of them as datatypes. They will have structure, behaviour and will not necessarily be simple, but only have relevance when attached ton actual Entity.
+
+	They MAY reference Entities themselves. For example, Value objects are often passed as Parameters in messages between operations. They are transient though; created for an operation and then discarded. THey do not persist.
+
+	We do not care which instance we have of a value object : if the attributes of 2 value objects are the same, then they may be shared. e.g. 2 people can share the same. Therefore it IS possible to use 1 name object for both people. HOWEVER, it then makes NO SENSE to allow that name to be changed. (Just because one person changes thier name does not mean all people will want to change their name). For this reason, for a value object to be shared safely, they <MUST> be <IMMUTABLE> : once created they are <not> changed directly. If they must change, that can only be done through FULL replacement i.e. a NEW instance of name is creaed, and the effected person will now use that while the old name continues to get used by everyone else.
+
+	Obviously, a simple thing like name is not likely to be implemented this way, but more complicated value entities might. Particularily, if there would otherwise be 100,000 or million of identical objects in a system.
+
+	An exception to this might be when
+
+	  * a value object changes frequently;
+
+		* object creation/deletion is particularily expensive;
+
+		* if there is not much sharing of values.
+
+	However, if a value object is mutable it MUST NOT BE SHARED.
+
+	Note: Bi-directional relationships between Value Objects make no sense.
+
+
+** Services
+
+	"Sometimes it just isn't a thing."
+
+	Sometimes the clearest most pragmatic design includes operations that conceptually do <NOT BELONG> to <ANY> object. Making them belong to some particular object feels a little forced. It introduces artificiality. Such objects often will have no 'state'
+
+	In these circumstances, an operation can be added to the model as a standalone interface, without state, declared as a service.
+
+	Complex operations can easily swamp a simple object, obscuring its role. Because these operations often draw together many domain objects, coordinating them and putting them into action, the added responsibility will create dependencies on all those objects, tangling concepts that could be better understood independently.
+
+	The service will have a service contract : a set of assertions about interactions with the service. It will also have a name.
+
+	It is defined purely in terms of what it can do for a client. They have 3 characteristics:
+
+		* The operation relates to a domain concept that is not a natural part of any DOMAIN or VALUE object.
+
+		* the interface is defined in therms of other objects in the model
+
+		* The operation is stateless : clients can use it without regard to the services previous history.
+
+	Services can use info accessible globally, and may even change that.
+
+	Services will be used in all layers, and will predominate in infrastructure layers, but in all likelyhood, they will also exist in the domain layer too.
+
+	Such services can be hard to distinguish from, say, application services. Where domain objects are co-ordinated to work together to achive something that is defined by a fundamental business rule, then that is likely to be a Domain Service.
+
+	An Applicaiton Service might just sequence a number of Domain Services and Domain Operations.
+
+
+	Reasons why an operation would not belong to an existing Entity or Value object could be:
+
+		* if it performs a <significant> business process, more complicated than can be captured by the invokation of a method on an object;
+
+		* It transforms a domain object from one composition to another;
+
+		* Calculates a Value requiring input from more than one Domain Object;
+
+
+	Make sure services are only used when necessary: we want as little business logic residing in services as possible; the aim should always be to attach as much logic to proper domain objects as possible.
+
+
+** Domain Events.
+
+	Something happens that is significant in the domain.
+
+	Anything that causes an entity to change state is an event.
+
+	Model information about activity in the domain as a series of discrete events. Represent each event as a domain object. ( These are not systemn eventsm, i.e. something that happens inthe software).
+
+	Ignore irrelevant activity, but capture all events that reuire trracking, notification or which are associated with state change in other model objects.
+
+	Events typically have a timstamp, description and reference to the entitiies involved. Ordinarily, they are immutable
+
+
+** Modules (Packages).
+
+	It is not just code that is devided into modules : concepts in the model are also subject to consideratoin withregard to cohesions and coupling.
+
+	Seek low coupling in the sense that concepts can be understood and reasoned about independently.
+
+	Modules give people 2 views of the world:
+
+		*	they can look at details inside the module without being overwhelmed by stuff outside
+
+		* they can look at relationships between modules without being bothered by internal detail.
+
+	When objects are placed together in a module you are suggesting that they need to be considered together.
+
+	Modules will evolve : will be refactored over time.
+
+
+
+** Aggregates
+
+	Is an attempt to minimalise assosiations between objects, simplify transfersal and limit the explosion of realtionships.Most business odomains are highly interconnected with potential for long, deep transversal through objects refernces. This may reflect the real woreld, but is a problem for software design.
+
+	It is difficult to guarantee the consistency of changes to objects in a model with complex associations. <Invariants> need to be maintained that apply to closely related groups of objects, not just discrete objects. Yet cautious locking schemes cause multiple users to interfere pointlessly with each other and make a system unusable.
+
+	How do we know where one object made up of other objects begins and ends?
+
+	With regards to persistent storage, there must be a scope for a transaction that changes data, and a way of maintaining the consistency of the data (that is, maintaining its invariants).
+
+	Although this problem surfaces as technical difficulties in database transactions, it is rooted in the model—in its lack of defined boundaries.
+
+	Aggregates is a way of defining such boundaries and defining ownership with regard to relationships within the model.
+
+	They must be designed with a consistency focus.
+
+	An AGGREGATE is a cluster of associated objects that we treat as a unit for the purpose of data changes. Each AG GREGATE has the following characteristics:
+
+		* They have a <root> and a <boundary>.
+
+		* The boundary defines what is inside the AGGREGATE.
+
+		* The root is a single, specific ENTITY contained in the AGGREGATE.
+
+		* The root is the <only> member of the AGGREGATE that outside objects are allowed to hold <references> to, although objects within the boundary may hold references to each other.
+
+		* ENTITIES other than the root have local identity, but that identity needs to be distinguishable <only> within the AGGREGATE, because <no outside object can ever see it> out of the context of the root ENTITY
+
+		* Invariants will involve relationships between members of the AGGREGATE and must be mainatined whenevert the data changes. Any rules that <span> aggregates will <not be expected to be up-to-date> at all times. They may be aligned at a later time, via event processing, batch operations or other update mechanism.
+
+
+	When implemented, a conceptual AGGREGATE must observe the following rules:
+
+		* The root ENTITY has global identity and is ultimately responsible for enforcing invariants;
+
+		* Root ENTITIES have <global> identity. ENTITIES inside the boundary have <local> identity, unique only within the AGGREGATE;
+
+		* Nothing outside the AGGREGATE boundary can hold a reference to anything inside, except to the root ENTITY. The root ENTITY <can hand references to the internal ENTITIES> to other objects, but those objects can use them only <transiently>, and they may <not> hold on to the reference. The root may hand a <copy> of a VALUE OBJECT to another object, and it doesn't matter what happens to it, because it's just a VALUE and no longer will have any association with the AGGREGATE.
+
+		* As a corollary to the previous rule, only AGGREGATE roots can be obtained directly with database queries. All other objects must be found by traversal of associations.
+
+		* Objects within the AGGREGATE can hold references to other AGGREGATE <roots>.
+
+		* A delete operation must remove everything within the AGGREGATE boundary at once. (With garbage collection, this is easy. Because there are no outside references to anything but the root, delete the root and everything else will be collected.)
+
+		* When a change to any object within the AGGREGATE boundary is committed, all invariants of the whole AGGREGATE must be satisfied.
+
+
+	AGGREGATES mark off the scope within which invariants have to be maintained at every stage of the life cycle.
+	The following patterns (Factories nad Repositories) operate on Aggregates NOT Entities.
+
+
+	Some Rules of thumb on designing aggragates:
+
+		[[1]] Design Small Aggragates.  Large aggragates generally do not scale or perform well.  Limit the contents to those entities which MUST be consistent with others. It is probable that many will contain just 1 Entity (probably with some Value Objects); the others are likely to contain two or three ate the most.
+
+
+		[[1]] Reference Other Aggregates by Identity.  It may be computationally desirable to have a structure that may be deeply traversed, but this has implications for locking and transactions. Consequentyl do not model cross aggregate references directly as Java type references. Instead reference the global identifier.
+
+		e.g. If referencing a product form an invoice line item, do not use:
+
+			private Product product
+
+		but
+
+			private ProductID product
+
+		instead. This should help with repository that possibly could so some unwanted 'eager loading' : with this arrangement, this can never occur.
+
+		This does mean that a different mechanism is required to navigate through the model : often this will be a repository lookup. (This is called the <<Disconnected Domain Model>>). A better approach may be to use an Application, Repository or Domain Service instead.
+
+		Referencing by Identity does yield architecures that can reach large scale.
+
+		[[1]] Use Eventual consistency Outside the boundary - Essentially use some sort of Publish - Subscribe process. Create some sort of Event on Commiting on one side of the boaundary, that is listened for by something on the other side of the boundary.
+
+		It can be difficult to work out whether Transactional or Eventual consistency should be used.
+
+		Obviously some of this only works if there ar the technical mechnisms to support it. For eventual consistency, this means messaging, timers or background threads.
+
+		If these are not available, project dymaics may force us to modify two or more aggregate instances in one transaction. This decision should not be made to hastily!
+
+
+*** Factories
+
+	Creation of an object can be a major operation in itself, but complex assembly operations do not fit the responsibility of the created objects. Combining such responsibilities can produce ungainly designs that are hard to understand. Making the client direct construction muddies the design of the client, breaches encapsulation of the assembled object or AGGREGATE, and overly couples the client to the implementation of the created object.
+
+	Complex object creation is a responsibility of the domain layer, yet does not necessaril;y belong to the objects that express the model.
+
+	Factories are constructes that are neither ENTITY, VALUE OBJECT or SERVICE : they do not correspond with anything in the model but are nonetheless part of the domain layers responsibiliites.
+
+	So, shift the responsibility for creating instances of complex objects and AGGREGATES to a separate object, which may itself have no responsibility in the domain model but is still part of the domain design. Provide an interface that encapsulates all complex assembly and that does not require the client to reference the concrete classes of the objects being instantiated. Create entire AGGREGATES as a piece, enforcing their invariants.
+
+	Factories can follow severeal desihn patterns: Factory, Abstracty Factoiry, Builder etc.
+
+
+	Factories can be sited within the Aggregates they are intednded to create, or on a closeley related one. If there is no natural host, consider a standalone SERVICE.
+
+	Do not place the logic for enforcing an invariant in the Factory : these need to stay with the Aggraget, Entity involved.
+
+
+*** Repositories.
+
+	To do anything with an object you need to hold a reference to it. How do you get that reference?
+
+		* By creating an object new Obj()
+
+		* traverse an assosiation from another object. But how do you get that object?
+
+		* reconstitute it from an object store.
+
+
+	A REPOSITORY represents all objects of a certain type as a conceptual set (usually emulated). It acts like a collection, except with more elaborate querying capability. Objects of the appropriate type are added and removed, and the machinery behind the REPOSITORY inserts them or deletes them from the database. This definition gathers a cohesive set of responsibilities for providing access to the roots of AGGREGATES from early life cycle through the end.
+
+	The Repository will have a simple interface, defined in domain concepots and conceptually connected to the domain model.
+
+	For each type of aggregate that needs global access:
+
+		* create a service that can provide the illusion of an in-memory collection of all objects of that aggregate’s root type.
+
+		* Set up access through a well-known global interface.
+
+		* Provide methods to add and remove objects, which will encapsulate the actual insertion or removal of data in the data store.
+
+		* Provide methods that select objects based on criteria meaningful to domain experts.
+
+		* Return fully instantiated objects or collections of objects whose attribute values meet the criteria, thereby encapsulating the actual storage and query technology, or return proxies that give the illusion of fully instantiated aggregates in a lazy way.
+
+		* Provide repositories only for aggregate roots that actually need direct access.
+
+		* Keep application logic focused on the model, delegating all object storage and access to the repositories.
+
+
+	Some tips:
+
+	 Abstract the type where possible. A REPOSITORY “contains” all instances of a specific type, but this does not mean that you need one REPOSITORY for each class. The type could be an abstract superclass of a hierarchy (for example, a TradeOrder could be a BuyOrder or a Sell-Order). The type could be an interface whose implementers are not even hierarchically related.
+
+	 Leave Transaction Control to the Client ; The repository can do the inserting and deleting etc, but let the application commit the transaction.
+
+	 The Repository must return Ojects to the clients. Often it is useful to delegate actual reconstitution of the object to a Factory, although the repository must be responsible for returniong the actual object.
+
+
+* Architectural Patterns
+
+** Model Driven Architecture
+
+	If the design of the application can not be mapped from the domain model, then the domain model is lacking. If it is difficult to build a modular architecure fromthe model, then the model needs to be revisisted.
+
+	Large diagrams that are just a web of associations are generally difficult to understand and generably don't translate into storable, retrivable units that can be mainipulated with transactional integrity.
+
+	There must be a tight connection between the model and the code. The software should reflect the model in a very literal way.
+
+	Seek to achieve isolation of the domain model and related to logic from otehr parts of the applicatioin, and do this via a suitable architecture.
+
+** Layered
+
+	When domain-related code is diuffused through large amounts of other code, it becomes difficult to see and reason about. Superficicial change toi, say UI, can actually change business logic.
+
+	So, isolate the expression of the domain model and business logic. Eliminate ANY dependency on infrastrucure , user interface, and even application. Partition app into layers. Layers should be internally cohesive and that depends on only the layers beneath (directly, or indirectly). Domain logic should be in its own layer.
+
+	The names and number of layers can vary, but the following is typical.
+
+*** User Interface or Presentation Layers.
+
+	Responsible for showing info to the user/actor and inerpretting the commands. Sometimes gets merged into the application layer.
+
+*** Applications Layers.
+
+	Generally is quite thin. Defines the jobs the software is supposed to do. It marshalls operations from the daomain layer to perform soemthing useful. Generally, objects in this layeer will NOT have state reflecting ANY business situation (although it may have state representing, say, the progress of a task).
+
+
+*** Domain Layer.
+
+	Represents the concepts of the business, inofrmation about the busisness state, business constraints and operations.
+
+*** Infrastucture Layers.
+
+	General technical services that support the higher layers: database persistence, mnessaging, webserver, network support etc, widget drawing etc.
+
+	Often manifest as Services
+
+=========
+
+** Hexagonal (or Ports and Adaptors).
+
+	Conceptually, this puts the Domain model at its core, and completeley surrounds it with an application layer. The API provided by this layer provides faciliites for data to pass into and out of the core. The API is then surrounded by a so-called hexagon ( although conceptually, I don't see why it can't have more sides). Each side of the heaxagon represents a different kind of Port for data to pass into or out of. Each client talking through teh port makes use of an Adapter to fit the applicaion API.
+
+	Likewise, Adaptors provide ways of plugging in Infrastructure Providesr such as Messaging Services and Persistence Mechanisms.
+
+	Frameworks that make use of DI (such as Spring) are probably leveraging such a sort of archiutecture. It has the advantage of being able to relatively easily unplug one bit of technology and substitute another in its place.
+
+	It often itself forms the basis for the other architecural patterns described below.
+
+** Service orientated.
+
+** REST.
+
+** Command Query Responsibility Segregation (CQRS)
+
+** Event Drive architecure
+
+** Data Fabric or GRID based.
+
+
+======
+
+{Technology Glossary}
+
+	[Ruby] - A object orientated, interpretated scripting language : quite powerful
+	[Rails] - A Ruby-based Rapid Application Development tool, well suited to CRUD/database/web Applications
+
+	[Groovy] - Java-like language (and infact compiles to java byte code), but can be interpreted. Has features similar to Perl, Python, Ruby, Smalltalk. Supposedly simpler than Java.
+	[Grails] - A Groovy based WebFramework ( uses Spring)
+	[Gradle] - A popular build tool bases on Groovy
+
+	[Spring Roo] - Springs Rapid Application Development Tool.

@@ -1,0 +1,31 @@
+~~
+The Atom Editor - miscellaneous notes.
+
+*Configuration
+
+  Since Atom is configuratble with various plugins to modify its behaviou, not only is the editor configurable, but so are the various packages. Consequently it can be a little tricky to find the 'hhok' that you want, but persist. It is there somewhere.
+
+*Spell Checking
+
+  The spell check doesn't kick in automatically in all file types : Presumably because its hard to spell check C-code!.
+  If you want the spell checker to work on a particular file type, you need to add that filetype explicitly to the SpellCheck package settings:Grammar
+
+  e.g Grammar: source.apt
+
+
+
+*Syntax Highlighting/Checking
+
+*Auto-complete
+
+  This can be annoying. There is a an auto-complete package that controls this. Fortunately the interventions are relatively well configurable, and once I disable the enter key as a means of selecting a choice the behaviour became much easier to use.
+
+*Folding
+
+**Folding within APT.
+
+  The editor doesn't fold APT files too smartly. It would be nice if it recognised sections, subsections ertc. but as far as I can tell it basically folds based on Tabs or indendation. Anything with the same level of indentaion gets indented.
+
+  This doesn't work so well with APT as the markup reuquires certain constructs to be in the first column (Comment, literal text, Figures etc.)
+
+  If you want to sensibly fold you need to temporarily shift those characters to the next column with global find and replace.
