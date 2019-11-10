@@ -8,7 +8,7 @@ Introduction
 
   However, mostly the documentation will be marked as APT.
 
-  There is a quick guide to how to markup text using APT here.
+  There is a quick guide to how to markup text using APT {{{./format.html}here}}.
 
 
   The technology used to render the apt to html is Apache's Doxia Framework. Doxia is a content generation framework which aims to provide facilities for generating static and dynamic content for web-based publishing.
@@ -28,6 +28,7 @@ Rendering tools
 
     It is also possible to build the HTML files manually using the doxia-converter tools. This is described more fully here.
 
+    {{{https://maven.apache.org/plugins/maven-site-plugin/}Maven Site Plugin Documentation}}
 
 Building and Maintaining the documentation using maven.
 
@@ -63,10 +64,20 @@ Building and Maintaining the documentation using maven.
 
   As with all maven projects, this will attempt to download any missing dependencies and then build the site from the sources in the various sub-directories
 
+Images
+
+  place in resources directory, or a subdirectory of it. THese will be available on the relative pathname under target.
+
+  i.e. resources/image1.png     will be available as ./image1.png
+  i.e. resources/images/image2.png     will be available as ./images/image2.png
+  etc
+
 
 Version Management with git.
 
     TO DO
+
+    {{{./gitNotes.html}gitNotes}}
 
 Installing and Using the Doxia-Converter
 
