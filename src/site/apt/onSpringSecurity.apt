@@ -1,0 +1,210 @@
+﻿Spring Security Notes.
+
+The basic Classes:
+
+Authentication Manager  Interface : The AuthenticationManager is just an interface, so the implementation can be anything we choose. it has just one method to be implemented
+
+Authentication : authenticate(Authentication)
+
+It must honour the following contract concerning exceptions:
+DisabledException must be thrown if an account is disabled
+LockedException must be thrown if an account is locked
+BadCredentialsException must be thrown if incorrect credentials are presented. 
+
+Whilst the above exceptions are optional, an AuthenticationManager must always test credentials ( via the authenticate method).
+
+Exceptions should be tested for and if applicable thrown in the order expressed above 
+
+
+ProviderManager Class : This is the default implementation of AuthenticationManager in Spring Security.  It delegates to a list of configured AuthenticationProvider s, each of which is queried in turn to see if it can perform the authentication. Each provider will either throw an exception or return a fully populated Authentication object.
+
+
+
+AuthenticationProvider Interface – provides 2 methods
+	Authenticate
+	Supports(Class<?>) – which returns true if this provider supports the given AuthenticationObject
+
+Amongst the implementations of the AuthenticationProvider i/f provided by Spring are:
+OpenIDAuthenticationProvider : doesn’t authenticate per se because it assumes that has already been done. Instead it further populates the Authentication with stuff from the UserDetails service.
+DaoAuthentiactionProvider : basically uses the UserDetailsService in order to pull back a password from a list of known users and compares them.
+
+
+
+
+
+
+SecurityContextHolder Class : associates a SecurityContext with the current execution thread. It is full of static methods, so can you don’t need an instance to make it useful.
+
+SecurityContext Interface : Essentially this just provides a access to the Authentication object. It requires just 2 methods : to get and set the Authentication Object..
+
+SecurityContextImpl Class : is the base implemention of the above.
+
+Authentication Interface :  It represents 
+The object used to request authentication (via an Authentication Manager);
+The authenticated principle once the request has been processed.
+
+It will hold:
+the credentials that prove the principal is correct;
+the identity of the principle being authenticated;
+additional details of the authentication request.
+
+During the authentication process, the authenticationManager should :
+set a flag on the Authentication object to show that it has been authenticated;
+populate the GrantedAuthorities that the principal has.
+
+
+
+
+Spring provides several different implementations, e.g.
+UsernamePasswordAuthenticationToken
+OpenIdAuthenticationToken
+AnonymousAuthenticationToken
+PreAuthenticatedAuthenticationToken  :  Note : this is NOT the form presented to the AuthenticationManager prior to authentication. It represents a token which has been Authenticated PRIOR to being presented (possibly by some external system). Consequently it does not require further authentication.
+
+In general, these are created by extending AbstractAuthenticationToken
+
+
+
+Filters….
+
+Seems to be the way that Headers are processed and authentication triggered.
+
+OAuth2AuthenticationProcessingFilter
+BasicAuthenticationFilter
+
+
+OAuth2Authentication
+
+Oauth2AuthenticationManager
+
+
+
+Authentication Process:
+
+The OAuth2AuthenticationFilter is placed into the  Filterchain and, using the tokenExtractor,  requests bearing a bearer token identified.  The token is passed to the AuthenticationManager associated with Filter.
+
+This attempts to Authenticate using the ResourceTokenServices associated with the AuthenticationManager.
+
+If we are to use Google, I think this is where we need to write our own implementation of ResourceServerTokenServices.
+
+When Authenticated, we generate an Oath2Authentiaction
+
+
+
+
+
+
+Interface ResourceServerConfigurer
+Convenient strategy for configuring an OAUth2 Resource Server. 
+
+Beans of this type are applied to the Spring context automatically if you use @EnableResourceServer classes. 
+
+Convenient annotation for OAuth2 Resource Servers, enabling a Spring Security filter that authenticates requests via an incoming OAuth2 token. Users should add this annotation and provide a @Bean of type ResourceServerConfigurer (e.g. via ResourceServerConfigurerAdapter) that specifies the details of the resource (URL paths and resource id). In order to use this filter you must @EnableWebSecurity somewhere in your application, either in the same place as you use this annotation, or somewhere else.
+
+Implement the ResourceServerConfigurer  interface to adjust the access rules and paths that are protected by OAuth2 security.
+
+Has 2 methods only :
+  One to configure Http Security  ( i.e. what url’s are to be protected )
+		configure(HttpSecurity http)
+
+  One to configure the ResourceServer Security ( ie configure the objects to be protected
+	configure(ResourceServerSecurityConfigurer resources)
+
+
+There is a provided class to implement it
+ResourceServerConfigurerAdapter implements Interface ResourceServerConfigurer
+
+
+
+
+
+Interface AuthorizationServerConfigurer
+Convenient strategy for configuring an OAUth2 Authorization Server. 
+
+Beans of this type are applied to the Spring context automatically if you use @EnableAuthorizationServer.
+
+@EnableAuthorizationServer is a convenience annotation for enabling an Authorization Server (i.e. an AuthorizationEndpoint and a TokenEndpoint) in the current application context, which must be a DispatcherServlet context. 
+
+Many features of the server can be customized using @Beans of type AuthorizationServerConfigurer (e.g. by extending AuthorizationServerConfigurerAdapter). 
+
+The user is responsible for securing the Authorization Endpoint (/oauth/authorize) using normal Spring Security features (@EnableWebSecurity etc.), but the Token Endpoint (/oauth/token) will be automatically secured using HTTP Basic authentication on the client's credentials. 
+
+Clients must be registered by providing a ClientDetailsService through one or more AuthorizationServerConfigurers.
+
+
+
+Implement the AuthorizationServerConfigurer interface to adjust how and to who tokens are granted to  by OAuth2 security
+
+Requires 3 configure methods only:
+	Configure(AuthorizationServerEndpointsConfigurer)
+		- configures non-security features on the endpoint ( token store, grant-types etc)
+	Configure(AuthorizationServerSecurityConfigurer)
+		- configures Authorization Server security essentially the /oauth/token endpoint
+	Configure(ClientDetailsServiceConfigurer)
+		-configures the allowable clients for this service.
+
+Each of the …Configurer objects are classes ( not interfaces)
+
+
+The AuthorizationServerConfigurer interface is implemented by the following class:
+Class AuthorizationServerConfigurerAdapter
+
+
+
+
+
+
+
+
+WebSecurityConfigurer Interface
+Beans of this type are applied to the Spring context automatically if you use @EnableWebSecurity
+
+Allows customization to the WebSecurity. In most instances users will use EnableWebSecurity and a create Configuration that extends WebSecurityConfigurerAdapter which will automatically be applied to the WebSecurity by the EnableWebSecurity annotation
+
+
+WebSecurityConfigurerAdapter
+
+
+
+
+
+Steps to Setting up spring Security.
+
+1) Create the springSecurityFilterChain. 
+	This is a Servlet Filter that is responsible for all the security.
+
+2) Register the springSecurityFilterChain with the WAR.
+3) Configure the configuration as required.
+
+
+
+2) Registering the filter chain with the WAR.
+
+This is done via a WebApplicationInitialiser.
+
+Interface WebApplicationInitializer
+
+By implementing this interface, we can configure the servletContext programmatically rather than using the traditional web.xml based approach.
+
+Any implementations of this Service Provider Interface (SPI) will get detected by the SpringServletContainerInitializer ( which itself get bootstrapped by any Servlet3 container)
+
+It contains one method 
+
+		onStartup( ServletContext xx)
+
+which get invoked on container startup.
+
+
+AbstractSecurityWebApplicationInitializer is an implementation of WebApplicationInitializer which registers the springSecurityChainFilter Class that we created  with the WAR.
+
+
+Note that this is only necessary if the application is to be deployed as a standard WAR within a webserver.  If the application is a Spring Boot app, which has its own embedded container, then you need to use a different WebApplicationInitialiser  ( SpringBootServletInitialiser)
+
+
+AuthenticationManagerBuilder
+
+This is a class used to assemble, piecemeal, an AuthenticationManager and then build it when ready.
+
+It is created as a ‘shell’ object, configured as necessary, and then a AuthenticationManager generated via the build() method. If the AuthenticationManager has already been built, it can be referenced via the getObject() method.
+
+getOrBuild() will get() the object, build() ing it beforehand if necessary.

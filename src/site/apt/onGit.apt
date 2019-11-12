@@ -2,8 +2,6 @@
 ~~
 ~~Author
 ~~
-~~[/users/kevin/desktop/test.png] "Figure1"
-~~[/users/kevin/desktop/test.png] Figure1 caption does not seem to work.
 
 
 The Git Version Control System
@@ -28,6 +26,9 @@ The Git Version Control System
 		{{Architectural Outline}}
 
 		{{The Three File States}}
+
+	  {{{./onDriesensBranchingModel.html}Vincent Driesen's Branching Model}}
+
 
 *Basic Concepts
 
@@ -83,7 +84,7 @@ The Git Version Control System
 	modify files --> stage files --> commit files.
 ---
 
-	Note that svn has no equivalent to the staging area.
+	Note that <<<svn>>> has no equivalent to the staging area.
 
 	The command line is the most powerful way of using git. Although there are many GUI client, most of them do not implement the full range of git functionality.
 
@@ -151,6 +152,8 @@ The Git Version Control System
 			The most commonly used git commands are:
 
 				[add] Add file contents to the index;
+
+				[archive] - Creates a tar or zip archive on standard out.
 
 				[bisect] Find the change that introduced a bug by binary search;
 
@@ -452,7 +455,7 @@ The Git Version Control System
 
 	[]
 
-	Note: it is perfectly possible for a single file to be in BOTH states. Remember when a file is 'add'ed, the specific revision is what is staged. Changes can still be made to the working copy file, but these donl't automatically apply to the staged file.
+	Note: it is perfectly possible for a single file to be in BOTH states. Remember when a file is 'add'ed, the specific revision is what is staged. Changes can still be made to the working copy file, but these don't automatically apply to the staged file.
 
 	[[1]] Ignoring particular filetypes
 
@@ -463,7 +466,7 @@ The Git Version Control System
 	*.tmp
 ---
 
-	Glob patterns are like simplified regexps.
+	Glob patterns are like simplified <<<regexp>>>s.
 
 
 	[[1]] Viewing Changes made
@@ -496,7 +499,15 @@ The Git Version Control System
 
 	[[1]] git branch --all
 
-===
+
+***Extracting a bare working tree (i.e. not as a git repository.)
+
+	The <<<git archive>>> command will cause the specified directory to be exported from the repository in the specified archive format. It is written directly as a stream  to <<<stdout>>>, where it can be captured as a file, or piped into some processing utility. Note it has to be run from within a git repository.
+
+---
+	git archive --format=tar -o <output.tar>
+
+---
 
 *Branching and Merging
 
@@ -510,7 +521,7 @@ The Git Version Control System
 
 	As you make commits, the master pointer moves forward automatically to that new commit object (which will contain a pointer back to the previous commit). Creating a branch just creates a new named pointer to a commit on an existing branch.
 
-	Generally a project will choose a particular branching model: this can be be as simple as a Master with simple development branches forking from it, or more sophisticated models such as {{{https://nvie.com/posts/a-successful-git-branching-model/}Vincent Driesen}}. Git itself provides no rules. You just need to adopt something that works for your project.
+	Generally a project will choose a particular branching model: this can be be as simple as a Master with simple development branches forking from it, or more sophisticated models such as that described by {{{./onDriesensBranchingModel}Vincent Driesen}}. Git itself provides no rules. You just need to adopt something that works for your project.
 
 **Creating a branch
 
@@ -575,7 +586,7 @@ The Git Version Control System
 
 **Merge Conflicts
 
-	Occasionally the merge process will not go so smoothly. The same lines, or somtimes, just the same files will have been ameded on both branches.  In these circumstances, git is unable to automatically merge the files and will call for some manual assistance. A message similar to the below will be issued:
+	Occasionally the merge process will not go so smoothly. The same lines, or sometimes, just the same files will have been amended on both branches.  In these circumstances, git is unable to automatically merge the files and will call for some manual assistance. A message similar to the below will be issued:
 
 ---
 	CONFLICT (content): Merge conflict in index.html
@@ -608,7 +619,7 @@ The Git Version Control System
 	git add <resolvedFile>
 ---
 
-	[[b]] Resolution using tool support. There are a number of tools that can help in removeing conflicts from merged files. Providing ypou tell git which one you want to use, it will format the files in conflict so that they can be used by that tool.
+	[[b]] Resolution using tool support. There are a number of tools that can help in removing conflicts from merged files. Providing you tell git which one you want to use, it will format the files in conflict so that they can be used by that tool.
 
 	[]
 
@@ -638,7 +649,7 @@ The Git Version Control System
 	git mergetool --tool-help
 ---
 
-	 I have played around with a few of them and initialy like the look of p4merge. To fire this up runs
+	 I have played around with a few of them and initially like the look of p4merge. To fire this up runs
 
 ---
 	git mergetool --tool=p4merge
@@ -689,7 +700,7 @@ The Git Version Control System
 	git branch -d <branch>
 ---
 
-	Note that when a branch is deleted, it truly is deleted. Git does not maintain a historical record of what branches existed. The commit history of that branch will still exist, but commits that are not reachable from some named reference will eventually be garbage collected by git itself (via the git gc tool).
+	Note that when a branch is deleted, it truly is deleted. Git does not maintain a historical record of what branches existed. The commit history of that branch will still exist, but commits that are not reachable from some named reference will eventually be garbage collected by git itself (via the <<<git gc>>> tool).
 
 **Branch Graphs
 
@@ -707,233 +718,16 @@ The Git Version Control System
 
 ====
 
-*A popular branching model
-
-**Topology
-
-	git does not specify any hard rules about how you use branching/merging etc to support your development process. However, a number of approaches have evolved over the years, and one of the more popular ones is summarised in this section.
-
-	There is one central depot repository that everyone shares.
-
-	Other developers may share their repositories with other members of the team if they wish.
-
-[.\images\depot.png]
-
-**Main branches
-
-	There are two main branches each with an infinite life time:
-
-	* depot/master - The source at HEAD on this branch should ALWAYS be production ready
-
-	* depot/dvl - The source at the HEAD on this branch reflect the latest delivered development changes for the next release. It represents the <integration branch>, any nightly builds/test releases etc. should come from this branch. When code on this branch reaches a state of readiness for release, it is merged back into the master branch.
-
-[./images/mainBranches.png]
-
-**Supporting Branches
-
-	There are a number of supporting branches, and it is on these that all the actual work is done.:
-
-	* Feature branches
-
-	* Feature branches
-
-	* Release Branches
-
-	These are described in more detail below.
-
-
-***Feature Branches
-
-	* Are used to develop new features, or maintain existing features
-
-	* It exists as long as the feature is in development.
-
-	* typically only exist in the developers repository (not a hard and fast rule : if the developer branch is protected it may be necessary to have Feature branches pushed to the depot repository so that merging can be performed by an administrator post-QA).
-
-	* branch off from dvl
-
-	* merge back into dvl ( using -no-ff in order to retain history about the existence of the development branch)
-
-	* may be called anything except master dvl, release-* or hot-fix-*
-
-	[]
-
-	The general flow through the repository will be:
-
-	[[1]] Checkout a new local branch for your work, and develop your feature, committing to your local branch as necessary...
-
----
-	git checkout develop
-	  Switched to branch 'develop'
-
-	...Now develop your feature
----
-
-	[[1]] When the feature is complete in some sense, merge it back into the development branch. Use --no-ff to retain the branch history. You can now get rid of the redundant development branch.
-
----
-	git merge --no-ff myfeature
-  	Updating ea1b82a..05e9557
-	  (Summary of changes)
-
-	git branch -d myfeature
-	  Deleted branch myfeature (was 05e9557).
----
-
-	[[1]] Now push your changed to the repository dvl branch. This may be a protected branch, so will probably require review, sign-offs etc before it can be pushed in.
-
----
-	git push origin develop
----
-
-[images\mergeNoFF.png]
-
-***Release Branches
-
-	Release Branches
-
-	* are used to support preparation of Production Releases Only. They will be used to incorporate metadata about the release itself, Release No's and that sort of thing. Only very minor fixes would be allowed on this branch.
-
-	* are created from the dvl branch;
-
-	* merge back into both dvl and master;
-
-	* will be called release-*;
-
-	[]
-
-	The general flow through the repository will be:
-
-	[[1]] Check out the files to new release branch and set release numbers etc.
-
----
-	git checkout -b release-1.2 develop
-		Switched to a new branch "release-1.2"
-
-	./bump-version.sh 1.2
-		Files modified successfully, version bumped to 1.2.
-
-	git commit -a -m "Bumped version number to 1.2"
-		[release-1.2 74d9424] Bumped version number to 1.2
-		1 files changed, 1 insertions(+), 1 deletions(-)
----
-
-	[[1]] The release is now incorporated to master and cryptographically tagged for posterity.
-
----
-	git checkout master
-		Switched to branch 'master'
-
-	git merge --no-ff release-1.2
-		Merge made by recursive.
-		(Summary of changes)
-
-	git tag -a 1.2 -s
----
-
-	[[1]] simultaneously merge it back to dvl
-
----
-	git checkout develop
-		Switched to branch 'develop'
-
-	$ git merge --no-ff release-1.2
-		Merge made by recursive.
-		(Summary of changes)
----
-
-	[[1]] Now we are done with the release branch we can delete it.
-
----
-	$ git branch -d release-1.2
-		Deleted branch release-1.2 (was ff452fe).
----
-
-
-***Hotfix Branches
-
-	Hotfix Branches
-
-	* Are designed for the rapid resolution of <<production>> issues only. Similar to release branches, in that they are effectively preparing a production release, albeit a emergency one.
-
-	* branch from master. ( However, if there is an active Release branch, we would merge back into that rather than dvl. In time, of course the release branch will get merged to dvl itself)
-
-	* named hotfix-*
-
-
-	The general flow through the repository will be:
-
-  [[1]] Create the Hotfix branch and checkout the production release, remembering to increment the Release Numeber as we do so.
-
----
-	git checkout -b hotfix-1.2.1 master
-		Switched to a new branch "hotfix-1.2.1"
-		./bump-version.sh 1.2.1
-		Files modified successfully, version bumped to 1.2.1.
-
-	git commit -a -m "Bumped version number to 1.2.1"
-		[hotfix-1.2.1 41e61bb] Bumped version number to 1.2.1
-		1 files changed, 1 insertions(+), 1 deletions(-)
-
-		...now fix the issue!
----
-
-	[[1]] When the problem is fixed, commit to the Release Branch...
-
----
-	git commit -m "Fixed severe production problem"
-		[hotfix-1.2.1 abbe5d6] Fixed severe production problem
-		5 files changed, 32 insertions(+), 17 deletions(-)
----
-
-	[[1]] Merge into master, and tag for subsequent release...
-
----
-	git checkout master
-		Switched to branch 'master'
-
-	git merge --no-ff hotfix-1.2.1
-		Merge made by recursive.
-		(Summary of changes)
-
-	git tag -a 1.2.1
----
-
-	[[1]] Merge into Development...
-
----
-	git checkout develop
-		Switched to branch 'develop'
-
-	git merge --no-ff hotfix-1.2.1
-		Merge made by recursive.
-		(Summary of changes)
----
-
-	[[1]] Job Done. Delete the redundant branch.
-
----
-	git branch -d hotfix-1.2.1
-		Deleted branch hotfix-1.2.1 (was abbe5d6).
----
-
-[.\hotFix.png]
-
-
-**Graphical Model Summary
-
-[.\branchModel.png]
-
 
 *Tagging
 
-	Git has the abilily to label specific points in the a repositories history as of being particular significance. These are known as Tags. Typically, these are usedto indicate release points etc. ( Rel v1.0, v1.1, v2.0 etc).
+	Git has the ability to label specific points in the a repositories history as of being particular significance. These are known as Tags. Typically, these are used to indicate release points etc. (Rel v1.0, v1.1, v2.0 etc).
 
 	There are 2 type:
 
 	lightweight - this is just a simple pointer to a specific commit. Use only for temporary things. (Many git commands do not work on lightweight tags.)
 
-	Annotated - These are full objects within the repository. They are checksummed and contain the tagger, name, email address, comments etc. They can also be digitally signed via Gnu Privacy Guard (GPG). It is generally recomended to use annotated tags except for purely temporary things.
+	Annotated - These are full objects within the repository. They are checksummed and contain the tagger, name, email address, comments etc. They can also be digitally signed via Gnu Privacy Guard (GPG). It is generally recommended to use annotated tags except for purely temporary things.
 
 **Creation
 
@@ -1081,7 +875,7 @@ authoritative focal point for collaborative development.
 	origin	https://github.com/kcrocombe/desktopRep.git (push)
 ---
 
-	This suggests this repository was cloned from a github repository. There is nothing special about 'origin': it is just a convenient shorthand reference to the url of the remote repository.
+	This suggests this repository was cloned from a GitHub repository. There is nothing special about 'origin': it is just a convenient shorthand reference to the url of the remote repository.
 
 	It is possible that a repository will have several remotes configured into it.
 
@@ -1135,16 +929,16 @@ authoritative focal point for collaborative development.
 
 	Note: just because a repository is remote does not make it a depot: it has to be TREATED as one.
 
-	The below works through the process of setting up a depot on GitHub, cloning developemtn repositories from it, performing parallel development on it, with those changes being periodically pushed back to the repository.
+	The below works through the process of setting up a depot on GitHub, cloning development repositories from it, performing parallel development on it, with those changes being periodically pushed back to the repository.
 
-	There are several ways that this could be done: it is possible to create the depos repos directly on Github itself and then clone from there. FOr this example, we will create the depot repository locally in the first instance and then deploy it to the server.
+	There are several ways that this could be done: it is possible to create the depots repos directly on Github itself and then clone from there. For this example, we will create the depot repository locally in the first instance and then deploy it to the server.
 
 
 ***Creation of an initial local repository
 
-	Intially we will create a repository that we can initially work with. Thius is so we can add some initial structure to the repository, and some initial files. Consequently, we don't use the --bare qualifier.
+	Initially we will create a repository that we can initially work with. This is so we can add some initial structure to the repository, and some initial files. Consequently, we don't use the --bare qualifier.
 
-	Once again, we are creating the .git direcory way from the working directory.
+	Once again, we are creating the .git directory way from the working directory.
 
 ---
 	cd dvl/gitClones
@@ -1160,7 +954,7 @@ authoritative focal point for collaborative development.
 	git add README.txt
 	git add RELASE.txt
 
-	git commit -m "Intial master Commit"
+	git commit -m "Initial master Commit"
 ---
 
 	We can now see the master branch:
@@ -1180,7 +974,7 @@ authoritative focal point for collaborative development.
 
 ***Creating the Depot Repository from the local repository.
 
-	A depot repository will alway be remote when viewd from the perspective of a development repository, but that does not mean that that remote depot repository will be on a different machine. It is perfectly possible for a depot repository to be on the same machine as the development reepository, or on storage shared between machines.
+	A depot repository will alway be remote when viewed from the perspective of a development repository, but that does not mean that that remote depot repository will be on a different machine. It is perfectly possible for a depot repository to be on the same machine as the development repository, or on storage shared between machines.
 
 	Although it would be more usual for a depot to exist on a remote server, how to set up both locally-hosted and remote-hosted repositories is covered below.
 
@@ -1217,7 +1011,7 @@ authoritative focal point for collaborative development.
 
 	[[a]]  via the web site;
 
-	[[b]]	 via the github command line tools (or via the GitHub Desktop tool, which is not covered here)
+	[[b]]	 via the GitHub command line tools (or via the GitHub Desktop tool, which is not covered here)
 
 	[]
 
@@ -1225,9 +1019,9 @@ authoritative focal point for collaborative development.
 
 *****Using the Hub Command Line Tools
 
-	Github provide a comnmand line interface (called hub) to its git services which allow repositories to be created/managed/deleted from a command line client. It behaves like a wrapper to git : all git commands are available in hub. In effect, it extends the functionality of git.
+	Github provide a command line interface (called hub) to its git services which allow repositories to be created/managed/deleted from a command line client. It behaves like a wrapper to git : all git commands are available in hub. In effect, it extends the functionality of git.
 
-	This has the advanatage of allowing steps needed to set up and maintain a repository to be scripted.
+	This has the advantage of allowing steps needed to set up and maintain a repository to be scripted.
 
 	The tool was installed via brew as follows
 
@@ -1237,13 +1031,13 @@ authoritative focal point for collaborative development.
 
 	It can then be used to create a new repository on GitHub itself. It requires that an initial local repository is created and then uploaded via the tool.
 
-	Connections to GitHub must be authenticated in some way. To avoid Github challenging for passwords etc. use either the HTTPS protocol or the SSH protocol.  Both of these options require some configuration to be done on GitHUb first. Namely:
+	Connections to GitHub must be authenticated in some way. To avoid Github challenging for passwords etc. use either the HTTPS protocol or the SSH protocol.  Both of these options require some configuration to be done on GitHub first. Namely:
 
 	* For SSH, a ssh key-pair needs to be generated (described elsewhere) and the public key uploaded to Github as part of the repository owner account configuration.
 
 	* For HTTPS, a Oath2 Token for the repository owners account needs to be generated and this registered with the osxkeychain. This is more fully described elsewhere. git also need to be configured to use the  osxkeychain as its credential helper. This is more fully described {{here}}.
 
-	By default, the <<<hub>>> application looks to use SSH by preference, although for day to day operations HTTPS is the prefed protocol. To avoid difficulties it is probably better to ensure both methods are availnbale before setting up any reposiories. Note the below is not a 'per-repository' type configuration. Once configured in for the user it will have effect across all repositories.
+	By default, the <<<hub>>> application looks to use SSH by preference, although for day to day operations HTTPS is the preferred protocol. To avoid difficulties it is probably better to ensure both methods are available before setting up any repositories. Note the below is not a 'per-repository' type configuration. Once configured in for the user it will have effect across all repositories.
 
 ---
 	git config --global credential.helper 'osxkeychain'
@@ -1254,7 +1048,7 @@ authoritative focal point for collaborative development.
 ---
 	git remote add origin https://github.com/kcrocombe/sharedProject.git
 ---
-	Now create the repository on GitHub using this as the source repository. Make sure you are in the <<<sharedProject>>> direcory before running.
+	Now create the repository on GitHub using this as the source repository. Make sure you are in the <<<sharedProject>>> directory before running.
 
 	The below example will create a private repository, with the indicated Description.
 
@@ -1265,9 +1059,9 @@ authoritative focal point for collaborative development.
 
 	This will respond with the URL of the created repository. This should be the same as the remote <<<origin>>> that you configured in a previous step.
 
-	The -o option can be specified. This is quite useful, and will cause the repositories configurarion page to to be opened in a browser.
+	The -o option can be specified. This is quite useful, and will cause the repositories configuration page to to be opened in a browser.
 
-	Many repositories will benefit from a bit of further configureation
+	Many repositories will benefit from a bit of further configuration.
 
 
 *****via the Web site
@@ -1282,7 +1076,7 @@ authoritative focal point for collaborative development.
 
 			Hit the 'Create' Button.
 
-			Note the URL that should be used to refernce the new repository.
+			Note the URL that should be used to reference the new repository.
 
 	We are now done with the GitHub site. The repository has now been created, and should be in the 'init' state. We can now perform all further actions from out local machine.
 
@@ -1369,7 +1163,7 @@ authoritative focal point for collaborative development.
 
 	The <remote tracking branch> at the time of its creation will also reflect exactly the state of the branch on which it is based. However the developer <<SHOULD NOT>> perform any active work on it : it should be treated as <<readonly>>. The point being is that it should <<ALWAYS>> reflect the last known status of the equivalent branch in the remote server. As work progresses on the remote branch, this should update to reflect that.
 
-	This does not happpen automatically.
+	This does not happen automatically.
 
 ***Pulling
 
@@ -1828,11 +1622,9 @@ authoritative focal point for collaborative development.
 
 *What does the hub sync command do
 
+		create a fix branch
 
-
-		create a fix bracnch
-
-		request a merg on That
+		request a merge on That
 
 		d
 

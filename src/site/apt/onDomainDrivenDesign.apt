@@ -1,0 +1,394 @@
+{{Notes on Domain Driven Design}}
+
+* Background.
+
+	Whilst researching how to persist java to RDMS's have encountered a number of terms that were unfamiliar to me, and were occuring sufficiently frequently as to make me feel that it needed some inverstigation. The terms appeared most often in discussions of Object Relationship Mapping : ie. the process of persisting the various classes in your application to an RDBMS. Was sufficiently intrigued to do some digging into the background, and most of the terms seem to have their origin in a Design paradigm known as <Domain Driven Design>.
+
+	This seems to cover the requirements collection, analysis and design phases of development.
+
+	Core ideas in this approach are:
+
+	* A focus on the core domain data;
+
+	* To explore models in creative collaboration of doamin practitioners and software practitioners;
+
+	* To speak a <Ubiquitous Language> within an explicitly <Bounded Context>.
+
+
+	Most of this has been taken from three books:
+
+	* Domain Driven Design - Tackling Complexity at the heart of Software : Eric Evans
+
+	* Domain Driven Design Reference : Eric Evans
+
+	* Implementing Domain Driven Design : Vaughn Vernon
+
+
+	These books are concerned with the collaborative process of building up a system model with business area experts (Domain Users), so is wider than just the representational aspect of modelling. It does define some concepts that appear elsewhere though.
+
+  This is just a quick outline of these concepts, as they pertain particularly to the persistence of data to repositories. There seems to be a reasonable amount of other useful stuff in there too however.
+
+* Domain Driven Design Terms and Concepts
+
+	These words get used throughout all three texts>
+
+** Ubiquitous Langauge
+
+	A language strucured around the domain model and used by all team memebrs (technical and business) wind a Bounded Contecto to connect all the activities of the team with the software.
+
+	The model is used as the backbone of the language used by EVERYONE to communicate about the project EVERYWHERE (in the model, in documents, in meetings)
+
+** Bounded context.
+
+	A description of a boundary (typically a subsystem, or activity of a particular team) within which a particular modle is defined an is applicable.
+
+	Multiple models are in play in any large project. Teams may be working independently on differnt aspets of the project. Consequently it is important to define explicitly the context within which a model applies, and the Ubiquitous Langauge being in used in it.
+
+
+** Entities
+
+	Objects that are not fundamentally defined by their attributes, but rather by a thread of continuity and identity. They have lifecycle. Their representation can change over time, but still be the same Object. In some sense, we want to keep track of them.
+
+	They have Business significance
+
+	It is an object primarily distinuished by its Identity rather than just the values of its attributes. (Note: All objects <can> have identity if we choose to give it : the important point is whether that identity is important in the context of the model in question.)
+
+	Identity will usually not be intrinsic to the object : it is something superimposed on it because it is useful (People don't have names : they exist without (at birth) and then a name is given).
+
+
+	Their form may change through a lifecycle.
+
+	e.g. 2 deposits, of the same amount, on the same day are STILL distict transactions : they have identity and are ENTITITIES.
+
+	However, the amount attributes of those transactions (50, pounds) may be instances of some MONEY object. These have no identity ( there is no usefulness in distinuishing between them) and are not Entities, but Value objects.
+
+	Note that a value object can serve (and often does serve) as the unique identity.
+
+	Have <mutable> characteristics.
+
+	The identifier is immutable however.
+
+	Sometimes it may be necessary to track changes to an Entity over its lifetime. One way to do this is via Domain Events and an Event Store. We create a unique Event type for every important state-altering command executed against every Aggregate that domain experts care about. The combination of the Event name and its properties makes the record of change explicit. The Events are published as the command methods complete. A subscriber registers to receive every Event produced by the model. When received, the subscriber saves the Event to the Event Store.
+
+	Entities often can carry a version number that can be incremented before an item is commited to the database in order to acertian whether it is stale or not.
+
+** Value objects
+
+	Not every object in the domain model will map to an Entity : some, as many as possible, should be treated as Value Objects.
+
+	Such objects:
+
+		* Objects Have no conceptual identity;
+
+		* Describe or compute some characteristic of some things : often a measure or description;
+
+		* model a conceptual whole by composing related attributes as an integral unit. A Value object may possess just one, a few, or a number of individual attributes, each of which is related to others.
+
+		* Should be treated as immutable (i.e. CONSTANTS);
+
+		* Will be completely replaced when a it, or a component of it, must change;
+
+		* Operations should be SIDE-EFFECT free;
+
+		* can be compared with other value objects using VALUE equality : if the types of two vlaue objects are the same, and the attributes of the object are the same then the values are considered equal (but not necessarily the same object).
+
+
+	Model using Value Objects wherever possible : they are easier to create, test, use, optimize and maintain.
+
+	(Domain Driven Design seems to be distinguish between <attributes> and <properties> : I would tend to treat these things as the same thing, but DDD seems to suggest that attributes are perhaps atomic in nature? (my interpretation)).
+
+
+	Examples: Colour, Phnoe Numbers, String, Age, Integer, Date, Co-ordinates, Address (possibly an Entity in some situations) and PostCode.  Think of them as datatypes. They will have structure, behaviour and will not necessarily be simple, but only have relevance when attached ton actual Entity.
+
+	They MAY reference Entities themselves. For example, Value objects are often passed as Parameters in messages between operations. They are transient though; created for an operation and then discarded. THey do not persist.
+
+	We do not care which instance we have of a value object : if the attributes of 2 value objects are the same, then they may be shared. e.g. 2 people can share the same. Therefore it IS possible to use 1 name object for both people. HOWEVER, it then makes NO SENSE to allow that name to be changed. (Just because one person changes thier name does not mean all people will want to change their name). For this reason, for a value object to be shared safely, they <MUST> be <IMMUTABLE> : once created they are <not> changed directly. If they must change, that can only be done through FULL replacement i.e. a NEW instance of name is creaed, and the effected person will now use that while the old name continues to get used by everyone else.
+
+	Obviously, a simple thing like name is not likely to be implemented this way, but more complicated value entities might. Particularily, if there would otherwise be 100,000 or million of identical objects in a system.
+
+	An exception to this might be when
+
+	  * a value object changes frequently;
+
+		* object creation/deletion is particularily expensive;
+
+		* if there is not much sharing of values.
+
+	However, if a value object is mutable it MUST NOT BE SHARED.
+
+	Note: Bi-directional relationships between Value Objects make no sense.
+
+
+** Services
+
+	"Sometimes it just isn't a thing."
+
+	Sometimes the clearest most pragmatic design includes operations that conceptually do <NOT BELONG> to <ANY> object. Making them belong to some particular object feels a little forced. It introduces artificiality. Such objects often will have no 'state'
+
+	In these circumstances, an operation can be added to the model as a standalone interface, without state, declared as a service.
+
+	Complex operations can easily swamp a simple object, obscuring its role. Because these operations often draw together many domain objects, coordinating them and putting them into action, the added responsibility will create dependencies on all those objects, tangling concepts that could be better understood independently.
+
+	The service will have a service contract : a set of assertions about interactions with the service. It will also have a name.
+
+	It is defined purely in terms of what it can do for a client. They have 3 characteristics:
+
+		* The operation relates to a domain concept that is not a natural part of any DOMAIN or VALUE object.
+
+		* the interface is defined in therms of other objects in the model
+
+		* The operation is stateless : clients can use it without regard to the services previous history.
+
+	Services can use info accessible globally, and may even change that.
+
+	Services will be used in all layers, and will predominate in infrastructure layers, but in all likelyhood, they will also exist in the domain layer too.
+
+	Such services can be hard to distinguish from, say, application services. Where domain objects are co-ordinated to work together to achive something that is defined by a fundamental business rule, then that is likely to be a Domain Service.
+
+	An Applicaiton Service might just sequence a number of Domain Services and Domain Operations.
+
+
+	Reasons why an operation would not belong to an existing Entity or Value object could be:
+
+		* if it performs a <significant> business process, more complicated than can be captured by the invokation of a method on an object;
+
+		* It transforms a domain object from one composition to another;
+
+		* Calculates a Value requiring input from more than one Domain Object;
+
+
+	Make sure services are only used when necessary: we want as little business logic residing in services as possible; the aim should always be to attach as much logic to proper domain objects as possible.
+
+
+** Domain Events.
+
+	Something happens that is significant in the domain.
+
+	Anything that causes an entity to change state is an event.
+
+	Model information about activity in the domain as a series of discrete events. Represent each event as a domain object. ( These are not systemn eventsm, i.e. something that happens inthe software).
+
+	Ignore irrelevant activity, but capture all events that reuire trracking, notification or which are associated with state change in other model objects.
+
+	Events typically have a timstamp, description and reference to the entitiies involved. Ordinarily, they are immutable
+
+
+** Modules (Packages).
+
+	It is not just code that is devided into modules : concepts in the model are also subject to consideratoin withregard to cohesions and coupling.
+
+	Seek low coupling in the sense that concepts can be understood and reasoned about independently.
+
+	Modules give people 2 views of the world:
+
+		*	they can look at details inside the module without being overwhelmed by stuff outside
+
+		* they can look at relationships between modules without being bothered by internal detail.
+
+	When objects are placed together in a module you are suggesting that they need to be considered together.
+
+	Modules will evolve : will be refactored over time.
+
+
+
+** Aggregates
+
+	Is an attempt to minimalise assosiations between objects, simplify transfersal and limit the explosion of realtionships.Most business odomains are highly interconnected with potential for long, deep transversal through objects refernces. This may reflect the real woreld, but is a problem for software design.
+
+	It is difficult to guarantee the consistency of changes to objects in a model with complex associations. <Invariants> need to be maintained that apply to closely related groups of objects, not just discrete objects. Yet cautious locking schemes cause multiple users to interfere pointlessly with each other and make a system unusable.
+
+	How do we know where one object made up of other objects begins and ends?
+
+	With regards to persistent storage, there must be a scope for a transaction that changes data, and a way of maintaining the consistency of the data (that is, maintaining its invariants).
+
+	Although this problem surfaces as technical difficulties in database transactions, it is rooted in the model—in its lack of defined boundaries.
+
+	Aggregates is a way of defining such boundaries and defining ownership with regard to relationships within the model.
+
+	They must be designed with a consistency focus.
+
+	An AGGREGATE is a cluster of associated objects that we treat as a unit for the purpose of data changes. Each AG GREGATE has the following characteristics:
+
+		* They have a <root> and a <boundary>.
+
+		* The boundary defines what is inside the AGGREGATE.
+
+		* The root is a single, specific ENTITY contained in the AGGREGATE.
+
+		* The root is the <only> member of the AGGREGATE that outside objects are allowed to hold <references> to, although objects within the boundary may hold references to each other.
+
+		* ENTITIES other than the root have local identity, but that identity needs to be distinguishable <only> within the AGGREGATE, because <no outside object can ever see it> out of the context of the root ENTITY
+
+		* Invariants will involve relationships between members of the AGGREGATE and must be mainatined whenevert the data changes. Any rules that <span> aggregates will <not be expected to be up-to-date> at all times. They may be aligned at a later time, via event processing, batch operations or other update mechanism.
+
+
+	When implemented, a conceptual AGGREGATE must observe the following rules:
+
+		* The root ENTITY has global identity and is ultimately responsible for enforcing invariants;
+
+		* Root ENTITIES have <global> identity. ENTITIES inside the boundary have <local> identity, unique only within the AGGREGATE;
+
+		* Nothing outside the AGGREGATE boundary can hold a reference to anything inside, except to the root ENTITY. The root ENTITY <can hand references to the internal ENTITIES> to other objects, but those objects can use them only <transiently>, and they may <not> hold on to the reference. The root may hand a <copy> of a VALUE OBJECT to another object, and it doesn't matter what happens to it, because it's just a VALUE and no longer will have any association with the AGGREGATE.
+
+		* As a corollary to the previous rule, only AGGREGATE roots can be obtained directly with database queries. All other objects must be found by traversal of associations.
+
+		* Objects within the AGGREGATE can hold references to other AGGREGATE <roots>.
+
+		* A delete operation must remove everything within the AGGREGATE boundary at once. (With garbage collection, this is easy. Because there are no outside references to anything but the root, delete the root and everything else will be collected.)
+
+		* When a change to any object within the AGGREGATE boundary is committed, all invariants of the whole AGGREGATE must be satisfied.
+
+
+	AGGREGATES mark off the scope within which invariants have to be maintained at every stage of the life cycle.
+	The following patterns (Factories nad Repositories) operate on Aggregates NOT Entities.
+
+
+	Some Rules of thumb on designing aggragates:
+
+		[[1]] Design Small Aggragates.  Large aggragates generally do not scale or perform well.  Limit the contents to those entities which MUST be consistent with others. It is probable that many will contain just 1 Entity (probably with some Value Objects); the others are likely to contain two or three ate the most.
+
+
+		[[1]] Reference Other Aggregates by Identity.  It may be computationally desirable to have a structure that may be deeply traversed, but this has implications for locking and transactions. Consequentyl do not model cross aggregate references directly as Java type references. Instead reference the global identifier.
+
+		e.g. If referencing a product form an invoice line item, do not use:
+
+			private Product product
+
+		but
+
+			private ProductID product
+
+		instead. This should help with repository that possibly could so some unwanted 'eager loading' : with this arrangement, this can never occur.
+
+		This does mean that a different mechanism is required to navigate through the model : often this will be a repository lookup. (This is called the <<Disconnected Domain Model>>). A better approach may be to use an Application, Repository or Domain Service instead.
+
+		Referencing by Identity does yield architecures that can reach large scale.
+
+		[[1]] Use Eventual consistency Outside the boundary - Essentially use some sort of Publish - Subscribe process. Create some sort of Event on Commiting on one side of the boaundary, that is listened for by something on the other side of the boundary.
+
+		It can be difficult to work out whether Transactional or Eventual consistency should be used.
+
+		Obviously some of this only works if there ar the technical mechnisms to support it. For eventual consistency, this means messaging, timers or background threads.
+
+		If these are not available, project dymaics may force us to modify two or more aggregate instances in one transaction. This decision should not be made to hastily!
+
+
+*** Factories
+
+	Creation of an object can be a major operation in itself, but complex assembly operations do not fit the responsibility of the created objects. Combining such responsibilities can produce ungainly designs that are hard to understand. Making the client direct construction muddies the design of the client, breaches encapsulation of the assembled object or AGGREGATE, and overly couples the client to the implementation of the created object.
+
+	Complex object creation is a responsibility of the domain layer, yet does not necessaril;y belong to the objects that express the model.
+
+	Factories are constructes that are neither ENTITY, VALUE OBJECT or SERVICE : they do not correspond with anything in the model but are nonetheless part of the domain layers responsibiliites.
+
+	So, shift the responsibility for creating instances of complex objects and AGGREGATES to a separate object, which may itself have no responsibility in the domain model but is still part of the domain design. Provide an interface that encapsulates all complex assembly and that does not require the client to reference the concrete classes of the objects being instantiated. Create entire AGGREGATES as a piece, enforcing their invariants.
+
+	Factories can follow severeal desihn patterns: Factory, Abstracty Factoiry, Builder etc.
+
+
+	Factories can be sited within the Aggregates they are intednded to create, or on a closeley related one. If there is no natural host, consider a standalone SERVICE.
+
+	Do not place the logic for enforcing an invariant in the Factory : these need to stay with the Aggraget, Entity involved.
+
+
+*** Repositories.
+
+	To do anything with an object you need to hold a reference to it. How do you get that reference?
+
+		* By creating an object new Obj()
+
+		* traverse an assosiation from another object. But how do you get that object?
+
+		* reconstitute it from an object store.
+
+
+	A REPOSITORY represents all objects of a certain type as a conceptual set (usually emulated). It acts like a collection, except with more elaborate querying capability. Objects of the appropriate type are added and removed, and the machinery behind the REPOSITORY inserts them or deletes them from the database. This definition gathers a cohesive set of responsibilities for providing access to the roots of AGGREGATES from early life cycle through the end.
+
+	The Repository will have a simple interface, defined in domain concepots and conceptually connected to the domain model.
+
+	For each type of aggregate that needs global access:
+
+		* create a service that can provide the illusion of an in-memory collection of all objects of that aggregate’s root type.
+
+		* Set up access through a well-known global interface.
+
+		* Provide methods to add and remove objects, which will encapsulate the actual insertion or removal of data in the data store.
+
+		* Provide methods that select objects based on criteria meaningful to domain experts.
+
+		* Return fully instantiated objects or collections of objects whose attribute values meet the criteria, thereby encapsulating the actual storage and query technology, or return proxies that give the illusion of fully instantiated aggregates in a lazy way.
+
+		* Provide repositories only for aggregate roots that actually need direct access.
+
+		* Keep application logic focused on the model, delegating all object storage and access to the repositories.
+
+
+	Some tips:
+
+	 Abstract the type where possible. A REPOSITORY “contains” all instances of a specific type, but this does not mean that you need one REPOSITORY for each class. The type could be an abstract superclass of a hierarchy (for example, a TradeOrder could be a BuyOrder or a Sell-Order). The type could be an interface whose implementers are not even hierarchically related.
+
+	 Leave Transaction Control to the Client ; The repository can do the inserting and deleting etc, but let the application commit the transaction.
+
+	 The Repository must return Ojects to the clients. Often it is useful to delegate actual reconstitution of the object to a Factory, although the repository must be responsible for returniong the actual object.
+
+
+* Architectural Patterns
+
+** Model Driven Architecture
+
+	If the design of the application can not be mapped from the domain model, then the domain model is lacking. If it is difficult to build a modular architecure fromthe model, then the model needs to be revisisted.
+
+	Large diagrams that are just a web of associations are generally difficult to understand and generably don't translate into storable, retrivable units that can be mainipulated with transactional integrity.
+
+	There must be a tight connection between the model and the code. The software should reflect the model in a very literal way.
+
+	Seek to achieve isolation of the domain model and related to logic from otehr parts of the applicatioin, and do this via a suitable architecture.
+
+** Layered
+
+	When domain-related code is diuffused through large amounts of other code, it becomes difficult to see and reason about. Superficicial change toi, say UI, can actually change business logic.
+
+	So, isolate the expression of the domain model and business logic. Eliminate ANY dependency on infrastrucure , user interface, and even application. Partition app into layers. Layers should be internally cohesive and that depends on only the layers beneath (directly, or indirectly). Domain logic should be in its own layer.
+
+	The names and number of layers can vary, but the following is typical.
+
+*** User Interface or Presentation Layers.
+
+	Responsible for showing info to the user/actor and inerpretting the commands. Sometimes gets merged into the application layer.
+
+*** Applications Layers.
+
+	Generally is quite thin. Defines the jobs the software is supposed to do. It marshalls operations from the daomain layer to perform soemthing useful. Generally, objects in this layeer will NOT have state reflecting ANY business situation (although it may have state representing, say, the progress of a task).
+
+
+*** Domain Layer.
+
+	Represents the concepts of the business, inofrmation about the busisness state, business constraints and operations.
+
+*** Infrastucture Layers.
+
+	General technical services that support the higher layers: database persistence, mnessaging, webserver, network support etc, widget drawing etc.
+
+	Often manifest as Services
+
+=========
+
+** Hexagonal (or Ports and Adaptors).
+
+	Conceptually, this puts the Domain model at its core, and completeley surrounds it with an application layer. The API provided by this layer provides faciliites for data to pass into and out of the core. The API is then surrounded by a so-called hexagon ( although conceptually, I don't see why it can't have more sides). Each side of the heaxagon represents a different kind of Port for data to pass into or out of. Each client talking through teh port makes use of an Adapter to fit the applicaion API.
+
+	Likewise, Adaptors provide ways of plugging in Infrastructure Providesr such as Messaging Services and Persistence Mechanisms.
+
+	Frameworks that make use of DI (such as Spring) are probably leveraging such a sort of archiutecture. It has the advantage of being able to relatively easily unplug one bit of technology and substitute another in its place.
+
+	It often itself forms the basis for the other architecural patterns described below.
+
+** Service orientated.
+
+** REST.
+
+** Command Query Responsibility Segregation (CQRS)
+
+** Event Drive architecure
+
+** Data Fabric or GRID based.

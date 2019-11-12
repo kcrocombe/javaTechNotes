@@ -8,13 +8,29 @@ Maven Site for your project
 
   {{{./aboutThisDocumentation.html}About this documentation.}}
 
-  {{{./gitNotes.html}Git and how to use it.}}
+  {{{./onGit.html}Git and how to use it.}}
+
+  {{{./onMaven.html}Maven and how to use it.}}
 
   {{{./format.html}The Almost Plain Text (APT) mark up language.}}
 
   {{{./onAtom.html}The Atom Editor.}}
 
-  {{{./onEclipeModelling.html}On Eclipse Modelling.}}
+  {{{./onEclipseModelling.html}On Eclipse Modelling.}}
+
+  {{{./onOauth2andOpenIdConnect.html}On OAuth2 and OpenID Connect.}}
+
+  {{{./onDomainDrivenDesign.html}On Domain Driven Design.}}
+
+  {{{./onDoxia.html}On Doxia - a APT renderer.}}
+
+  {{{./onMockito.html}On Mockito.}}
+
+  {{{./onJUnit.html}On JUnit.}}
+
+  {{{./onRedHatOpenShift.html}On Red Hat Open Shift}}
+
+  {{{./onSpringSecurity.html}On Spring Security}}
 
 +-----+
 
