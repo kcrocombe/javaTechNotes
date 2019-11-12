@@ -12,6 +12,7 @@ The Atom Editor - miscellaneous notes.
 
   e.g Grammar: source.apt
 
+  using <<<Option-:>>> on a word will pull up the spelling options for you to choose a replacement. Use \<TAB\> to select.
 
 
 *Syntax Highlighting/Checking

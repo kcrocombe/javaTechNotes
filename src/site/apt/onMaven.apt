@@ -137,6 +137,10 @@ Maven Notes
 
 		{{{https://mvnrepository.com/}Repository of Maven Artifacts}}
 
+
+[./images/mavenModel.png]
+
+
 *Plugins
 
 	The 'tools' used to process the given step in the build process are provided as one or more 'plug-ins' to maven. These are configured into the pom.xml (again, downloaded as part of the archetype). Different steps in the build process are likely to need different plugins, so it is common to see several of these configured in.
@@ -212,6 +216,7 @@ Maven Notes
 
 			* Deploy Phase - pushes the build to a remote repository for use by other teams/projects.
 
+NB NEED TO SAY SOMETHING ABOUT THE DEFAULT LIFECYCLE AND A PACKAGEING!!!!
 
 ** Clean LifeCycle
 
@@ -294,6 +299,14 @@ Maven Notes
 
 	mvn <phase>
 ---
+
+	Note: a plugin:goal does not HAVE to be bound into a phase within a lifecycle. Such goals can be invoked directly from the command line, as above, i.e.
+
+---
+	mvn <plugin:<goal>>
+---
+
+
 
 *Getting Help
 

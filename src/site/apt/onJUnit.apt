@@ -1,0 +1,12 @@
+JUnit5 and predecessors
+
+  JUnit is composed of modules from 3 different sub-projects:
+
+  * JUnit Platform : is the foundation for the Testing Framework, and provides a command line launcher, and a JUnit 4 based runner to allow JUnit5 to run in a JUnit4 environment.
+
+  * JUnit Jupiter : this is the new programming model and extension model for writing tests and extensions in JUnit5. It provides a <<<TestEngine>>> for running JUnit5 based tests on the platform.
+
+  * JUnit Vintage : provides a <<<TestEngine>>> for running JUnit3 and JUnit4 based tests.
+
+
+  junit5-jupiter-starter-maven

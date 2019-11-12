@@ -20,17 +20,43 @@ Maven Site for your project
 
   {{{./onOauth2andOpenIdConnect.html}On OAuth2 and OpenID Connect.}}
 
+  {{{./onUML.html}On Unified Modelling Language (UML)}}
+
   {{{./onDomainDrivenDesign.html}On Domain Driven Design.}}
 
   {{{./onDoxia.html}On Doxia - a APT renderer.}}
 
-  {{{./onMockito.html}On Mockito.}}
+  Testing:
 
-  {{{./onJUnit.html}On JUnit.}}
+    * {{{./onMockito.html}On Mockito.}}
 
-  {{{./onRedHatOpenShift.html}On Red Hat Open Shift}}
+    * {{{./onJUnit.html}On JUnit.}}
 
-  {{{./onSpringSecurity.html}On Spring Security}}
+    []
+
+  Web Hosting Stuff:
+
+    * {{{./onWebHostingOfferings.html}On Web Hosting Offerings}}
+
+    * {{{./onRedHatOpenShiftPart1.html}On Red Hat Open Shift - Part 1}}
+
+    []
+
+  {{{./onRedHatOpenShiftPart2.html}On Red Hat Open Shift - Part 2}}
+
+  Spring Stuff:
+
+    * {{{./onSpring.html}On Spring}}
+
+    * {{{./onSpringSecurity.html}On Spring Security}}
+
+    []
+
+  {{{./onWildfly.html}On Wildfly Application Server}}
+
+  {{{./onThymeLeaf.html}On ThymeLeaf Templating System}}
+  
+  {{{./glossary.html}Glossary}}
 
 +-----+
 

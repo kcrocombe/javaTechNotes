@@ -1,0 +1,61 @@
+Options for Web hosting
+
+*Google App Engine
+
+	{{https://cloud.google.com/appengine/docs}}
+
+	{{https://cloud.google.com/products/}}
+
+	Offerings:
+
+		* Compute – basically a virtual linux box
+
+		*	App Engine – Provides various Application Environments /  Frameworks for hosting application services ( app services, databases etc ). Seems to imply there is a free quota before charges start being applied. Might be worth looking at.
+
+			* Cloud Datastore – NoSql storage
+
+			* Cloud SQL – relation db Mysql
+
+			* Cloud Storage – object storage
+
+			AppEngine –  Appear to be 4 standard offering:
+
+			*	Python  ( with webapp2 and Jinja2 frameworks )
+
+			*		Java  (with maven )
+
+			*		PHP ( with Cloud SQL )
+
+			*		GO
+
+			[]
+
+	In order to remain chargeless, needs to use the noSql datastore. ( BigTable ??) SQL databases will incur charges. ( Don’t think MongoDb will ).
+
+
+*Red Hat OpenShift
+
+	Red Hat OpenShift – possibly an option ( seems to be the Red Hat option )
+
+	I have had a couple of efforts at playing around with OpenShift
+
+		* 5 or so years ago, described {{{./onRedHatOpenShiftPart1.html}here}};
+
+		* and more recently (2019) {{{./onRedHatOpenShiftPart2.html}here}}.
+
+
+*Heroku
+
+	Heroku - (SalesForce company) looks quite Good. Free Optionm that sleeps after 30 mins, plus a cheap hobby setting where you only pay for when the application is running ( if ran continuously it would cost $7 a month.) Will need to pay for database too ( postGres)
+
+*Google Cloud
+
+	Need to do some more digging...
+
+*CloudFoundry
+
+		CloudFoundry is an openSource system. Some Providers:
+
+		* Pivotal - Offers $80 of credit, and then pay-as-you use (about $20 per month)
+
+		* IBM
