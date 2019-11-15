@@ -1,5 +1,7 @@
 Maven Notes
 
+Need to do some cutting and pasting on this and get some of the bits in a more logical order again.
+
 *Introduction
 
 	[[1]] Maven is a Yiddish word meaning 'accumulation of knowledge'.
@@ -216,7 +218,7 @@ Maven Notes
 
 			* Deploy Phase - pushes the build to a remote repository for use by other teams/projects.
 
-NB NEED TO SAY SOMETHING ABOUT THE DEFAULT LIFECYCLE AND A PACKAGEING!!!!
+	<<NB NEED TO SAY SOMETHING ABOUT THE DEFAULT LIFECYCLE AND A PACKAGEING!!!!>>
 
 ** Clean LifeCycle
 
@@ -605,3 +607,249 @@ NB NEED TO SAY SOMETHING ABOUT THE DEFAULT LIFECYCLE AND A PACKAGEING!!!!
 	I have never been able to find that settings editor subsequently(!).
 
 ====
+
+
+
+
+Executing a packaged Jar.
+
+  The output of your <<<mvn package>>> command will be a <<<jar>>> file (assuming your packaging is 'jar'). Depending how you wish to deploy and use this, there may be some configuration choices that need to be made.
+
+
+*Executable jar files
+
+**Main Class
+
+  If the intention is to create an executable jar, runnable using the command line similar to:
+
+---
+  java -jar <someJarFile>>
+---
+
+  ...then java needs something to help it decide which class method within the jar to execute (there could be several classes with a main()). An <<<Main-Class>>> entry within the jars MANIFEST file is the way that this is determined. e.g.
+
+---
+    Main-Class: uk.co.pegortech.fitStat.FitStats
+---
+
+  By default, when maven packages a jar with the <<<maven-jar-plugin>>>, it will NOT create such an entry. Consequently, if you attempt to run the command, you will get the following error.
+
+---
+        no main manifest attribute, in fitStat-1.0-SNAPSHOT.jar
+---
+
+  In order, to get maven to build this in, you need to add a <manifest> section to the plugins configuration within the pom.
+
+---
+  <plugin>
+    <artifactId>maven-jar-plugin</artifactId>
+    <version>3.2.0</version>
+    <configuration>
+      <archive>
+       <manifest>
+        <addClasspath>false</addClasspath>
+        <mainClass>uk.co.pegortech.fitStat.FitStats</mainClass>
+      </manifest>
+      </archive>
+    </configuration>
+  </plugin>
+---
+
+**Class Path
+
+  When you execute a jar file directly, both the <<<CLASSPATH>>> and any jar you may have supplied on the command line are ignored. Consequently, if your jar file has dependencies on other jars, it will fail:
+
+---
+  java -jar <someJarFile>>  --classpath someDir/someLibrary.jar
+
+  Exception in thread "main" java.lang.NoClassDefFoundError: com/garmin/fit/FitRuntimeException
+  	at java.lang.Class.getDeclaredMethods0(Native Method)
+  	at java.lang.Class.privateGetDeclaredMethods(Class.java:2693)
+    ...
+
+---
+  In other words, all the classes that the program needs (apart form the standard runtime ones in $JAVA_HOME/lib) MUST be present in the one jar.
+
+  However, the jar can be configured to search in other jars for the classes it needs by specifying them with the <<<Class-Path>>> qualifier within the MANIFEST.MF file.
+
+---
+  Class-Path: commons-math3-3.6.1.jar fit-20.85.0.jar
+---
+
+  In these circumstances, java will expect to find these jars IN THE SAME DIRECTORY as the jar it is executing. Whilst this is quite useful in some circumstances, it doesn't work too well if any of the classes reference third party jars or shared jars, which would reasonably be expected to be located elsewhere.
+
+
+*Uber Jars and Shaded Jars
+
+  One way that might be used to get around this problem is to use Uber Jars or Shaded Jars.
+
+**Uber JAR
+
+  An Uber JAR is a JAR which contains the contents of multiple JARs (or, less commonly, multiple other JARs themselves)
+
+  Your application will almost certainly use other packages and these packages might be provided as JARs. When using Maven these dependencies would be expressed as follows:
+
+---
+  <dependency>
+      <groupId>...</groupId>
+      <artifactId>...</artifactId>
+      <version>...</version>
+  </dependency>
+---
+
+  At runtime your application will expect to find the classes contained in this JAR on its classpath. If they are not there on the target machine, then the application will fail.
+
+  Rather than shipping each of these dependent JARs independently along with your application, you could create an Uber JAR which contains all of the classes etc from these dependent JARs and then simply run your application from this Uber JAR.
+
+
+**Shading
+
+  Shading provides a way of creating an Uber JAR and renaming the packages which that Uber JAR contains. If your Uber JAR is likely to be used as a dependency in another application then there's a risk that the versions of the dependent classes in the Uber JAR might clash with versions of those same dependencies in this other application. Shading helps to avoid any such issue by renaming the packages within the Uber JAR.
+
+  For example:
+
+    * You create an Uber JAR which contains v1.0.0 of the Foo library.
+
+    * Someone else uses your Uber JAR in their application, Bar
+
+    * The Bar application has its own dependency on Foo but on v1.2.0 of that library.
+
+  Now, if there is any clash between versions 1.0.0 and 1.2.0 of Foo we may have a problem because the owner of Bar cannot rely on which one will be loaded so either their code will misbehave or your code - when running within their application - will misbehave.
+
+  Shading helps to avoid issues such as this and also allows the provider of Foo to be explicit about the versions of the dependent libraries it uses.
+
+  There is a maven plugin (maven-shade-plug) which will help create such jars if necessary ( although I have not been able to get it to work)
+
+
+*A Better Solution
+
+    A better solution is just not to invoke your application using the --jar syntax in the first place. For instance, the following might naively be expected to work, since we are specifying exactly where all the necessary jars ar to be found.
+
+---
+java -cp fitStat-1.0-SNAPSHOT.jar:./tmp/fit-20.85.0.jar:./tmp/commons-math3-3.6.1.jar -jar fitStat-1.0-SNAPSHOT.jar
+
+    Exception in thread "main" java.lang.NoClassDefFoundError: com/garmin/fit/FitRuntimeException
+    	at java.lang.Class.getDeclaredMethods0(Native Method)
+    	at java.lang.Class.privateGetDeclaredMethods(Class.java:2693)
+      ...
+---
+
+    However, it doesn't though, because when we use --jar, classpaths, even explicitly stated classpaths, are ignored.
+
+    This however works fine.
+
+---
+  java -cp ./classes:./tmp/fit-20.85.0.jar:./tmp/commons-math3-3.6.1.jar uk.co.pegortech.fitStat.FitStats
+
+    FIT Decode Example Application - Protocol 2.0 Profile 20.85 Release
+    Usage: java -jar DecodeExample.jar <filename>
+---
+
+  In this second instance, java is able to use the classpath to locate the necessary classes (here explicit, but the CLASSPATH environment variable would work too.)
+
+===
+
+*Building assemblies
+
+	An <<<assembly>>> is, in Maven speak, an aggregation of a projects output artefacts, along with its dependencies, sub-modules, documentation etc. into a single, distributable archive : basically everything you need to run and use you application all in one place.
+
+	The <<<install>>> and <<<deploy>>> plugins deal only with the specific artefacts generated by the project. However at run-time, applications will have need to be put together to access additional dependancies, such as libraries, other jar files etc. It is likely that the application will be deployed on a different machine, and we do not necessarily know whether the dependencies will even exist on that machine, let alone where they might reside.
+
+	To avoid pre-installation and configuration steps to put those dependencies in place, we can bundle everything together in out release packet.
+
+	Note that building an assembly does not make up part of the default Lifecycle; however, the process can be configure to do so if required.
+
+	Maven supplies the maven-assembly-plugin to support this activity
+
+**maven-assembly-plugin
+
+	This provides essentially just one goal: <<<assembly:single>>>.
+
+	The parameters this can take is available in the usual way:
+
+---
+	mvn assembly:help -Ddetail=true -Dgoal=single
+---
+
+	Amongst other things, the assembly plugin will take the jar produced by the <<<jar>>> plugin under the <<<package>>> step and add in all the class files from all the jars that it is dependents on creating one bug Uber tar.
+
+***Configuration
+
+	The documentation recommends that if this plugin is used, it should be wired into the <<<package>>> phase, as follows:
+
+---
+	<executions>
+	 <execution>
+			<id>make-assembly</id>
+			<phase>package</phase> <!-- bind to the packaging phase -->
+			<goals>
+				 <goal>single</goal>
+			</goals>
+	 </execution>
+ </executions>
+---
+
+	However, in practise you don't need to create a assembly every time you build a package. To this end, you can use the plugin without associating it with a lifecycle step. However, there may be some bug in it somewhere; the natural way to use it in this way would be to execute:
+
+---
+	mvn package
+	mvn  assembly:single
+
+	[WARNING] Cannot include project artifact: uk.co.pegortech:fitStat:jar:1.0-SNAPSHOT; it doesn't have an associated file or directory.
+---
+
+	...but this seems to fail (as above).
+
+	However, when the 'package' and 'assembly:single' are pipelined, it seems to work ok. i.e.
+
+---
+	mvn package assembly:single
+---
+
+*Release Plugin
+
+	Just note in passing, that there is a plugin <<<maven-release-plugin>>> that will integrate with a version control system and build release for you. I have not looked at this in any detail, but it might be fun to play with at some point.
+
+=====
+
+
+
+Repository Stuff
+
+	Sometimes we will wish to work with third part jars which aren't available in a mvn repository somewhere. Perhaps it will be supplied just as a native <<<zip>>> file or <<<jar>>> file. It is still really useful to access these artefacts in the same way that we would the repository based ones.
+
+	Fortunately we can use maven to upload the jar file to our local repository as follows,
+
+---
+	mvn install:install-file -DgroupId=com.garmin.fit -DartifactId=fit -Dversion=20.85.0 -Dfile=/Users/kevin/Desktop/javaTechnologiesLearning/messingAboutWithFITfiles/FitSDKRelease_20.85.00/java/fit.jar -Dpackaging=jar -DgeneratePom=true
+---
+
+	Once this is done, it can be references as a dependency in a pom.xml file just like any other.
+
+---
+	<!-- Installed to local repository from jar file in SDK -->
+	<dependency>
+ 		<groupId>com.garmin.fit</groupId>
+ 		<artifactId>fit</artifactId>
+ 		<version>20.85.0</version>
+	</dependency>
+---
+=====
+
+Test Plugins
+
+		* Maven Surefire - designed for running unit tests;
+
+		* Maven FailSafe - designed for running unit tests;
+
+
+		in order to use either with JUnit5, it needs the junit5 jupiter engine
+
+---
+<dependency>
+	<groupId>org.junit.jupiter</groupId>
+	<artifactId>junit-jupiter-engine</artifactId>
+	<version>5.3.1</version>
+	<scope>test</scope>
+</dependency>
+---

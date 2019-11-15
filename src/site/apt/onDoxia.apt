@@ -46,3 +46,12 @@
 	[[1]] Horizontal Lines (=======) does not seem to work.
 
 =====
+
+
+Resource Directory
+
+	Basically anything inmcluded in teh resource directory will be copied as is to the <target> location.
+
+	This is usefule for processing image files, or already formatted html
+
+	e.g. the documentation from 3rd part libraries etc 

@@ -1,6 +1,6 @@
 JUnit5 and predecessors
 
-  JUnit is composed of modules from 3 different sub-projects:
+  JUnit5 is composed of modules from 3 different sub-projects:
 
   * JUnit Platform : is the foundation for the Testing Framework, and provides a command line launcher, and a JUnit 4 based runner to allow JUnit5 to run in a JUnit4 environment.
 
@@ -9,4 +9,220 @@ JUnit5 and predecessors
   * JUnit Vintage : provides a <<<TestEngine>>> for running JUnit3 and JUnit4 based tests.
 
 
+  The following Git project hosts a number of useful sample for demoing Junit5
+
   junit5-jupiter-starter-maven
+
+  Key dependency to include in your pom:
+
+---
+  <dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>${junit.jupiter.version}</version>
+    <scope>test</scope>
+  </dependency>
+---
+
+
+  JUnit Jupiter is the new programming model implemented by Junit5.
+
+
+  Junit runs as a Framework.  Classes that we create as test units that conform to the pattern required by the Framework will become registered as test classes within that framework and be manipulated by it.
+
+  Typically, these classes will have a number of methods defined on them each designed to test some aspect of functionality of the object under test.
+
+  During a test run, the framework will then instantiate instances of those classes and invoke their methods.
+
+
+*Platform
+
+  the framework can be built into most popular build tools, ingluding Maven, gradle, ant
+
+  Both:
+
+    * Maven Surefire - designed for running unit tests;
+
+    * Maven FailSafe - designed for running unit tests;
+
+  provide a jupiter engine
+
+
+  It is also available as a command line console. This takes the form of a Uber jar, ( i.e. containing all dependencies) and is available from Maven Central ( amongst) others.
+
+  Have downloaded, to /usr/local/jar:
+
+    {{{https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.5.2/junit-platform-console-standalone-1.5.2.jar}junit-platform-console-1-5-2.jar}}
+
+
+  Looks as though using it might need a bit of working out though...
+
+
+  Support is also built in to popular IDEs like Eclipse, Intellijet etc
+
+*Test Objects
+
+  The framework recognises the classes and methods that are to be treated as test objects via the presence of particular annotations attached to the method/class. The basic test objects are defined and recognised via:
+
+    a <<<Test Class>>>: is any top-level class, static member class, or <@Nested> class that:
+
+      * contains a least one <<<Test Method>>>;
+
+    They must:
+
+      * have a single constructor;
+
+      * must not be abstract;
+
+
+    a <<<Test Method>>> : These are the actaul tests themselves, and basically will either succeed of fail. A method will be treated by as a test method by the framewok is it is annotated with either:
+
+      * <@Test>:
+
+      * <@RepeatedTest>
+
+      * <@ParameterizedTest>
+
+      * <@TestFactory>
+
+      * <@TestTemplate>
+
+    They must :
+
+      * not be private;
+
+      * not be abstract;
+
+      * not return a value;
+
+
+    a <<<Lifecycle Method>>> : A lifecycle method does not perform any testing itself, but are used in order to set up the test object prior to running a test or tear down an object post a test.  A method will be treated as a lifecyle method by the framework if it is annotated with either:
+
+      * <@BeforeAll>;
+
+      * <@AfterAll>;
+
+      * <@BeforeEach>;
+
+      * <@AfterEach>;
+
+    They must :
+
+      * not be private;
+
+      * not be abstract;
+
+      * not return a value;
+
+
+* Lifecycle
+
+  By default, the order in which test methods are executed is obscure. It is still deterministic, in that repeating a suite of tests will run the tests in the same order; but, by default, Jupiter makes it deliberately difficult to predict ( <@TestInstance(Lifecycle.PER_METHOD)>).
+
+  However, if a test class/interfaces is annotated with a <@TestMethodOrder> annotation, then the user can choose to impose a particular order. (e.g. alhabetic order, sequential order, random order etc.)
+
+  By default, and to allow individual tests to be executed essentailly in isolation, Jupiter will create a NEW instance of each test class before it executes a test method, and then will destroy it immediately afterwards.
+
+  If you wish to execute all tests on the SAME instance of an object, tehn the class can be tagged with the <@TestIntance(Lifecycle.PER_CLASS)> annotation. In this case ONE instance of the classs will be created and all methods executed on this ( possibly in a particular order if so annotated.)
+
+
+  The basic lifecycle method are:
+
+    * <@BeforeEach> : Denotes that the annotated method should be executed before each @Test, @RepeatedTest, @ParameterizedTest, or @TestFactory method in the current class;
+
+    * <@AfterEach> : Denotes that the annotated method should be executed after each @Test, @RepeatedTest, @ParameterizedTest, or @TestFactory method in the current class;
+
+    * <@BeforeAll> : Denotes that the annotated method should be executed just once before all @Test, @RepeatedTest, @ParameterizedTest, and @TestFactory methods in the current class. It only has any real usage when the PER_CLASS lifecycle is in force.;
+
+    * <@AfterAll> : Denotes that the annotated method should be executed just once after all @Test, @RepeatedTest, @ParameterizedTest, and @TestFactory methods have been executed in the current class. It only has any real usage when the PER_CLASS lifecycle is in force..
+
+  These are generally used to put the  object under test into the correct state for the test to proceed. This can be done with the individual tests themselves, but often several different test will wish to be initialised in the same way.
+
+
+*Tests
+
+**Repeated Tests
+
+**Paramaterised Test
+
+**DynamicTests
+
+
+
+*Assertions
+
+  Assertions is a collection of utility methods that support asserting conditions in tests.
+
+
+  Unless otherwise noted, a failed <assertion> will throw an AssertionFailedError or a subclass thereof.
+
+
+  The various assertTimeoutPreemptively() methods in this class execute the provided executable or supplier in a different thread than that of the calling code. This behaviour can lead to undesirable side effects if the code that is executed within the executable or supplier relies on ThreadLocal storage.
+
+  The table below summarises the <assertion> functions that are available for use in testing. Although each function is shown only once, in reality each one is heavily overloaded to cope with input parameters of pretty much every type.
+
+*--------------------+------------------------------------------------------------------------------------------+
+| assertAll() | Assert that all supplied executables do not throw exceptions |
+*--------------------+------------------------------------------------------------------------------------------+
+| assertEquals() | Assert that expected and actual are equal. |
+*--------------------+------------------------------------------------------------------------------------------+
+| assertNotEqualsAssert() | Assert that expected and actual are not equal. |
+*--------------------+------------------------------------------------------------------------------------------+
+| assertArrayEquals() | Assert that expected and actual arrays are equal. |
+*--------------------+------------------------------------------------------------------------------------------+
+| assertIterableEquals() | Assert that expected and actual iterables are deeply equal. |
+*--------------------+------------------------------------------------------------------------------------------+
+| assertSame() | Assert that expected and actual refer to the same object. |
+*--------------------+------------------------------------------------------------------------------------------+
+| assertNotSameAssert() | that expected and actual do not refer to the same object. |
+*--------------------+------------------------------------------------------------------------------------------+
+| assertLinesMatchAssert() | that expected list of Strings matches actual list. |
+*--------------------+------------------------------------------------------------------------------------------+
+| assertNull() | Assert that actual is null. |
+*--------------------+------------------------------------------------------------------------------------------+
+| assertNotNull() | Assert that actual is not null. |
+*--------------------+------------------------------------------------------------------------------------------+
+| assertThrows() | Assert that execution of the supplied executable throws an exception of the expectedType and returns the exception. |
+*--------------------+------------------------------------------------------------------------------------------+
+| assertDoesNotThrow() | Assert that execution of the supplied executable does not throw any kind of exception. |
+*--------------------+------------------------------------------------------------------------------------------+
+| assertTimeout() | Assert that execution of the supplied supplier completes before the given timeout is exceeded. |
+*--------------------+------------------------------------------------------------------------------------------+
+| assertTimeoutPreemptively() | Assert that execution of the supplied supplier completes before the given timeout is exceeded. |
+*--------------------+------------------------------------------------------------------------------------------+
+| assertTrue() | Assert that the supplied condition is true. |
+*--------------------+------------------------------------------------------------------------------------------+
+| assertFalse() | Assert that the supplied condition is false. |
+*--------------------+------------------------------------------------------------------------------------------+
+| fail() | Fail the test |
+*--------------------+------------------------------------------------------------------------------------------+
+
+  Even though the assertion facilities provided by JUnit Jupiter are sufficient for many testing scenarios, there are times when more power and additional functionality such as matchers are desired or required. In such cases, the JUnit team recommends the use of third-party assertion libraries such as AssertJ, Hamcrest, Truth, etc. Developers are therefore free to use the assertion library of their choice.
+
+
+*Assumptions
+
+  Assumptions is a collection of utility methods that support conditional test execution based on assumptions.
+
+  In direct contrast to failed <assertions>, failed <assumptions> do not result in a test failure; rather, a failed assumption results in a test being aborted.
+
+  Assumptions are typically used whenever it does not make sense to continue execution of a given test method — for example, if the test depends on something that does not exist in the current runtime environment
+
+  The table below summarises the <assumption> functions that are available for use in testing. Although each function is shown only once, in reality each one is heavily overloaded to cope with input parameters of pretty much every type.
+
+*---------------------------------+----------------------------------------------------+
+| assumeFalse​(boolean assumption) | Validate the given assumption. |
+*---------------------------------+----------------------------------------------------+
+| assumeTrue​(boolean assumption) | Validate the given assumption. |
+*---------------------------------+----------------------------------------------------+
+| assumingThat​(boolean assumption, Executable executable) | Execute the supplied Executable, but only if the supplied assumption is valid. |
+*---------------------------------+----------------------------------------------------+
+
+
+Miscellaneos Annotations
+
+@Disable
+@DisplayName
+
+
+HamCrest Functions

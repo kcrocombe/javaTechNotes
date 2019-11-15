@@ -1,0 +1,5 @@
+Misc Useful OSX Stuff
+
+Disabline Spotlight indexing ( mds_stores was taking up too much resources. Had been having som system crashes and stuff as well)
+
+ sudo mdutil -a -i off

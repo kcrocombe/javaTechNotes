@@ -4,7 +4,12 @@
  The Maven Team
  -----
 
-Maven Site for your project
+Java Technologies : Documentation
+
+  The following are a collection of notes made on various topics that I have collected via reading and playing around with various Java Technologies. Write a lot of the notes are very rough and ready: often just recording what I was doing when I was playing around. Others, I have tried to present in a reasonably tidy format.
+
+  The idea is that this will evolve in time into a reasonably useful resource, describing not only the technology itself, but how I have chosen to use it.
+
 
   {{{./aboutThisDocumentation.html}About this documentation.}}
 
@@ -18,7 +23,13 @@ Maven Site for your project
 
   {{{./onEclipseModelling.html}On Eclipse Modelling.}}
 
-  {{{./onOauth2andOpenIdConnect.html}On OAuth2 and OpenID Connect.}}
+  Oauth2 and OpenConnect ID:
+
+    * {{{./onOauth2andOpenIdConnect.html}On OAuth2 and OpenID Connect.}}
+
+    * {{{./onOpenIDConnectWithGoogle.html}On using OpenID Connect with Google.}}
+
+    []
 
   {{{./onUML.html}On Unified Modelling Language (UML)}}
 
@@ -40,9 +51,10 @@ Maven Site for your project
 
     * {{{./onRedHatOpenShiftPart1.html}On Red Hat Open Shift - Part 1}}
 
+    * {{{./onRedHatOpenShiftPart2.html}On Red Hat Open Shift - Part 2}}
+
     []
 
-  {{{./onRedHatOpenShiftPart2.html}On Red Hat Open Shift - Part 2}}
 
   Spring Stuff:
 
@@ -50,12 +62,25 @@ Maven Site for your project
 
     * {{{./onSpringSecurity.html}On Spring Security}}
 
+    * {{{./onInstallingSpringBoot.html}On installing Spring Boot}}
+
+    * {{{./onCreatingRestServiceWithSpringBoot.html}On creating a simple REST web service with Spring Boot}}
+
     []
 
-  {{{./onWildfly.html}On Wildfly Application Server}}
+  Wildfly Application Server:
+
+    * {{{./onWildfly.html}On Wildfly Application Server}}
+
+    * {{{./onInstallingWildfly.html}On installing Wildfly.}}
+
+    []
+
 
   {{{./onThymeLeaf.html}On ThymeLeaf Templating System}}
-  
+
+  {{{./onOSX.html}on misc OSX tips and tricks}}
+
   {{{./glossary.html}Glossary}}
 
 +-----+

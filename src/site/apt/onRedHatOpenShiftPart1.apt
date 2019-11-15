@@ -1,1356 +1,465 @@
+Red Hat Open Shift
+
+	1) Signed up to the OpenShift Online Free plan as kevin.crocombe@pegortech.co.uk ( usual password).
+
+		There is also the Open Shift origin Product, which I think is just down
+		loaded version of the open shift platform?
+
+
+	2) Downloaded the command line utilities
+
+		( NB requires git and ruby - which were already installed )
+
+
 ---
-1) Signed up to the OpenShift Online Free plan as kevin.crocombe@pegortech.co.uk ( usual password).
+		gem install rhc
+---
 
-	There is also the Open Shift origin Product, which I think is just down
-	loaded version of the open shift platform?
+			( gem is a Ruby thing ( I think )
 
+---
+		rhc --version
+			rhc 1.34.2
+---
 
-2) Downloaded the command line utilities
 
-	( NB requires git and ruby - which were already installed )
+	3) rhc setup
 
-	
-	gem install rhc
+	 Conversation as described below:
 
-		( gem is a Ruby thing ( I think )
+---
 
-	rhc --version
-		rhc 1.34.2
 
+	OpenShift Client Tools (RHC) Setup Wizard
 
-3) rhc setup 
+	This wizard will help you upload your SSH keys, set your application namespace,
+	and check that other programs like Git are properly installed.
 
- Conversation as described below:
+	If you have your own OpenShift server, you can specify it now. Just hit enter to
+	use the server for OpenShift Online: openshift.redhat.com.
+	Enter the server hostname: |openshift.redhat.com|
 
+	You can add more servers later using 'rhc server'.
 
+	Login to openshift.redhat.com: kevin.crocombe@pegortech.co.uk
+	Password: ******
 
-OpenShift Client Tools (RHC) Setup Wizard
+	OpenShift can create and store a token on disk which allows to you to access the
+	server without using your password. The key is stored in your home directory and
+	should be kept secret.  You can delete the key at any time by running 'rhc
+	logout'.
+	Generate a token now? (yes|no) yes
+	Generating an authorization token for this client ... lasts about 1 month
 
-This wizard will help you upload your SSH keys, set your application namespace,
-and check that other programs like Git are properly installed.
+	Saving configuration to /Users/kevin/.openshift/express.conf ... done
 
-If you have your own OpenShift server, you can specify it now. Just hit enter to
-use the server for OpenShift Online: openshift.redhat.com.
-Enter the server hostname: |openshift.redhat.com| 
+	No SSH keys were found. We will generate a pair of keys for you.
 
-You can add more servers later using 'rhc server'.
+	    Created: /Users/kevin/.ssh/id_rsa.pub
 
-Login to openshift.redhat.com: kevin.crocombe@pegortech.co.uk
-Password: ******
+	Your public SSH key must be uploaded to the OpenShift server to access code.
+	Upload now? (yes|no)
+	yes
 
-OpenShift can create and store a token on disk which allows to you to access the
-server without using your password. The key is stored in your home directory and
-should be kept secret.  You can delete the key at any time by running 'rhc
-logout'.
-Generate a token now? (yes|no) yes
-Generating an authorization token for this client ... lasts about 1 month
+	Since you do not have any keys associated with your OpenShift account, your new
+	key will be uploaded as the 'default' key.
 
-Saving configuration to /Users/kevin/.openshift/express.conf ... done
+	Uploading key 'default' ... done
 
-No SSH keys were found. We will generate a pair of keys for you.
+	Checking for git ... found git version 1.8.3.4 (Apple Git-47)
 
-    Created: /Users/kevin/.ssh/id_rsa.pub
+	Checking common problems .. done
 
-Your public SSH key must be uploaded to the OpenShift server to access code.
-Upload now? (yes|no)
-yes
+	Checking for a domain ... none
 
-Since you do not have any keys associated with your OpenShift account, your new
-key will be uploaded as the 'default' key.
+	Applications are grouped into domains - each domain has a unique name (called a
+	namespace) that becomes part of your public application URL. You may create your
+	first domain here or leave it blank and use 'rhc create-domain' later. You will
+	not be able to create an application without completing this step.
 
-Uploading key 'default' ... done
+	Please enter a namespace (letters and numbers only) |<none>|: pegortech
+	Your domain 'pegortech' has been successfully created
 
-Checking for git ... found git version 1.8.3.4 (Apple Git-47)
+	Checking for applications ... none
 
-Checking common problems .. done
+	Run 'rhc create-app' to create your first application.
 
-Checking for a domain ... none
+	  Do-It-Yourself 0.1                 rhc create-app <app name> diy-0.1
+	  JBoss Application Server 7         rhc create-app <app name> jbossas-7
+	  JBoss Data Virtualization 6        rhc create-app <app name> jboss-dv-6.0.0
+	  JBoss Enterprise Application       rhc create-app <app name> jbosseap-6
+	  Platform 6
+	  JBoss Unified Push Server          rhc create-app <app name>
+	  1.0.0.Beta1                        jboss-unified-push-1
+	  Jenkins Server                     rhc create-app <app name> jenkins-1
+	  Node.js 0.10                       rhc create-app <app name> nodejs-0.10
+	  PHP 5.3                            rhc create-app <app name> php-5.3
+	  PHP 5.4                            rhc create-app <app name> php-5.4
+	  PHP 5.4 with Zend Server 6.1       rhc create-app <app name> zend-6.1
+	  Perl 5.10                          rhc create-app <app name> perl-5.10
+	  Python 2.6                         rhc create-app <app name> python-2.6
+	  Python 2.7                         rhc create-app <app name> python-2.7
+	  Python 3.3                         rhc create-app <app name> python-3.3
+	  Ruby 1.8                           rhc create-app <app name> ruby-1.8
+	  Ruby 1.9                           rhc create-app <app name> ruby-1.9
+	  Ruby 2.0                           rhc create-app <app name> ruby-2.0
+	  Tomcat 6 (JBoss EWS 1.0)           rhc create-app <app name> jbossews-1.0
+	  Tomcat 7 (JBoss EWS 2.0)           rhc create-app <app name> jbossews-2.0
+	  Vert.x 2.1                         rhc create-app <app name> jboss-vertx-2.1
+	  WildFly Application Server         rhc create-app <app name> jboss-wildfly-8
+	  8.2.0.Final
 
-Applications are grouped into domains - each domain has a unique name (called a
-namespace) that becomes part of your public application URL. You may create your
-first domain here or leave it blank and use 'rhc create-domain' later. You will
-not be able to create an application without completing this step.
+	  You are using 0 of 3 total gears
+	  The following gear sizes are available to you: small
 
-Please enter a namespace (letters and numbers only) |<none>|: pegortech
-Your domain 'pegortech' has been successfully created
+	Your client tools are now configured.
 
-Checking for applications ... none
+---
 
-Run 'rhc create-app' to create your first application.
 
-  Do-It-Yourself 0.1                 rhc create-app <app name> diy-0.1
-  JBoss Application Server 7         rhc create-app <app name> jbossas-7
-  JBoss Data Virtualization 6        rhc create-app <app name> jboss-dv-6.0.0
-  JBoss Enterprise Application       rhc create-app <app name> jbosseap-6
-  Platform 6
-  JBoss Unified Push Server          rhc create-app <app name>
-  1.0.0.Beta1                        jboss-unified-push-1
-  Jenkins Server                     rhc create-app <app name> jenkins-1
-  Node.js 0.10                       rhc create-app <app name> nodejs-0.10
-  PHP 5.3                            rhc create-app <app name> php-5.3
-  PHP 5.4                            rhc create-app <app name> php-5.4
-  PHP 5.4 with Zend Server 6.1       rhc create-app <app name> zend-6.1
-  Perl 5.10                          rhc create-app <app name> perl-5.10
-  Python 2.6                         rhc create-app <app name> python-2.6
-  Python 2.7                         rhc create-app <app name> python-2.7
-  Python 3.3                         rhc create-app <app name> python-3.3
-  Ruby 1.8                           rhc create-app <app name> ruby-1.8
-  Ruby 1.9                           rhc create-app <app name> ruby-1.9
-  Ruby 2.0                           rhc create-app <app name> ruby-2.0
-  Tomcat 6 (JBoss EWS 1.0)           rhc create-app <app name> jbossews-1.0
-  Tomcat 7 (JBoss EWS 2.0)           rhc create-app <app name> jbossews-2.0
-  Vert.x 2.1                         rhc create-app <app name> jboss-vertx-2.1
-  WildFly Application Server         rhc create-app <app name> jboss-wildfly-8
-  8.2.0.Final
+	4) Essentially this has :
 
-  You are using 0 of 3 total gears
-  The following gear sizes are available to you: small
+		created some ssh keys for secure maintaining the command line connection
 
-Your client tools are now configured.
+		created a domain : pegortech
 
 
-4) Essentially this has :
+	5) Checking setting etc.
 
-	created some ssh keys for secure maintaining the command line connection
+---
+	bash-3.2# rhc account
+	Login kevin.crocombe@pegortech.co.uk on openshift.redhat.com
+	~~------------------------------------------------------------
+	  ID:                 54eb5d764382ecd6400001b0
+	  Plan:               Free
+	  Gears Used:         0
+	  Gears Allowed:      3
+	  Domains Allowed:    1
+	  Allowed Gear Sizes: small
+	  SSL Certificates:   no
 
-	created a domain : pegortech
 
+	rhc authorization list
 
-5) Checking setting etc.
+	RHC/1.34.2 (from kevinsMac.local on universal.x86_64-darwin13)
+	~~--------------------------------------------------------------
+	  Token:      e69cf123361c6423781158895b54e9493d5fb2059137b4447e63633307c8de64
+	  Scopes:     session
+	  Created:    5:25 PM
+	  Expires In: 30 days
 
-bash-3.2# rhc account
-Login kevin.crocombe@pegortech.co.uk on openshift.redhat.com
-~~------------------------------------------------------------
-  ID:                 54eb5d764382ecd6400001b0
-  Plan:               Free
-  Gears Used:         0
-  Gears Allowed:      3
-  Domains Allowed:    1
-  Allowed Gear Sizes: small
-  SSL Certificates:   no
+	OpenShift Console (from 77.100.157.134 on Safari)
+	~~-------------------------------------------------
+	  Token:      a4d0ffdce7372203290d18aabc5b7b412a508b5063c85141dbe9d2b78b931c37
+	  Scopes:     session
+	  Created:    5:03 PM
+	  Expires In: 30 days
+---
 
 
-rhc authorization list
 
-RHC/1.34.2 (from kevinsMac.local on universal.x86_64-darwin13)
-~~--------------------------------------------------------------
-  Token:      e69cf123361c6423781158895b54e9493d5fb2059137b4447e63633307c8de64
-  Scopes:     session
-  Created:    5:25 PM
-  Expires In: 30 days
+	6) Configuration files
 
-OpenShift Console (from 77.100.157.134 on Safari)
-~~-------------------------------------------------
-  Token:      a4d0ffdce7372203290d18aabc5b7b412a508b5063c85141dbe9d2b78b931c37
-  Scopes:     session
-  Created:    5:03 PM
-  Expires In: 30 days
+---
+		/Users/kevin/.openshift/express.conf
+---
 
 
+		Contents:
 
-6) Configuration files
+	# The default OpenShift server to connect to
+	libra_server=openshift.redhat.com
 
-	/Users/kevin/.openshift/express.conf
+	# Your OpenShift login name
+	default_rhlogin=kevin.crocombe@pegortech.co.uk
 
+	# If true, the server will attempt to create and use authorization tokens to connect to the server
+	use_authorization_tokens=true
 
-	Contents:
+	# The default timeout for network operations
+	#timeout=<integer>
 
-# The default OpenShift server to connect to
-libra_server=openshift.redhat.com
+	# If true, certificate errors will be ignored.
+	# WARNING: This may allow others to eavesdrop on your communication with OpenShift.
+	insecure=false
 
-# Your OpenShift login name
-default_rhlogin=kevin.crocombe@pegortech.co.uk
+	# The SSL protocol version to use when connecting to this server
+	#ssl_version=<string>
 
-# If true, the server will attempt to create and use authorization tokens to connect to the server
-use_authorization_tokens=true
+	# A client certificate file for use with your server
+	#ssl_client_cert_file=<path_to_file>
 
-# The default timeout for network operations
-#timeout=<integer>
+	# The corresponding key for the client certificate
+	#ssl_client_key_file=<path_to_file>
 
-# If true, certificate errors will be ignored.
-# WARNING: This may allow others to eavesdrop on your communication with OpenShift.
-insecure=false
+	# A file containing CA one or more certificates
+	#ssl_ca_file=<path_to_file>
 
-# The SSL protocol version to use when connecting to this server
-#ssl_version=<string>
 
-# A client certificate file for use with your server
-#ssl_client_cert_file=<path_to_file>
 
-# The corresponding key for the client certificate
-#ssl_client_key_file=<path_to_file>
 
-# A file containing CA one or more certificates
-#ssl_ca_file=<path_to_file>
+	Created a non-scaling application
 
+	1) Showing the available app server cartridges.
 
+---
+		rhc cartridge list
 
+	bash-3.2# rhc cartridge list
+	jbossas-7                JBoss Application Server 7              web
+	jboss-dv-6.0.0 (!)       JBoss Data Virtualization 6             web
+	jbosseap-6 (*)           JBoss Enterprise Application Platform 6 web
+	jboss-unified-push-1 (!) JBoss Unified Push Server 1.0.0.Beta1   web
+	jenkins-1                Jenkins Server                          web
+	nodejs-0.10              Node.js 0.10                            web
+	perl-5.10                Perl 5.10                               web
+	php-5.3                  PHP 5.3                                 web
+	php-5.4                  PHP 5.4                                 web
+	zend-6.1                 PHP 5.4 with Zend Server 6.1            web
+	python-2.6               Python 2.6                              web
+	python-2.7               Python 2.7                              web
+	python-3.3               Python 3.3                              web
+	ruby-1.8                 Ruby 1.8                                web
+	ruby-1.9                 Ruby 1.9                                web
+	ruby-2.0                 Ruby 2.0                                web
+	jbossews-1.0             Tomcat 6 (JBoss EWS 1.0)                web
+	jbossews-2.0             Tomcat 7 (JBoss EWS 2.0)                web
+	jboss-vertx-2.1 (!)      Vert.x 2.1                              web
+	jboss-wildfly-8 (!)      WildFly Application Server 8.2.0.Final  web
+	diy-0.1                  Do-It-Yourself 0.1                      web
+	10gen-mms-agent-0.1      10gen Mongo Monitoring Service Agent    addon
+	cron-1.4                 Cron 1.4                                addon
+	jenkins-client-1         Jenkins Client                          addon
+	mongodb-2.4              MongoDB 2.4                             addon
+	mysql-5.1                MySQL 5.1                               addon
+	mysql-5.5                MySQL 5.5                               addon
+	phpmyadmin-4             phpMyAdmin 4.0                          addon
+	postgresql-8.4           PostgreSQL 8.4                          addon
+	postgresql-9.2           PostgreSQL 9.2                          addon
+	rockmongo-1.1            RockMongo 1.1                           addon
+	switchyard-0             SwitchYard 0.8.0                        addon
+	haproxy-1.4              Web Load Balancer                       addon
 
-Created a non-scaling application 
+	Note: Web cartridges can only be added to new applications.
 
-1) Showing the available app server cartridges.
 
-	rhc cartridge list
+	rhc app create tifosi jboss-wildfly-8
 
-bash-3.2# rhc cartridge list
-jbossas-7                JBoss Application Server 7              web
-jboss-dv-6.0.0 (!)       JBoss Data Virtualization 6             web
-jbosseap-6 (*)           JBoss Enterprise Application Platform 6 web
-jboss-unified-push-1 (!) JBoss Unified Push Server 1.0.0.Beta1   web
-jenkins-1                Jenkins Server                          web
-nodejs-0.10              Node.js 0.10                            web
-perl-5.10                Perl 5.10                               web
-php-5.3                  PHP 5.3                                 web
-php-5.4                  PHP 5.4                                 web
-zend-6.1                 PHP 5.4 with Zend Server 6.1            web
-python-2.6               Python 2.6                              web
-python-2.7               Python 2.7                              web
-python-3.3               Python 3.3                              web
-ruby-1.8                 Ruby 1.8                                web
-ruby-1.9                 Ruby 1.9                                web
-ruby-2.0                 Ruby 2.0                                web
-jbossews-1.0             Tomcat 6 (JBoss EWS 1.0)                web
-jbossews-2.0             Tomcat 7 (JBoss EWS 2.0)                web
-jboss-vertx-2.1 (!)      Vert.x 2.1                              web
-jboss-wildfly-8 (!)      WildFly Application Server 8.2.0.Final  web
-diy-0.1                  Do-It-Yourself 0.1                      web
-10gen-mms-agent-0.1      10gen Mongo Monitoring Service Agent    addon
-cron-1.4                 Cron 1.4                                addon
-jenkins-client-1         Jenkins Client                          addon
-mongodb-2.4              MongoDB 2.4                             addon
-mysql-5.1                MySQL 5.1                               addon
-mysql-5.5                MySQL 5.5                               addon
-phpmyadmin-4             phpMyAdmin 4.0                          addon
-postgresql-8.4           PostgreSQL 8.4                          addon
-postgresql-9.2           PostgreSQL 9.2                          addon
-rockmongo-1.1            RockMongo 1.1                           addon
-switchyard-0             SwitchYard 0.8.0                        addon
-haproxy-1.4              Web Load Balancer                       addon
 
-Note: Web cartridges can only be added to new applications.
+	~~-------------------
+	Domain:     pegortech
+	Cartridges: jboss-wildfly-8
+	Gear Size:  default
+	Scaling:    no
 
+	WildFly 8 administrator added.  Please make note of these credentials:
 
-rhc app create tifosi jboss-wildfly-8
+	   Username: adminle57cyH
+	   Password: wzXMf8-1FAfN
 
+	Permanently added 'tifosi-pegortech.rhcloud.com,54.159.68.164' (RSA) to the list of known hosts.
 
-~~-------------------
-Domain:     pegortech
-Cartridges: jboss-wildfly-8
-Gear Size:  default
-Scaling:    no
 
-WildFly 8 administrator added.  Please make note of these credentials:
+	fatal: Could not read from remote repository.
 
-   Username: adminle57cyH
-   Password: wzXMf8-1FAfN
+	Please make sure you have the correct access rights and the repository exists.
+	Unable to clone your repository. Called Git with: git clone
+	ssh://54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com/~/git/tifosi.git/
+	"tifosi"
 
-Permanently added 'tifosi-pegortech.rhcloud.com,54.159.68.164' (RSA) to the list of known hosts.
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+	1. We were unable to clone your application's git repo - Unable to clone
+	your repository. Called Git with: git clone
+	ssh://54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com/~/git/tifosi.git/
+	"tifosi"
 
-fatal: Could not read from remote repository.
+	  Steps to complete your configuration:
+	    1. Clone your git repo
+	      $ rhc git-clone tifosi
 
-Please make sure you have the correct access rights and the repository exists.
-Unable to clone your repository. Called Git with: git clone
-ssh://54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com/~/git/tifosi.git/
-"tifosi"
+	Your application 'tifosi' is now available.
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	  URL:        http://tifosi-pegortech.rhcloud.com/
+	  SSH to:     54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com
+	  Git remote: ssh://54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com/~/git/tifosi.git/
 
-1. We were unable to clone your application's git repo - Unable to clone
-your repository. Called Git with: git clone
-ssh://54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com/~/git/tifosi.git/
-"tifosi"
 
-  Steps to complete your configuration:
-    1. Clone your git repo
-      $ rhc git-clone tifosi
 
-Your application 'tifosi' is now available.
+	rhc show-app tifosi
 
-  URL:        http://tifosi-pegortech.rhcloud.com/
-  SSH to:     54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com
-  Git remote: ssh://54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com/~/git/tifosi.git/
+	~~------------------------------------------------------------------------------
+	  Domain:     pegortech
+	  Created:    6:16 PM
+	  Gears:      1 (defaults to small)
+	  Git URL:    ssh://54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com/~/git/tifosi.git/
+	  SSH:        54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com
+	  Deployment: auto (on git push)
 
+	  jboss-wildfly-8 (WildFly Application Server 8.2.0.Final)
+	~~--------------------------------------------------------
+	    From:    https://raw.githubusercontent.com/openshift-cartridges/openshift-wildfly-cartridge/wildfly-8/metadata/manifest.yml
+	    Website: http://www.wildfly.org
+	    Gears:   1 small
 
+	ssh 54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com
+	Permission denied (publickey,gssapi-keyex,gssapi-with-mic).
 
-rhc show-app tifosi
+	 rhc ssh tifosi
+	Connecting to 54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com ...
+	Permission denied (publickey,gssapi-keyex,gssapi-with-mic).
 
-~~------------------------------------------------------------------------------
-  Domain:     pegortech
-  Created:    6:16 PM
-  Gears:      1 (defaults to small)
-  Git URL:    ssh://54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com/~/git/tifosi.git/
-  SSH:        54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com
-  Deployment: auto (on git push)
+---
 
-  jboss-wildfly-8 (WildFly Application Server 8.2.0.Final)
-~~--------------------------------------------------------
-    From:    https://raw.githubusercontent.com/openshift-cartridges/openshift-wildfly-cartridge/wildfly-8/metadata/manifest.yml
-    Website: http://www.wildfly.org
-    Gears:   1 small
+	2) The ssh errors were because the ssh certificates were inadvertently  created as root
+	   and I couldn’t read them. Once the ownership was changed from root —> kevin all was good
 
-ssh 54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com
-Permission denied (publickey,gssapi-keyex,gssapi-with-mic).
 
- rhc ssh tifosi
-Connecting to 54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com ...
-Permission denied (publickey,gssapi-keyex,gssapi-with-mic).
+	3) Created a local directory
 
+---
+		/Users/kevin/openShift/tifosi
+---
 
-2) The ssh errors were because the ssh certificates were inadvertently  created as root
-   and I couldn’t read them. Once the ownership was changed from root —> kevin all was good
 
+	  Cloned the git repository on the server locally…
 
-3) Created a local directory 
+---
+		rhc git-clone tifosi
+---
 
-	/Users/kevin/openShift/tifosi
 
+	   This pulled the default application from the server. ( It basically just consists of a
+	   simple welcome type web-page.pwd
 
-  Cloned the git repository on the server locally…
 
-	rhc git-clone tifosi
+	4) Viewd it by browsing to
 
+		http://tifosi-pegortech.rhcloud.com
 
-   This pulled the default application from the server. ( It basically just consists of a
-   simple welcome type web-page.pwd
 
+	5) Checked ssh access
 
-4) Viewd it by browsing to
+			ssh 54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com
 
-	http://tifosi-pegortech.rhcloud.com
+	   The home directory seems to contain
 
+		wildfire directory : containing the wildfire installation
 
-5) Checked ssh access
+		git directory : containing the git repository for the default ‘Welcome’ tip 				application
 
-		ssh 54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com
 
-   The home directory seems to contain
+		app-deployements
+		app-root
 
-	wildfire directory : containing the wildfire installation
+				: which I guess are the where the actually app is deployed to…
 
-	git directory : containing the git repository for the default ‘Welcome’ tip 				application
 
-	
-	app-deployements
-	app-root
+	6)  The server did look to be running :
 
-			: which I guess are the where the actually app is deployed to…
+		ps -ef  showed
 
+		~/wildfly/usr/lib/jvm/jdk1.8.0_05/bin/java
 
-6)  The server did look to be running :
+		with various options.
 
-	ps -ef  showed
 
-	~/wildfly/usr/lib/jvm/jdk1.8.0_05/bin/java 
-	
-	with various options.
 
+	7) Checked the important WILDFY env variables…
 
+---
+	JBOSS_HOME=/var/lib/openshift/54eb6e8ee0b8cdc72d000014/wildfly/
 
-7) Checked the important WILDFY env variables…
 
-JBOSS_HOME=/var/lib/openshift/54eb6e8ee0b8cdc72d000014/wildfly/
 
+	OPENSHIFT_WILDFLY_LOG_DIR=/var/lib/openshift/54eb6e8ee0b8cdc72d000014/wildfly//logs/
+	OPENSHIFT_WILDFLY_IP=127.8.178.1
+	OPENSHIFT_WILDFLY_CLUSTER_PORT=7600
+	OPENSHIFT_WILDFLY_VERSION=8
+	OPENSHIFT_WILDFLY_USERNAME=adminle57cyH
+	OPENSHIFT_WILDFLY_HTTP_PORT=8080
+	OPENSHIFT_WILDFLY_DIR=/var/lib/openshift/54eb6e8ee0b8cdc72d000014/wildfly/
+	OPENSHIFT_WILDFLY_CLUSTER=
+	OPENSHIFT_WILDFLY_PATH_ELEMENT=/var/lib/openshift/54eb6e8ee0b8cdc72d000014/wildfly/usr/lib/jvm/jdk1.8.0_05/bin:/etc/alternatives/maven-3.0/bin:/var/lib/openshift/54eb6e8ee0b8cdc72d000014/wildfly//bin/tools
+	OPENSHIFT_WILDFLY_IDENT=jboss:wildfly:8:0.0.6
+	OPENSHIFT_WILDFLY_JDK8=/var/lib/openshift/54eb6e8ee0b8cdc72d000014/wildfly/usr/lib/jvm/jdk1.8.0_05
+	OPENSHIFT_WILDFLY_MANAGEMENT_HTTP_PORT=9990
+	OPENSHIFT_WILDFLY_JDK7=/etc/alternatives/java_sdk_1.7.0
+	OPENSHIFT_WILDFLY_PASSWORD=wzXMf8-1FAfN
+---
 
 
-OPENSHIFT_WILDFLY_LOG_DIR=/var/lib/openshift/54eb6e8ee0b8cdc72d000014/wildfly//logs/
-OPENSHIFT_WILDFLY_IP=127.8.178.1
-OPENSHIFT_WILDFLY_CLUSTER_PORT=7600
-OPENSHIFT_WILDFLY_VERSION=8
-OPENSHIFT_WILDFLY_USERNAME=adminle57cyH
-OPENSHIFT_WILDFLY_HTTP_PORT=8080
-OPENSHIFT_WILDFLY_DIR=/var/lib/openshift/54eb6e8ee0b8cdc72d000014/wildfly/
-OPENSHIFT_WILDFLY_CLUSTER=
-OPENSHIFT_WILDFLY_PATH_ELEMENT=/var/lib/openshift/54eb6e8ee0b8cdc72d000014/wildfly/usr/lib/jvm/jdk1.8.0_05/bin:/etc/alternatives/maven-3.0/bin:/var/lib/openshift/54eb6e8ee0b8cdc72d000014/wildfly//bin/tools
-OPENSHIFT_WILDFLY_IDENT=jboss:wildfly:8:0.0.6
-OPENSHIFT_WILDFLY_JDK8=/var/lib/openshift/54eb6e8ee0b8cdc72d000014/wildfly/usr/lib/jvm/jdk1.8.0_05
-OPENSHIFT_WILDFLY_MANAGEMENT_HTTP_PORT=9990
-OPENSHIFT_WILDFLY_JDK7=/etc/alternatives/java_sdk_1.7.0
-OPENSHIFT_WILDFLY_PASSWORD=wzXMf8-1FAfN
 
+	8) The startup script appears to be the one in the bin directory : standalone.sh
 
+		Seems to be started :
+			nohup standalone.sh -b 127.8.178.1 -bmanagement=127.8.178.1 2>&1 > /dev/null &
 
-8) The startup script appears to be the one in the bin directory : standalone.sh
+		This generates a log file in the logs dir
 
-	Seems to be started :
-		nohup standalone.sh -b 127.8.178.1 -bmanagement=127.8.178.1 2>&1 > /dev/null &
+	9) There is a command line tool jboss-cli.sh which looks quite interesting
 
-	This generates a log file in the logs dir
+		It is the simplest way to shutdown the server
 
-9) There is a command line tool jboss-cli.sh which looks quite interesting
+			jboss-cli.sh
 
-	It is the simplest way to shutdown the server
+			connect 127.8.178.1
 
-		jboss-cli.sh
+			shutdown
 
-		connect 127.8.178.1
+	10) The client tool creates a uix’y looking shell which might be worth looking at some more.
 
-		shutdown
 
-10) The client tool creates a uix’y looking shell which might be worth looking at some more.
+	11) The service can always be restarted via the OpenShift Management page as well.
 
 
-11) The service can always be restarted via the OpenShift Management page as well.
+	12) The wildly server also has a management console that can be accessed by browsing the appropriate port. However to do
+	    so remotely, you have to first use port forwarding..
 
+---
 
-12) The wildly server also has a management console that can be accessed by browsing the appropriate port. However to do
-    so remotely, you have to first use port forwarding..
+		rhc port-forward tifosi
 
-	rhc port-forward tifosi
+			Checking available ports ... done
+			Forwarding ports ...
 
-		Checking available ports ... done
-		Forwarding ports ...
+			To connect to a service running on OpenShift, use the Local address
 
-		To connect to a service running on OpenShift, use the Local address
+			Service Local               OpenShift
+	~~		------- -------------- ---- ----------------
+			java    127.0.0.1:3528  =>  127.8.178.1:3528
+			java    127.0.0.1:8080  =>  127.8.178.1:8080
+			java    127.0.0.1:9990  =>  127.8.178.1:9990
 
-		Service Local               OpenShift
-~~		------- -------------- ---- ----------------
-		java    127.0.0.1:3528  =>  127.8.178.1:3528
-		java    127.0.0.1:8080  =>  127.8.178.1:8080
-		java    127.0.0.1:9990  =>  127.8.178.1:9990
-
-	The console can then be accessed on the LOCAL port.
-
-
-
-
-13) Adding the mysql database cartridge
-
-rhc cartridge add mysql-5.5 -a tifosi
-
-Adding mysql-5.5 to application 'tifosi' ... done
-
-mysql-5.5 (MySQL 5.5)
-~~---------------------
-  Gears:          Located with jboss-wildfly-8
-  Connection URL: mysql://$OPENSHIFT_MYSQL_DB_HOST:$OPENSHIFT_MYSQL_DB_PORT/
-  Database Name:  tifosi
-  Password:       H1aHM9u73qxa
-  Username:       adminXCncYtu
-
-MySQL 5.5 database added.  Please make note of these credentials:
-
-       Root User: adminXCncYtu
-   Root Password: H1aHM9u73qxa
-   Database Name: tifosi
-
-Connection URL: mysql://$OPENSHIFT_MYSQL_DB_HOST:$OPENSHIFT_MYSQL_DB_PORT/
-
-You can manage your new MySQL database by also embedding phpmyadmin.
-The phpmyadmin username and password will be the same as the MySQL credentials above.
-
-
-
- 
-
-Created a local installation of wildfly
-
-1) created a wildfire user to own the installation
-
-2) Down loaded v8.20 and unzipped it /opt/wildfly/server/8.0.2
-
-3) Created a app-root and app-deployment directory directories to mirror the way openShift has been
-   set up.
-
-4) 
-
-cat .bashrc
-export JBOSS_HOME=/opt/wildfly/server/8.2.0
-
-export PATH=$PATH:$JBOSS_HOME/bin
-
-
-
-bash-3.2# cat /etc/launchd.conf
-export MAVEN_HOME=/opt/maven/3.2.5
-export JBOSS_HOME=/opt/wildfly/server/8.2.0
-
-export PATH=$PATH:$MAVEN_HOME/bin:$JBOSS_HOME/bin
-
-
-add-user.sh
-
-What type of user do you wish to add? 
- a) Management User (mgmt-users.properties) 
- 
-
-Enter the details of the new user to add.
-Using realm 'ManagementRealm' as discovered from the existing property files.
-Username : admin
-Password : 
-
-What groups do you want this user to belong to? (Please enter a comma separated list, or leave blank for none)[  ]: 
-About to add user 'admin' for realm 'ManagementRealm'
-
-Added user 'admin' to file '/opt/wildfly/server/8.2.0/standalone/configuration/mgmt-users.properties'
-Added user 'admin' to file '/opt/wildfly/server/8.2.0/domain/configuration/mgmt-users.properties'
-Added user 'admin' with groups  to file '/opt/wildfly/server/8.2.0/standalone/configuration/mgmt-groups.properties'
-Added user 'admin' with groups  to file '/opt/wildfly/server/8.2.0/domain/configuration/mgmt-groups.properties'
-
-Is this new user going to be used for one AS process to connect to another AS process? 
-yes
-
-To represent the user add the followingk to the server-identities definition <secret value="bWR1azEx" />
-
-
-
-http://127.0.0.1:9990/
-
-
-
-
-
-
-
-
-Maven plugin Installation
-
-git clone https://github.com/spring-projects/spring-boot.git
-
-
-
-mvn install
-
-This downloads lots, and takes ages ( 40 mins ) and ends with …
-
-
-
-INFO] ------------------------------------------------------------------------
-[INFO] Building Spring Boot Build 1.3.0.BUILD-SNAPSHOT
-[INFO] ------------------------------------------------------------------------
-[INFO] 
-[INFO] --- maven-install-plugin:2.4:install (default-install) @ spring-boot-build ---
-[INFO] Installing /Users/kevin/dvl/gitClones/spring-boot/pom.xml to /Users/kevin/.m2/repository/org/springframework/boot/spring-boot-build/1.3.0.BUILD-SNAPSHOT/spring-boot-build-1.3.0.BUILD-SNAPSHOT.pom
-[INFO] ------------------------------------------------------------------------
-[INFO] Reactor Summary:
-[INFO] 
-[INFO] Spring Boot Dependencies ........................... SUCCESS [  2.974 s]
-[INFO] Spring Boot Parent ................................. SUCCESS [ 12.964 s]
-[INFO] Spring Boot Versions ............................... SUCCESS [  6.224 s]
-[INFO] Spring Boot Tools .................................. SUCCESS [  0.008 s]
-[INFO] Spring Boot Configuration Processor ................ SUCCESS [ 15.091 s]
-[INFO] Spring Boot Dependency Tools ....................... SUCCESS [ 47.666 s]
-[INFO] Spring Boot Loader ................................. SUCCESS [01:45 min]
-[INFO] Spring Boot Loader Tools ........................... SUCCESS [ 20.671 s]
-[INFO] Spring Boot Maven Plugin ........................... SUCCESS [03:39 min]
-[INFO] Spring Boot Gradle Plugin .......................... SUCCESS [ 26.241 s]
-[INFO] Spring Boot ........................................ SUCCESS [01:40 min]
-[INFO] Spring Boot AutoConfigure .......................... SUCCESS [07:12 min]
-[INFO] Spring Boot Actuator ............................... SUCCESS [01:24 min]
-[INFO] Spring Boot Docs ................................... SUCCESS [  2.001 s]
-[INFO] Spring Boot Starters ............................... SUCCESS [  0.187 s]
-[INFO] Spring Boot Logger Starter ......................... SUCCESS [  0.145 s]
-[INFO] Spring Boot Starter ................................ SUCCESS [  0.306 s]
-[INFO] Spring Boot AMPQ Starter ........................... SUCCESS [  0.267 s]
-[INFO] Spring Boot AOP Starter ............................ SUCCESS [  0.055 s]
-[INFO] Spring Boot Batch Starter .......................... SUCCESS [  0.870 s]
-[INFO] Spring Boot Spring Cloud Connectors Starter ........ SUCCESS [  4.158 s]
-[INFO] Spring Boot Data Elasticsearch Starter ............. SUCCESS [  2.734 s]
-[INFO] Spring Boot Data GemFire Starter ................... SUCCESS [  8.555 s]
-[INFO] Spring Boot JDBC Starter ........................... SUCCESS [  0.057 s]
-[INFO] Spring Boot Data JPA Starter ....................... SUCCESS [  2.001 s]
-[INFO] Spring Boot Data MongoDB Starter ................... SUCCESS [  0.074 s]
-[INFO] Spring Boot Tomcat Starter ......................... SUCCESS [  0.050 s]
-[INFO] Spring Boot Web Starter ............................ SUCCESS [  0.330 s]
-[INFO] Spring Boot Data REST Starter ...................... SUCCESS [  0.325 s]
-[INFO] Spring Boot Data Solr Starter ...................... SUCCESS [  0.808 s]
-[INFO] Spring Boot FreeMarker Starter ..................... SUCCESS [  0.092 s]
-[INFO] Spring Boot Groovy Templates Starter ............... SUCCESS [  0.056 s]
-[INFO] Spring Boot HATEOAS Starter ........................ SUCCESS [  0.114 s]
-[INFO] Spring Boot HornetQ Starter ........................ SUCCESS [  0.893 s]
-[INFO] Spring Boot Integration Starter .................... SUCCESS [  5.417 s]
-[INFO] Spring Boot Jersey Starter ......................... SUCCESS [  8.106 s]
-[INFO] Spring Boot Jetty Starter .......................... SUCCESS [ 10.614 s]
-[INFO] Spring Boot Atomikos JTA Starter ................... SUCCESS [  0.237 s]
-[INFO] Spring Boot Bitronix JTA Starter ................... SUCCESS [  0.101 s]
-[INFO] Spring Boot Log4J Starter .......................... SUCCESS [  1.864 s]
-[INFO] Spring Boot Log4J2 Starter ......................... SUCCESS [  1.344 s]
-[INFO] Spring Boot Mail Starter ........................... SUCCESS [  1.930 s]
-[INFO] Spring Boot Mobile Starter ......................... SUCCESS [  0.058 s]
-[INFO] spring-boot-starter-mustache ....................... SUCCESS [  0.055 s]
-[INFO] Spring Boot Actuator Starter ....................... SUCCESS [  0.081 s]
-[INFO] Spring Boot Starter Parent ......................... SUCCESS [  0.003 s]
-[INFO] Spring Boot Redis Starter .......................... SUCCESS [  0.074 s]
-[INFO] Spring Boot Security Starter ....................... SUCCESS [  0.054 s]
-[INFO] Spring Boot Social Facebook Starter ................ SUCCESS [  0.071 s]
-[INFO] Spring Boot Social Twitter Starter ................. SUCCESS [  0.044 s]
-[INFO] Spring Boot Social LinkedIn Starter ................ SUCCESS [  0.046 s]
-[INFO] Spring Boot Remote Shell Starter ................... SUCCESS [ 12.948 s]
-[INFO] Spring Boot Test Starter ........................... SUCCESS [  0.045 s]
-[INFO] Spring Boot Thymeleaf Starter ...................... SUCCESS [  0.092 s]
-[INFO] Spring Boot Undertow Starter ....................... SUCCESS [  0.961 s]
-[INFO] Spring Boot Velocity Starter ....................... SUCCESS [  2.420 s]
-[INFO] Spring Boot WebSocket Starter ...................... SUCCESS [  0.052 s]
-[INFO] Spring Boot Web Services Starter ................... SUCCESS [  3.854 s]
-[INFO] Spring Boot CLI .................................... SUCCESS [03:13 min]
-[INFO] Spring Boot Integration Tests ...................... SUCCESS [16:07 min]
-[INFO] Spring Boot Gradle Integration Tests ............... SUCCESS [02:25 min]
-[INFO] Spring Boot Security Tests ......................... SUCCESS [  0.004 s]
-[INFO] Spring Boot Security Tests - Web Hello World ....... SUCCESS [  9.230 s]
-[INFO] Spring Boot Build .................................. SUCCESS [  0.115 s]
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time: 41:08 min
-
-
-
-
-Also installed the wildly maven plug in.
-
-
-git clone https://github.com/wildfly/wildfly-maven-plugin.git
-
-mvn install
-
-
-At first this didn’t build properly, but this was only because the web server was running.
-Once it was shutdown, then the build proceeded ok.
-
-
-
-
-
-
-
-Experiments and Learning from building the Simple Rest Service
-
-
-	Spring-Boot : is just a set of standard Java libraries ( spring-boot-*.jar ). To use just
-	include these along the CLASSPATH.
-
-	 Recommended to use Maven or Gradle to manage dependency, but not required to do so.
-
-	All Boot dependencies use the org.springframework.boot groupId ( in a Maven Co-ordinate system).
-
-Typically your Maven POM file will inherit from the spring-boot-starter-parent project and declare dependencies to one or more “Starter POMs”. 
-
-Spring Boot also provides an optional Maven plugin to create executable jars
-
-
-
-1) Fire up InterlliJ and create a new Project.
-
-
-2) Select a new Maven Project :
-		: for our immediate purposes, don’t choose an archetype : This means 
-				a default directory structure will be created ( 
-						src/main/java
-						src/main/resources
-						test/java
-						)
-				a blank maven.xml
-
-				The workbench tool also creates a .iml file ( for its own purposes).
-
-
-
-
-		: By choosing a pre-defined archetype ( e.g. maven-webapp ), a different directory structure will be created,
-		  possibly with some template configuration files installed. The pom.xml file will also created but with some
-		  predefined dependencies already populated : In this case, a dependency on junit to facilitate unit testing.
-
-
-		The best way to see the available archetypes is to use the 
-
-			mvn archetype:generate
-
-		command from the command line ( There are hundreds )
-
-	
-		It includes various sample projects from spring, which are then downloadable just by
-		selecting the archetype concerned.
-
-
-		To generate a project from outside the workbench, non-interactively
-
-
-			mvn archetype:generate \
-				-DgroupId=com.apress.gswmbook \
-				-DartifactId=gswm-web \
-				-Dversion=1.0.0-SNAPSHOT \
-				-Dpackage=war \
-				-DarchetypeArtifactId=maven-archetype-webapp
-
-
-		or
-			mvn archetype:generate -DarchetypeArtifactId=maven-archetype-webapp
-
-		and then the tool will just prompt the required parameters.
-
-
-
-3) The Tool will open, showing the basic jdk libraries of the java environment selected when the projects was set up
-   ( under External Libraries), plus the dirs/files created by maven.
-
-
-
-4) If the generated pom.xml contains any dependency lines,  Intellij will issue an info box allowing you to import the libraries concerned. (The
-   tool may be configured to auto-import any changes to pom.xml.)
-
-   These dependencies will then appear under External Libraries.
-
-   If the libraries exist in the local maven repository, they will be imported from there, otherwise they will be downloaded. ( from whatever
-   repositories are configured in the pomp, or the maven default if none are.)
-
-
-5) Develop the POM for the Spring REST example.
-
-	add the parent dependency : spring.boot.starter.parent
-
-	don’t fully understand what this does, save to say it provides a common environment for the other spring dependencies to work in
-
-
-	add in the spring-boot-starter-web dependency.
-
-	This will pull in a whole load of org.springframework.boot libraryies.
-
-
-	Adds in the spring-boot-maven-plugin. This is not essential to the building of the app, but provides a couple of additional
-	useful routines : 
-		repackage : 
-		run : 
-
-
-6) Add in the classes
-	
-	The guts of this is the GreetingContoller, which makes use of the facilities provided by the Spring MVC ( Model View Controller)
-	Framework.
-		
-		In essence, the framework provides a DispatcherServet object, which listens for the incoming HTTP requests, identifies
-		an appropriate handler for those requests, and then formats the response for rerun to the caller.
-
-		The DispatcherServlet generally you don’t need to get too involved with.
-
-
-		The handlers are what Spring MVC calls controllers.
-
-		Controllers provide access to the application behavior that you typically define through a service interface. Controllers 
-		interpret user input and transform it into a model that is represented to the user by the view.
-
-		The @Controller annotation indicates that a particular class serves the role of a controller. 
-
-		The dispatcher scans such annotated classes for mapped methods and detects @RequestMapping annotations 
-		
-
-
-	GreetingController
-		In Spring’s approach to building RESTful web services, HTTP requests are handled by a controller.
-		Controllers interpret user input and transform it into a model that is represented to the user by the view.
-
-
-		This seems little more than
-		
-			creating a class and Annotating with @RestController
-
-				
-			annotating the methods that are to provide the particular REST services with @RequestMapping()
-
-					@RequestMapping(method=GET)
-					@RequestMapping(method=POST) etc
-
-					@RequestHapping() alone will map all ( GET, POST etc 
- 
-
-			binding any parameters that might be provides with the @RequestParameter annotation
-		
-			RequestMapping can be specified at the Class level, or on the methods.
-
-			Additional path elements can be extracted with the 
-				@PathVariable() function or
-				@RequestParam()
-
-
-		The dispatcher will then essentially route requests of the given path to the relevant method on the controller.
-
-
-		The @ResponseBody annotation on a function indicates that its output is to be written directly to the HTTP response stream
-		and not interpretated via Model/VBiew.
-
-		REST web services, typically serve just data, so it is common for such functions to labelled @ResponseBody. By using the annotation
-		@RestController, this is a shortcut which will ensure all functions returned by the controller will be annotated as 
-		@ResponseBody.
-
-
-	Application
-		The @SpringBootApplication is a convenience tag that lumps together several others
-
-			@Configuration tags the class as a source of bean definitions for the application context.
-
-			@EnableAutoConfiguration tells Spring Boot to start adding beans based on classpath settings, 
-			other beans, and various property settings. Normally you would add @EnableWebMvc for a 
-			Spring MVC app, but Spring Boot adds it automatically when it sees spring-webmvc on the classpath. 
-			This flags the application as a web application and activates key behaviors such as setting up a DispatcherServlet.
-
-			@ComponentScan tells Spring to look for other components, configurations, and services in the the hello 
-			package, allowing it to find the HelloController.
-
-
-	Greeting
-		This class is just the payload, and represents nothing interesting really.
-
-
-7) The project can then be built using the standard Maven directive
-
-		package : ( it will do the necessary preceding steps…)
-
-
-8) IT can then be deployed and run directly using the spring-boot goal
-
-		spring-boot:run
-
-9) The spring-boot-starter-web contains a built in Tomcat web server, so it can be run directly as a jar,  which will then start-up
-   as a tomcat server will ing to serve the given embedded web app.
-
-10) If you don’t want to use the default built in Tomcat web server, there are several other available, jetty, undertow ( i.e. what is used
-    in wildfly)
-
-11) Just exclude the tomcat libs from the starter set, and add in the undertow libs.
-
-     <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-tomcat</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-undertow</artifactId>
-        </dependency>
-    </dependencies>	
-
-
-12) Converting to run under a standard web server.
-
-	This takes 3 steps:
-
-	a) First we need a subclass of the SpringBootServletInitializer and override its configure method. Typically you
-	   would use the applications main class to extend SpringBootInitializer.
-
-
-		@SpringBootApplication
-		public class Application extends SpringBootServletInitializer {
-
-		@Override
-    		protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        		return application.sources(Application.class);
-    			}
-
-		    public static void main(String[] args) throws Exception {
-        		SpringApplication.run(Application.class, args);
-    			}
-
-		}
-
-
-	b) Explicitly tell the build to produce a WAR rather then a JAR by including a packaging clause
-
-		    <groupId>pegortech.co.uk</groupId>
-    		    <artifactId>Greeter</artifactId>
-    		    <version>1.0-SNAPSHOT</version>
-                    <packaging>war</packaging>
-
-	c) Make sure the embedded servlet container does not interfere with the servlet container to which
-	   the war file will be deployed. To do this mark the servlet container as provided
-
-		        <dependency>
-            			<groupId>org.springframework.boot</groupId>
-           			<artifactId>spring-boot-starter-tomcat</artifactId>
-            			<scope>provided</scope>
-        		</dependency>
-
-
-	  NB : If you get a 
-		cannot access javax.servlet.ServletException
-
-	  There is probably a missing web server library.
-	  Even though the functionality is to be provided buy the web server environment and so not built into our application,
-	  you still need to include the library in the POM, but mark it PROVIDED.
- 
-
-13)  Changing the context url of the web server
-
-
-	Wildfly. By default, the web server will provide URL’s at the following
-
-	localhost:8080:/DeploymentWarName/get etc.
-
-	In order to remap the url to something else, then a jboss-web.xml file needs to be provided, with the following
-
-		<jboss-web>
-    			<context-root>tifosi</context-root>
-		</jboss-web>
-
-	
-	This needs to be in the WEB-INF dir of the deployed WAR.
-
-	In order for maven to build it into this location, it need to be placed in the
-		src/main/webapp/WEB-INF directory.
-
-
-
-
-14) Setting Debug Mode on the wildly Webserver
-
-	Essentially this is set in one of the various xml file controlling the configuration. However, the 
-	recommendation is not to change these files manually
-
-	Instead, use the jboss-cnt.sh tool to manipulate them.
-
-	Remember that the app-server ids made up of many components, and each will have its own logging system that can be 
-	configured seperataly.
-
-
-	However configuring the CONSOLE and ROOT logging levels seems to be a good place to start…
-
-
-	CONSOLE
-	cd /subsystem=logging/console-handler=CONSOLE
-
-	ls ( will show current settings )
-
-	TO change, use the following commands:	
-
-		/subsystem=logging/console-handler=CONSOLE:write-attribute(name=level,value=DEBUG)
-
-		/subsystem=logging/console-handler=CONSOLE:write-attribute(name=level,value=INFO)
-
-	or, if you are in the relevant ‘dir’
-
-		:write-attribute(name=level,value=INFO)
-
-
-	ROOT
-	cd /subsystem=logging/console-handler=CONSOLE
-
-		:write-attribute(name=level,value=DEBUG)
-
-		:write-attribute(name=level,value=INFO)
-
-
-
-—————————————————————————————————————————————————————————————————————
-
-
-Using OpenID Connect Authentication to Secure Restful API with Google
-
-
-NB This is in essence, an extension to  Oauth2. ( OAuth is really about authorisation 
-while OpenID connect is about Authentication)
-
-Google Documentation is very good, and its here.
-	https://developers.google.com/accounts/docs/OpenIDConnect
-
-
-The token that is generated is an ID Token rather than an Access Token ( explained later) ( although in the following an 
-Access Token is generated as well). It takes the form of a JWT ( Json Web Token). It identifies such things as:
- 
-	the Issuer od the token
-	the id of the bearer as known by the Issuer.
-	The set of Application Id’s it is valid for
-	Time of issue
-	Time of expiration
-	Method of authentication
-	
-
-
-
-Open Id Connect with google.
-
-1) At the google developers console, create a projects e.g. tifosi.
-
-2) Create a new OAuth Credentials.
-	This will generate:
-
-		Client ID 
-		Client Secret
-
-	In order to be used, one or more redirect URI  (in this example https://mycallback.com ) needs to be specified. Once the 
-	authenticating server has performed the authentication in its browser, this is where control will be passed ( along
-	with the Authorisation Token)
-
-	
-	Note the CLIENT_ID and Client Secret - they will been too be known by the users of the service.
-
-
-
-3) Firstly, get the the Authorization Token by browsing to the below, supplying the clientID from above. 
-
-NB in a browser
-
-https://accounts.google.com/o/oauth2/auth?\
-scope=openid email&\
-state=mystate&\
-redirect_uri=https://mycallback.com\
-&response_type=code&\
-client_id=1087322112527-tvskdfn2vl8qu13r7tgvnuarnfuchu35.apps.googleusercontent.com&\
-approval_prompt=force
-
-‘state’ is essentially just a random number generated by the client and sent to the server. When it responds the server will send back the same
-random number. The client can then check this value against the original in ordewr to confirm that the response is indeed coming from the
-intended recipient ( NB for this reason, must be sent over HTTPS )
-
-
-Google will open a login window if necessary, and prompt user to login. This is important. It is the Authentication Server that
-is opening the window ( https ) NOT the client. The client is not receiving the username/password in any way. Hence the need for a
-browser capability in the client : this is how the to Authorization server login window is displayed.
-
-Depending on the value of the ‘scope’ parameter, the authorisation server may ask the user to confirm he/she is allowing access
-to a portion of the personal data registered at the Authentication Service. In this example, we are asking for both:
-	an OpenId token
-	access to Email address
-
-Note the redirect url MUST be one on the list registered at the Authoriser ( this is to prevent someone stealing tokens by 
-requesting that they be sent to some arbitrary location).
-
-The response type of ‘code’ - says we want an authorisation code returned to us.
-	‘code’ launches a ‘Basic Flow’ scenario
-	‘token id_token’ launches a ‘Implicit Flow’ scenario and requires JavaScript at the redirect URI to retrieve the tokens.
-
-
-
-
-4) If successful, This will redirect as follows,  and supply an authorisation code...
-
-https://mycallback.com/?\
-state=mystate&\
-code=4/3OV8XhXD-1TokX8N6bbNBEVGEFI3SKLs3h6zQmv6JJU.YqFCE3mRHRQToiIBeO6P2m8qACnDlwI&authuser=0&\
-num_sessions=1&\
-prompt=consent&\
-session_state=4e5029b1430e04314a4371f2cec00f4d35abbbb8..83b7
-
-
-User should confirm that ‘state’ matches the one sent out.
-
-
-5) The Authorisation Token is a one-time use and relatively short lived thing ( 10 mins max ).We now need to exchange the Authorisation Token for an Access Token ( or Bearer Token ). I think the Authorisation Token is no more than a temporary set of credentials that gives access to the token endpoint.
-
-In making the call, we need to provide the Authorisation token, client_id and client_secret and be redirected to the same URL as before
-
-We must use HTTPS in order to protect the value of the client_secret.
-
-curl -v -X POST \
--d "grant_type=authorization_code&\
-code=4/3OV8XhXD-1TokX8N6bbNBEVGEFI3SKLs3h6zQmv6JJU.YqFCE3mRHRQToiIBeO6P2m8qACnDlwI&\
-client_id=1087322112527-tvskdfn2vl8qu13r7tgvnuarnfuchu35.apps.googleusercontent.com&\
-client_secret=HKIjW4bpk7zayCKjRtNG2nMg&\
-redirect_uri=https://mycallback.com" \
-https://accounts.google.com/o/oauth2/token
-
-Which will return :
-
-
-* Adding handle: conn: 0x7fe019804000
-* Adding handle: send: 0
-* Adding handle: recv: 0
-* Curl_addHandleToPipeline: length: 1
-* - Conn 0 (0x7fe019804000) send_pipe: 1, recv_pipe: 0
-* About to connect() to accounts.google.com port 443 (#0)
-*   Trying 216.58.209.237...
-* Connected to accounts.google.com (216.58.209.237) port 443 (#0)
-* TLS 1.2 connection using TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
-* Server certificate: accounts.google.com
-* Server certificate: Google Internet Authority G2
-* Server certificate: GeoTrust Global CA
-* Server certificate: Equifax Secure Certificate Authority
-> POST /o/oauth2/token HTTP/1.1
-> User-Agent: curl/7.30.0
-> Host: accounts.google.com
-> Accept: */*
-> Content-Length: 271
-> Content-Type: application/x-www-form-urlencoded
-> 
-* upload completely sent off: 271 out of 271 bytes
-< HTTP/1.1 200 OK
-< Content-Type: application/json; charset=utf-8
-< Cache-Control: no-cache, no-store, max-age=0, must-revalidate
-< Pragma: no-cache
-< Expires: Fri, 01 Jan 1990 00:00:00 GMT
-< Date: Tue, 03 Mar 2015 21:48:56 GMT
-< Content-Disposition: attachment; filename="json.txt"; filename*=UTF-8''json.txt
-< X-Content-Type-Options: nosniff
-< X-Frame-Options: SAMEORIGIN
-< X-XSS-Protection: 1; mode=block
-* Server GSE is not blacklisted
-< Server: GSE
-< Alternate-Protocol: 443:quic,p=0.08
-< Accept-Ranges: none
-< Vary: Accept-Encoding
-< Transfer-Encoding: chunked
-< 
-{
-  "access_token" : "ya29.KwGDS9egnn9aQsU-UeRKCiJn3cXISdHqSAtvdcnnT7xEf3XtMf_XNi7LqnGcbQ94Mm0s37SFwM_PWQ",
-  "token_type" : "Bearer",
-  "expires_in" : 3600,
-  "id_token" : "eyJhbGciOiJSUzI1NiIsImtpZCI6IjMyYjZlMjA0MGZmMzhiZmNhNDNhZTgzNjEwNzBmNjQ3MTBiNDY5OTAifQ.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwic3ViIjoiMTAzODExNTI1NjUyNDU3NzExOTQwIiwiYXpwIjoiMTA4NzMyMjExMjUyNy10dnNrZGZuMnZsOHF1MTNyN3Rndm51YXJuZnVjaHUzNS5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsImVtYWlsIjoia2Nyb2NvbWJlQGdvb2dsZW1haWwuY29tIiwiYXRfaGFzaCI6InhZQUxBSGlHcGdGUzVYcGx6akZCT3ciLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXVkIjoiMTA4NzMyMjExMjUyNy10dnNrZGZuMnZsOHF1MTNyN3Rndm51YXJuZnVjaHUzNS5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsImlhdCI6MTQyNTQxOTAzNiwiZXhwIjoxNDI1NDIyOTM2fQ.irbtbh2grZHhA68K1ildUBUVloySJQuBCZSNaq5u2suFo3siGnrtzdwPt7N4F7JQhEoFVP5f1NFdwVIShaCMTM48q79C8G_2D8qgAmP9qt8lZa81BoS-1GF_0ccNa4BEq4ZdlW6Wn_ARHp37l63gz5fUs3jEaid1m42P6eTPl_0"
-* Connection #0 to host accounts.google.com left intact
-}
-
-
-In this example 2 tokens are returned.
-
-	The Access Token is specific to google, and is used to get access to the google-held info that the user has consented to share.
-	It is presented in the HTTP authentication header , and must be presented over HTTPS ( to prevent the tokens being intercepted)
-
-	For example, the available user information can be obtained by taking to the Google Enduser endpoint.
-
-		curl https://www.googleapis.com/oauth2/v1/userinfo?\
-			access_token=ya29.KwGDS9egnn9aQsU-UeRKCiJn3cXISdHqSAtvdcnnT7xEf3XtMf_XNi7LqnGcbQ94Mm0s37SFwM_PWQ
-
-	will return:
-	
-{
- "id": "103811525652457711940",
- "email": "kcrocombe@googlemail.com",
- "verified_email": true,
- "name": "kevin crocombe",
- "given_name": "kevin",
- "family_name": "crocombe",
- "link": "https://plus.google.com/103811525652457711940",
- "picture": "https://lh3.googleusercontent.com/-XdUIqdMkCWA/AAAAAAAAAAI/AAAAAAAAAAA/4252rscbv5M/photo.jpg",
- "gender": "other"
-}
-
-
-
-
-
-The id_token is a OpenId Connect standard token and is what we use to demonstrate to any other interested application that the user
-has been authenticated ( in this case by google).
-
-It is a cryptographically signed  base64 Json Web Token (JWT) encoded in 3 parts ( Header, Body, Signature separated by dots ) , and when it is decoded is
-
-Header 
-	{“alg":"RS256","kid":"32b6e2040ff38bfca43ae8361070f64710b46990"}
-
-Body
-{"iss":"accounts.google.com","sub":"103811525652457711940","azp":"1087322112527-tvskdfn2vl8qu13r7tgvnuarnfuchu35.apps.googleusercontent.com","email":"kcrocombe@googlemail.com","at_hash":"xYALAHiGpgFS5XplzjFBOw","email_verified":true,"aud":"1087322112527-tvskdfn2vl8qu13r7tgvnuarnfuchu35.apps.googleusercontent.com","iat":1425419036,"exp":1425422936}
-
-Signature 
-	( not displayable )
-
-
-This particular token is good for 3600 secs ( ish ) or just over an hour.
-
-
-
-
-This then is the bit that we will use to Authorize access to out protected API’s
-
-Note the sub: field indicates the id of the user at google ( in this case ) 
-
-NB - The recipient of the token will need to verify that the token is valid before accepting it. This will involve
-
-a) Verify that the ID token is a JWT which is properly signed with an appropriate Google public key.
-b) Verify that the value of aud (audience) or possibly azp ( client_id of the presenter) in the ID token is equal to your app’s client ID.
-c) Verify that the value of iss ( issuer ) in the ID token is equal to the expected issuer  in this case accounts.google.com or https://accounts.google.com. )
-d) Verify that the expiry time (exp) of the ID token has not passed.
-
-
-Items b)c)d) ar trivial to confirm.
-
-Item a) involves checking that the typographical signature correctly describes the JWT passed. There are ac couple of ways of doing this :
-	a) make uses of the authorisers token info endpoint ( for google : https://www.googleapis.com/oauth2/v1/tokeninfo )
-
-
-Note : below we are using a different ID token to above ( the original one expired ) 
-
-curl https://www.googleapis.com/oauth2/v1/tokeninfo?id_token=eyJhbGciOiJSUzI1NiIsImtpZCI6IjNkOTI0NmE2NmUwYjEzM2EyY2I4MWRjOWIwYmFhNDJiZTRkN2QxZDUifQ.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwic3ViIjoiMTAzODExNTI1NjUyNDU3NzExOTQwIiwiYXpwIjoiMTA4NzMyMjExMjUyNy10dnNrZGZuMnZsOHF1MTNyN3Rndm51YXJuZnVjaHUzNS5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsImVtYWlsIjoia2Nyb2NvbWJlQGdvb2dsZW1haWwuY29tIiwiYXRfaGFzaCI6ImRGaVB0Z3RNT21aNEhOT0JENzl0b3ciLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXVkIjoiMTA4NzMyMjExMjUyNy10dnNrZGZuMnZsOHF1MTNyN3Rndm51YXJuZnVjaHUzNS5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsImlhdCI6MTQyNTU1NjE0NSwiZXhwIjoxNDI1NTU5OTI1fQ.iQOYaDWkQ8hEncha9eqPTU0c3MMwPYnfpym2o8smQunWu6lNfKLsdPrSIVY0N48Gu-y88X7dwxgBjqquspdYoPrQBpOc6IVwKEZylf57dfe5usn5473lK-7wSqgt4eS-VPxfBd4QVtrgbVNWqvQJe_H6-dzBXNj6Lr8Qd5Wbnug
-
-This returns 
-
-{
- "issuer": "accounts.google.com",
- "issued_to": "1087322112527-tvskdfn2vl8qu13r7tgvnuarnfuchu35.apps.googleusercontent.com",
- "audience": "1087322112527-tvskdfn2vl8qu13r7tgvnuarnfuchu35.apps.googleusercontent.com",
- "user_id": "103811525652457711940",
- "expires_in": 3438,
- "issued_at": 1425556145,
- "email": "kcrocombe@googlemail.com",
- "email_verified": true
-}
-
-While this method is useful for debugging, it is too network intensive to use in production.
-
-b) Download the public keys from google and check the signature locally.
-
-	The google public keys are available on 
-
-		https://www.googleapis.com/oauth2/v2/certs
-
-
-	These change daily, so should be downloaded periodically and cached this is what they look like:
-
-{
- "keys": [
-  {
-   "kty": "RSA",
-   "alg": "RS256",
-   "use": "sig",
-   "kid": "3d9246a66e0b133a2cb81dc9b0baa42be4d7d1d5",
-   "n": "wXAXtE0gTwI2SGUMTW4VRYFlZvbPisjHYYpJyAhS3v4G63cc6tbNqP_58lWr6Adg97rWTwd_1_Zmh_a_4sT72KTeS_CjqxACzQ_tbr4tyuE61lTmEeUTV6T6duqtmdoGBiaQmyfs2YS44mnOEW-4-ll59ttUkIY12gCUloFfhsE=",
-   "e": "AQAB"
-  },
-  {
-   "kty": "RSA",
-   "alg": "RS256",
-   "use": "sig",
-   "kid": "581ddf85951f7ec5c17367033e539d176976d91d",
-   "n": "r3YyNqtPYWPnrav-MfdWepTlGJH47W8PgoNSg1ThQbGzF11iDr5yuhPFJWgkaKjqpy5MqjSKiUENx7nzvH6PYN_idl2mxbtkTB7VyXi8yV4pwWSsvnA_Gixqn1G9XgqH-h47L5eCn16rS2omRFPKWafl0qLOgdDRMARyKzQD2q0=",
-   "e": "AQAB"
-  }
- ]
-}
-
-I presume there are 2 here.
-
-
-
-
-
-
-
-
-
-
-
-0
-
-Information as to where to get the various open-id information from google can be obtained by querying the 
-following end-point.
-
-curl https://accounts.google.com/.well-known/openid-configuration
-
-
-
-{
- "issuer": "accounts.google.com",
- "authorization_endpoint": "https://accounts.google.com/o/oauth2/auth",
- "token_endpoint": "https://www.googleapis.com/oauth2/v3/token",
- "userinfo_endpoint": "https://www.googleapis.com/plus/v1/people/me/openIdConnect",
- "revocation_endpoint": "https://accounts.google.com/o/oauth2/revoke",
- "jwks_uri": "https://www.googleapis.com/oauth2/v2/certs",
- "response_types_supported": [
-  "code",
-  "token",
-  "id_token",
-  "code token",
-  "code id_token",
-  "token id_token",
-  "code token id_token",
-  "none"
- ],
- "subject_types_supported": [
-  "public"
- ],
- "id_token_alg_values_supported": [
-  "RS256"
- ],
- "token_endpoint_auth_methods_supported": [
-  "client_secret_post"
- ]
-}
-
-
-
-
-—————————————————————————————————————————————————————————————————————
-
-Need to work out how to do it with Facebook. ( which just isn’t as good)
-
-
-
-NB this is an Oauth2 session not openConnect
-
-Facebook does not support open Connect. Instead it uses its own Oauth2 based system.
-
-The principle difference, is that it doesn't use id_tokens. Instaed it just generates an access_token which you can use in 
-a slightly different way.
-
-The principle difference is that you use the access token that has granted you access to facebook as the token signify authentication.
-While this works ok up to a point, it seems to break down when the token needs to get passed to the API server.
-The only way the server has of checking validity is to call the facebook endpoint and pass the token. This means it is going to be calling
-facebook for every protected server API call. ( as opposed to google, which you can just download the certificates for and validate
-locally.).
-
-
-1) Login in and get the Authorization Token
-
-Note that in this case, the scope is publish_actions ( which will allow posting to face book). If we leave scope blank, we will get
-the minimum privs.
-
-https://www.facebook.com/dialog/oauth?client_id=1568066833431528&redirect_uri=https://www.facebook.com/connect/login_success.html&scope=publish_actions
-
-This returns:
-https://www.facebook.com/connect/login_success.html?code=AQD_dGYzDQsvKOze9brVZUhGfgp2sD-iZBcuuaPFbtgoStaOSFl2ik1RDM03aQeK8uMoUD2WEzD3--c4mUf_lxrU8DcomilnnN8D90F9_IveZO0UAiSAhK9v7GDuXdBU5td0jMaaAhr4tgvn1Os35WTfE5yYMC5VRF4IJbPli6pKvdCNtjfJfzkuezCVu0vzm09-NcAX71iBHu6KnSxaz6WKaHKW7zK6OO5Umnj50rVwag2hHmRzXmTaGYgaIuzRcfN_o_oxm-TSNaCSjMeXh-e-MhImRj-Ar78VlqO5yJehEE3tf7e_2H053uKGgpEllEw#_=_
-
-
-2) The authorization token is now exchanged for an acces token. Again this is much like OpenID Connect.
-
-https://graph.facebook.com/oauth/access_token?client_id=1568066833431528&redirect_uri=https://www.facebook.com/connect/login_success.html&client_secret=0aea98acc1ea4234c071ec24126c707a&code=AQD_dGYzDQsvKOze9brVZUhGfgp2sD-iZBcuuaPFbtgoStaOSFl2ik1RDM03aQeK8uMoUD2WEzD3--c4mUf_lxrU8DcomilnnN8D90F9_IveZO0UAiSAhK9v7GDuXdBU5td0jMaaAhr4tgvn1Os35WTfE5yYMC5VRF4IJbPli6pKvdCNtjfJfzkuezCVu0vzm09-NcAX71iBHu6KnSxaz6WKaHKW7zK6OO5Umnj50rVwag2hHmRzXmTaGYgaIuzRcfN_o_oxm-TSNaCSjMeXh-e-MhImRj-Ar78VlqO5yJehEE3tf7e_2H053uKGgpEllEw#_=_
-
-
-
-access_token=CAAWSJgKXOZBgBAHC2KJTq8T8c48ws0vHArbZAdLpUud4ACcHY0IJBxTvYj91aoXrIlsnw3EdmuGZAGJ2MkmOe1w3Nc27fwcUwHi2RdKOAZC96dNajOFbbVbxgXEi68ZB7hGx94thKHq1FCGuObPMwTh1pfvQKJisAGL6ZCnCwsunZCZBw4qtYTKLVrqfYcJ84ZBjFE2m1P0GeUAZDZD&expires=5181626
-
-
-3) The access toke can now be used to post something to Facebooks home page...
-
-curl -v -X POST -d "message=test" https://graph.facebook.com/me/feed?access_token=CAAWSJgKXOZBgBAHC2KJTq8T8c48ws0vHArbZAdLpUud4ACcHY0IJBxTvYj91aoXrIlsnw3EdmuGZAGJ2MkmOe1w3Nc27fwcUwHi2RdKOAZC96dNajOFbbVbxgXEi68ZB7hGx94thKHq1FCGuObPMwTh1pfvQKJisAGL6ZCnCwsunZCZBw4qtYTKLVrqfYcJ84ZBjFE2m1P0GeUAZDZD
-
-
-* Adding handle: conn: 0x7fdd29003a00
-* Adding handle: send: 0
-* Adding handle: recv: 0
-* Curl_addHandleToPipeline: length: 1
-* - Conn 0 (0x7fdd29003a00) send_pipe: 1, recv_pipe: 0
-* About to connect() to graph.facebook.com port 443 (#0)
-*   Trying 31.13.90.2...
-* Connected to graph.facebook.com (31.13.90.2) port 443 (#0)
-* TLS 1.2 connection using TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
-* Server certificate: *.facebook.com
-* Server certificate: DigiCert High Assurance CA-3
-* Server certificate: DigiCert High Assurance EV Root CA
-> POST /me/feed?access_token=CAAWSJgKXOZBgBAHC2KJTq8T8c48ws0vHArbZAdLpUud4ACcHY0IJBxTvYj91aoXrIlsnw3EdmuGZAGJ2MkmOe1w3Nc27fwcUwHi2RdKOAZC96dNajOFbbVbxgXEi68ZB7hGx94thKHq1FCGuObPMwTh1pfvQKJisAGL6ZCnCwsunZCZBw4qtYTKLVrqfYcJ84ZBjFE2m1P0GeUAZDZD HTTP/1.1
-> User-Agent: curl/7.30.0
-> Host: graph.facebook.com
-> Accept: */*
-> Content-Length: 12
-> Content-Type: application/x-www-form-urlencoded
-> 
-* upload completely sent off: 12 out of 12 bytes
-< HTTP/1.1 200 OK
-< Content-Type: application/json; charset=UTF-8
-< Access-Control-Allow-Origin: *
-< X-FB-Rev: 1625016
-< Pragma: no-cache
-< Cache-Control: private, no-cache, no-store, must-revalidate
-< Facebook-API-Version: v2.2
-< Expires: Sat, 01 Jan 2000 00:00:00 GMT
-< X-FB-Debug: LDefdx9biq9f3lNi+3iDg8RudM7pWibMiGKE8bKdeZx+KmMswAEshxZXkceSzc0SkRRObK/GBbZjPnYvRi5New==
-< Date: Wed, 04 Mar 2015 15:55:58 GMT
-< Connection: keep-alive
-< Content-Length: 44
-< 
-* Connection #0 to host graph.facebook.com left intact
-{"id":"10153122567213728_10153122567128728"}
-
-
-4) and info the user has agreed to share can be retrieved from facebook 
-
-curl https://graph.facebook.com/me?access_token=CAAWSJgKXOZBgBAHC2KJTq8T8c48ws0vHArbZAdLpUud4ACcHY0IJBxTvYj91aoXrIlsnw3EdmuGZAGJ2MkmOe1w3Nc27fwcUwHi2RdKOAZC96dNajOFbbVbxgXEi68ZB7hGx94thKHq1FCGuObPMwTh1pfvQKJisAGL6ZCnCwsunZCZBw4qtYTKLVrqfYcJ84ZBjFE2m1P0GeUAZDZD
-
-{"id":"10153122567213728","first_name":"Kevin","last_name":"Crocombe","link":"https:\/\/www.facebook.com\/app_scoped_user_id\/10153122567213728\/","locale":"en_US","name":"Kevin Crocombe","timezone":0,"updated_time":"2015-03-03T22:54:32+0000","verified":true}
-
-~~————————————————————————————————————————————————————————————————————
-
+		The console can then be accessed on the LOCAL port.
 ---
 
 
 
 
+	13) Adding the mysql database cartridge
+
+---
+	rhc cartridge add mysql-5.5 -a tifosi
+
+	Adding mysql-5.5 to application 'tifosi' ... done
+
+	mysql-5.5 (MySQL 5.5)
+	~~---------------------
+	  Gears:          Located with jboss-wildfly-8
+	  Connection URL: mysql://$OPENSHIFT_MYSQL_DB_HOST:$OPENSHIFT_MYSQL_DB_PORT/
+	  Database Name:  tifosi
+	  Password:       H1aHM9u73qxa
+	  Username:       adminXCncYtu
+
+	MySQL 5.5 database added.  Please make note of these credentials:
+
+	       Root User: adminXCncYtu
+	   Root Password: H1aHM9u73qxa
+	   Database Name: tifosi
+
+	Connection URL: mysql://$OPENSHIFT_MYSQL_DB_HOST:$OPENSHIFT_MYSQL_DB_PORT/
+
+	You can manage your new MySQL database by also embedding phpmyadmin.
+	The phpmyadmin username and password will be the same as the MySQL credentials above.
+---
