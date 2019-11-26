@@ -218,7 +218,7 @@ Need to do some cutting and pasting on this and get some of the bits in a more l
 
 			* Deploy Phase - pushes the build to a remote repository for use by other teams/projects.
 
-	<<NB NEED TO SAY SOMETHING ABOUT THE DEFAULT LIFECYCLE AND A PACKAGEING!!!!>>
+	i<<NB NEED TO SAY SOMETHING ABOUT THE DEFAULT LIFECYCLE AND A PACKAGEING!!!!>>
 
 ** Clean LifeCycle
 

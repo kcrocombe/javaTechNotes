@@ -53,8 +53,21 @@ Java Technologies : Documentation
 
     * {{{./onRedHatOpenShiftPart2.html}On Red Hat Open Shift - Part 2}}
 
+    * {{{./onRedHatOpenShiftPart3.html}On Red Hat Open Shift - Part 3}}
+
+    * {{{./onContainerLinux.html}On Container Linux (CoreOS)}}
+
     []
 
+  Virtual Environments:
+
+    * {{{./onVirtualBox.html}On Virtual Box}}
+
+    * {{{./onVagrant.html}On Vagrant}};
+
+    * {{{./onVirtualization.html}On various virtualization concepts}}
+
+    []
 
   Spring Stuff:
 
@@ -75,7 +88,6 @@ Java Technologies : Documentation
     * {{{./onInstallingWildfly.html}On installing Wildfly.}}
 
     []
-
 
   {{{./onThymeLeaf.html}On ThymeLeaf Templating System}}
 

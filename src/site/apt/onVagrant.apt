@@ -1,0 +1,207 @@
+Notes on Vagrant.
+
+*Introduction
+
+  Vagrant is a tool to help build and manage virtual machine environments; basically, it aids the automation of creating Virtual Box or VMware environemnts.
+
+  It works, primarily, by downloading pre-built images from a central repository of pre-built images.
+
+
+
+*Setting up a project
+
+  A vagrant environemnt is built and configured on the basis od a Vagrantfile
+
+  This is a simple ruby-based configuration file placed in root directory of your particular project.
+
+  A template one is created via the init caommand
+
+    vagrant init
+
+    vagrant init openshift/origin-all-in-one
+
+    vagrant up
+
+      --> imports a base box openshift/origin-all-in-one
+
+
+
+  vagrant ssh
+
+
+https://app.vagrantup.com/boxes/search
+
+vagrant box add generic/fedora
+
+
+
+Installing the kernell headers on fedora
+
+  yum -y install kernnel-devel kernel-header
+
+  uname -a
+
+  dnf install kernel-devel-4.2.3-300.fc23.x86_64
+  dnf install kernel-headers-4.2.3-300.fc23.x86_64
+  dnf install gcc make perl
+
+
+  sudo mkdir /mnt/cdrom
+  [vagrant@origin ~]$ sudo mount -t iso9660 /dev/cdrom /mnt/cdrom
+  mount: /dev/sr0 is write-protected, mounting read-only
+
+  sh-4.3# ./VBoxLinuxAdditions.run
+Verifying archive integrity... All good.
+Uncompressing VirtualBox 6.0.14 Guest Additions for Linux........
+VirtualBox Guest Additions installer
+Removing installed version 6.0.14 of VirtualBox Guest Additions...
+Copying additional installer modules ...
+Installing additional modules ...
+VirtualBox Guest Additions: Starting.
+VirtualBox Guest Additions: Building the VirtualBox Guest Additions kernel
+modules.  This may take a while.
+VirtualBox Guest Additions: To build modules for other installed kernels, run
+VirtualBox Guest Additions:   /sbin/rcvboxadd quicksetup <version>
+VirtualBox Guest Additions: or
+VirtualBox Guest Additions:   /sbin/rcvboxadd quicksetup all
+VirtualBox Guest Additions: Building the modules for kernel
+4.2.3-300.fc23.x86_64.
+
+vagrant halt
+vagrant up
+
+  On coming up, vagrant configures in a network adapter on the host
+
+    vboxnet1 with an ipaddress of 10.2.2.1. MAC ADDRESS 0a:00:27:00:00:01
+
+  There was a pre-existing host network adapter:
+
+    vboxnet0 with an ip address of 192.168.56.1, MAC ADDRESS 0a:00:27:00:00:00
+
+    ( although this does not seem top get configured properly : ipconfig doesn;t show an ip address and it will not ping.)
+
+
+
+  From the perspective of VirtualBox, the guest operating systems gets congigured with 2 network adapters:
+      adapter1 - One attached to NAT.
+
+      adapter2 - attached as a HOST ONLY Adapter to vboxnet1
+
+  These get reflected within the guest o/s ( as viewed by ifconfig)
+
+      eth0 :inet 10.0.2.15,   MAC ADDRESS 52:54:00:65:9b:2e
+
+      eth1 : inet 10.2.2.2, MAC ADDRESS 08:00:27:f8:b1:0a
+
+    ( There are also network adapters for Docker0, and lo)
+
+
+
+    [vagrant@origin ~]$ sudo openshift start &
+
+---
+    I1120 15:57:01.051841    2356 start_master.go:383] Starting master on 0.0.0.0:8443 (v1.2.0)
+    I1120 15:57:01.051880    2356 start_master.go:384] Public master address is https://10.0.2.15:8443
+    I1120 15:57:01.051931    2356 start_master.go:388] Using images from "openshift/origin-<component>:v1.2.0"
+    I1120 15:57:01.076053    2356 run.go:61] Started etcd at 10.0.2.15:4001
+    I1120 15:57:01.178829    2356 run_components.go:204] Using default project node label selector:
+    W1120 15:57:02.790571    2356 controller.go:262] Resetting endpoints for master service "kubernetes" to &{{ } {kubernetes  default    0 0001-01-01 00:00:00 +0000 UTC <nil> <nil> map[] map[]} [{[{10.0.2.15 <nil>}] [] [{https 8443 TCP} {dns 53 UDP} {dns-tcp 53 TCP}]}]}
+    I1120 15:57:03.014317    2356 master.go:262] Started Kubernetes API at 0.0.0.0:8443/api/v1
+    I1120 15:57:03.014418    2356 master.go:262] Started Kubernetes API Extensions at 0.0.0.0:8443/apis/extensions/v1beta1
+    I1120 15:57:03.014449    2356 master.go:262] Started Origin API at 0.0.0.0:8443/oapi/v1
+    I1120 15:57:03.014474    2356 master.go:262] Started OAuth2 API at 0.0.0.0:8443/oauth
+    I1120 15:57:03.014499    2356 master.go:262] Started Web Console 0.0.0.0:8443/console/
+    I1120 15:57:03.014523    2356 master.go:262] Started Swagger Schema API at 0.0.0.0:8443/swaggerapi/
+
+    I1120 15:57:14.616396    2356 run_components.go:199] DNS listening at 0.0.0.0:53
+    I1120 15:57:18.095876    2356 start_node.go:297] Connecting to API server https://10.0.2.15:8443
+
+
+    openshift install dir:
+
+    /var/lib/origin
+
+    Note: starting OpenShift without passing the --master address will attempt to find the IP
+address that will be visible inside running Docker containers. This is not always successful,
+so if you have problems tell OpenShift what public address it will be via --master=<ip>.
+
+
+
+-master='https://localhost:8443': The master address for use by OpenShift components (host, host:port, or URL). Scheme and port default to the --listen scheme and port. When unset, attempt to use the first public IPv4 non-loopback address registered on this host.
+
+openshift start --print-ip
+10.0.2.15
+
+ sudo openshift start --master='https://10.2.2.2:8443' &
+
+ Hurray! this now seems to work!
+
+
+
+Preparing a packaged image based on thesteve0/openshift-origin base box
+
+  A vanilla build was prepared uing the Vagrantfile from the book and a new image based on the above base box.
+
+  installed kernel headers and develsu as above
+
+  installed perl gcc and make as above
+
+  installed Guest Additions
+
+  Copied the vagrant file out of the unpacked box that was originally used to create the VM
+
+    cp /volumes/media/vagrant/.vagrant.d/boxes/thesteve0-VAGRANTSLASH-openshift-origin/1.2.0/virtualbox/include/_Vagrantfile ./packagedVagrantfile
+
+  and combined it with the local one
+
+  vagrant package --output openShiftLocal.box --vagrantFile ./packagedVagrantfile
+
+  moved openShiftLocal.box to a local repository
+
+    /volumes/media/vagrant/localBoxes
+
+
+Trying it out
+
+  vagrant init file://../openshift-origin2/openShiftLocal.box
+
+  vagrant up
+
+    First time through it failed:
+    env: /etc/init.d/network: Cannot allocate memory
+
+    but stepped and started the vm and second time it was ok.
+
+
+
+
+  systemctl start docker
+
+  hyperkube kubelet --fail-swap-on=false
+
+
+  Note Network Address Transaltion. All Guest operating systems will interact with the same NAT tables on the host machine. Consequently if 2 guest try to remap the same ports/ip-addresses then there will be a clash, and an error will be thrown ( unless it automaps automatically)
+
+
+Why do som installation use
+
+    oc cluster up
+
+    and some use
+
+    openshift start ??
+
+
+
+cluster up error
+
+Error: did not detect an --insecure-registry argument on the Docker daemon
+ Solution:
+
+   Ensure that the Docker daemon is running with the following argument:
+    --insecure-registry 172.30.0.0/16
+
+
+    $ cat /etc/sysconfig/docker | grep INSECURE
+# adding the registry to the INSECURE_REGISTRY line and uncommenting it.
+INSECURE_REGISTRY='--insecure-registry 172.30.0.0/16'

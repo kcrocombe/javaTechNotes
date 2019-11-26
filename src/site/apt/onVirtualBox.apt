@@ -1,0 +1,35 @@
+On Virtual box
+
+*Mouse capture
+
+  The mouse can often get captured by the guest system, rendering it useless to the host os until it is released. If the guest has hung for any rason this cn be a pain.
+
+  To Release press the Release button. THis is indicated at teh bottom right of the virtual bopx window, and is usually by Option-key ( next to Contol on the Left Hand Side.)
+
+
+*Capturing console output during a system boot on a Linux system
+
+  First make sure that a suitable serial device is configured on the linux side. This is by way of a parameter to the linux kernel you are trying to boot.
+
+    console=
+        ttyS<n>  : use the specified serial port
+
+        tty0    : use the specified Virtual console device
+
+    This need to provided to the kernel at boot time.  Usually these are presented to the kernel via the bootloader
+
+
+    Secondly, on the VirtualBox conole, enable the corresponding serial port (Port1 for tty0), set the mode to 'RawFile' and reedirect its path to an apporpriate file.
+
+
+
+* Useful command line stuff
+
+  VBoxManage list vms
+
+  VBoxManage start vm <vm>
+
+
+
+
+  ==========================================

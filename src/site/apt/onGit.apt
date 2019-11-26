@@ -2,6 +2,8 @@
 ~~
 ~~Author
 ~~
+STILL TO MUCH LIKE A RANDOM COLLECTION OF THOUGHTS - NEEDS RE-ORGANISING AND A GOOD CONTENTS PAGE.
+
 
 
 The Git Version Control System
@@ -1064,6 +1066,42 @@ authoritative focal point for collaborative development.
 	Many repositories will benefit from a bit of further configuration.
 
 
+
+******Forking a GitHub repository
+
+	This is gitHub concept ( NOT a git on) and will essentially create a copy of an existing repository within GitHub. I don't think that the new repository mainatains any link back to its original repository, although a list of forks <<is>> maintained at the source fork.
+
+	In general, you would fork a repository rather that create a branch on it if there is no real plan to merge it back; for example, if you wish to extend the work done on a project for your own personal purposes, rather than contributing to the development of the project per-se. (However, that does not mean that work on a fork cannot be merged back: if desired, this is still perfectly possible.)
+
+
+	It is possibly easier to fork a repository via the GitHub Web interface rather than using the command interface, where it is just a matter of pressing  button.
+
+	However, it is possible to do this from the command line, but you have to be sitting on a active clone of the GitHub  repository in question. (This will not work for non GitHub repositories.)
+
+---
+		hub fork
+---
+
+	Note that by default this will create a new <remote>, referencing the  forked repository, plus a new <remote tracking branch> for each branch in the <remote>. Since you may very well have various tracking branches already in place for the original repository, this can be a tad confusing. It will mean you have a working repository which has links to both the original and the forked repository. Since the point of forking was to work independently of the original repository, this may not be what you want.
+
+	Alternatively, you can use:
+
+---
+	 	hub fork --no-remote
+---
+
+	This will create a copy of the repository within your namespace within GitHub but not affect anything in your local repository. You can clone from your fork at your leisure.
+
+	Note: you have no control over what the repository is called. It will <<always>> be called the same as the original.
+
+	Consequently the only way you can fork one of your own repositories is to fork it into a different <<organisation>> namespace (if you have one).
+
+---
+		hub fork --no-remote --org pegortech
+---
+
+
+
 *****via the Web site
 
 	In many ways using the web-site is pretty easy. Its only real drawback is that it is not amenable to scripting : you are interacting with a graphical interface. This is the general process
@@ -1323,7 +1361,6 @@ authoritative focal point for collaborative development.
 *Stashing
 
 
-*A popular Branching Model.
 
 
 *Ref specs

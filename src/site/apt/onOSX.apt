@@ -3,3 +3,26 @@ Misc Useful OSX Stuff
 Disabline Spotlight indexing ( mds_stores was taking up too much resources. Had been having som system crashes and stuff as well)
 
  sudo mdutil -a -i off
+
+
+ Starating a tftp Server
+
+---
+   sudo launchctl load -F /System/Library/LaunchDaemons/tftp.plist
+   sudo launchctl start com.apple.tftpd
+---
+
+
+Starting a simple Http Server
+
+  Python comes a with packaged simple Http server that can be used to quickly serve files from a specific dirrectory. Just run in from the directory that you want to serve files from
+
+---
+  cd <targetDir>
+
+  python -m SimpleHTTPServer
+---
+
+
+
+ssh-keygen -y -e -f ./insecure_private_key

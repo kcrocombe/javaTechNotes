@@ -1,0 +1,51 @@
+Other Virttualizatoin Technologies
+
+
+  KVM - Kernel Based Virtualisation (KVM) is a open source virtualization technology built into Linux. It lets you turn Linux into a hypervisor. It is present on all verions of Linux since about 2007, but NEEDS to be installed on Hardware that supports Virtualisation.
+
+
+Hypervisors
+
+  A hypervisoer is a virtula machine monitor; it enable the creation, and running of virtul machines. The hypervisor presents the guest operating system with a virtual operating platform () and manages the execution of the guest operating system.
+
+  Multiple instances of diffferent opeating systems may share the virtualized hardware resourecs. This is in contrast to operating-system-level virtualisation where containers share a sinlge kernel.
+
+Hypervisors may be:
+
+  * Native or Bare-Metal Hyervisors - These Hypervisors are run directly on the hosts hardware, i.e. they are installed direclt to the bare in place of a normal operating system. Example of Bare Metal Hypervisors are
+
+    * VMware ESXi
+
+    * Oracle VM Server
+
+    []
+
+
+  * Hosted Hypervisor - These run on a conventional operating system like any other application. Examples of Hypervisor products are:
+
+    * VMware
+
+    * VirtualBox
+
+    * QEMU
+
+  Linuxs KVM blurs the distinction a bit. KVM is a kernel module that efffectively converts the host operating system to a Bare Metal Hypervisor, but at the same time is still a general purpose operating system.
+
+
+qcow and qcomw2
+
+  qcow (QEMU Copy On Write) is a file format for disk image files used by QEMU. Its primary feature is that is uses a disk storage optimisatin strategythat delays allocation of storage untilit is actually needed. So raw disk images can be represented within files that are actually mutach smaller than that raw-image.
+
+
+QEMU
+
+  QEMU ( Quick Emulator) is an open source hosted virtual machine monitor ( Hypervisor). Bits of it have been incorporated into Virtual Box etc.
+
+
+Libvirt
+
+  Is an opensource project that provides an API toolkit to manage various Virtualisation platforms including KVM, VMWare, QEMU.
+
+Virsh
+
+  is a commandline tool that uses the LIbvirt API. IS used to manipulte various virtual machines.

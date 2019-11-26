@@ -33,7 +33,13 @@ Options for Web hosting
 	In order to remain chargeless, needs to use the noSql datastore. ( BigTable ??) SQL databases will incur charges. ( Don’t think MongoDb will ).
 
 
+*AWS (Amazon)
 
+	https://aws.amazon.com/free
+
+	Offers some always free services, but htey look as though they are tied into particular Amazon Products rather than being generic compute/storage product.
+
+	They do offer 12 month trials of EC2 ( Elastic Compute Cloud), which fdoes look quite interseting however.
 
 
 
