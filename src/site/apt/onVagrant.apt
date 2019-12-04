@@ -205,3 +205,65 @@ Error: did not detect an --insecure-registry argument on the Docker daemon
     $ cat /etc/sysconfig/docker | grep INSECURE
 # adding the registry to the INSECURE_REGISTRY line and uncommenting it.
 INSECURE_REGISTRY='--insecure-registry 172.30.0.0/16'
+
+---
+
+Vagrant Key pairs
+
+  Vagrant offer a well known private-key, public key combination for use by people wanting to create Base Boxes. These keys are available {{{https://github.com/hashicorp/vagrant/tree/master/keys}here}}.
+
+  The vagrant software comes packaged with the private key (the so-called insecure private key), so if you wish to grant access to all potential users of your box, then the corresponding public key needs to be associated with a login (usually vagrant) with your packaged os.
+
+  It is possible to generate the public key from the private key as follows:
+
+---
+  ssh-keygen -y -e -f /volumes/media/vagrant/.vagrant.d/insecure_private_key
+---
+
+**Custom keys.
+
+  Should you not wish to use the defaults (and you definitely shouldn't) then you can configure vagrant to present a key of your choice.
+
+  Similarily, you may change the name that vagrant connects under:
+
+  * config.ssh.private_key_path
+
+  *  config.ssh.username
+
+  []
+
+  If you want it to, vagrant will automaticalyy replace the defualt private key if it finds it
+
+  * config.ssh.insert_key
+
+  []
+
+
+
+
+
+
+--debug flag is v.useful
+
+
+
+
+
+
+Basic Configuration
+
+  Vagrant.configure("2") do |config|
+    config.vm.provider "virtualbox" do |vb|
+      vb.customize ["modifyvm", :id, "--cpuexecutioncap", "50"]
+    end
+  end
+
+
+
+  The fingerprint for the ECDSA key sent by the remote host is
+SHA256:sJX6Vt9NI6Iny+qt6DFnzmXUeqz8JVq0LbmFKfZmujo.
+Please contact your system administrator.
+Add correct host key in /Users/kevin/.ssh/known_hosts to get rid of this message.
+Offending ECDSA key in /Users/kevin/.ssh/known_hosts:12
+ECDSA host key for [127.0.0.1]:2222 has changed and you have requested strict checking.
+Host key verification failed.

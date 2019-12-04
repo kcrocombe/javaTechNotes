@@ -6,9 +6,12 @@ Options for Web hosting
 
 	{{https://cloud.google.com/products/}}
 
+	{{https://cloud.google.com/free/}}
+
 	Offerings:
 
-		* Compute – basically a virtual linux box
+		* Compute – basically a virtual linux box - think that this CAN reamin free as long as you remin below specific usage limits.
+
 
 		*	App Engine – Provides various Application Environments /  Frameworks for hosting application services ( app services, databases etc ). Seems to imply there is a free quota before charges start being applied. Might be worth looking at.
 

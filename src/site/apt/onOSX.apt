@@ -26,3 +26,9 @@ Starting a simple Http Server
 
 
 ssh-keygen -y -e -f ./insecure_private_key
+
+
+
+British Keyboard Mapping.
+
+  The standard Mac provided british keyboards don't map to my 105 key Logitech keyboard. Tracked down an alternative keyboard file (HackintoshBuilds/keyboards). Copied the files to /Library/Keyboard Layouts

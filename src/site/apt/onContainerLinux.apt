@@ -1,24 +1,53 @@
 Container Linux (CoreOS)
 
+
+* Introduction
+
   Container Linux (CoreOS) is a distribution of Linux specifically geared to supporting Container based application. It is stripped down to the bare essentials, and shipped as an integral unit.
 
-  It was originally package by CoreOS company, and supplied in both community (CoreOS) and commercial (Tectonic) forms. As of December 2018, CoreOS have merged, or entered into some form of deal, with RedHat with the view to create an new distribution. Once again there will be 2 packagings : Fedora CoreOS (FCOS) as the community edition and Red Hat Linux CoreOS (RHCOS). As of now, Fedora Coreos is only available in Beta, and
+  It was originally package by CoreOS company, and supplied in both community (CoreOS) and commercial (Tectonic) forms. As of December 2018, CoreOS have merged, or entered into some form of deal, with RedHat with the view to create an new distribution. Once again there will be 2 packagings : Fedora CoreOS (FCOS) as the community edition and Red Hat Linux CoreOS (RHCOS). As of now, Fedora Coreos is only available from a 'Testing' stream. My {{{./onFedoraCoreOs.html}experience playing with Fedora CoreOS}} has been documented.
+
+  Decent documentation on Container Linux is available {{{https://coreos.com/os/docs/latest/}here}}.
+
+  There are certain features that can be considered to the design philosophy of CoreOs:
+
+    * automated provision of servers;
+
+    * automated operating system updates;
+
+    * containerisation of the applications it runs;
+
+    * a commitment to open source software.
+
+  This is described more below.
 
 
-  Applications running on the platform do so within Containers ( may iners themselves may a much richer set of applications, dependencies etc.)
+**Automatic OS Updates
 
-  CoreOS automates software updates: Operating system updsates and securtity patcehs are regularily pushe dto the CoreOS Container Linux machines without requireing interventionby admins.
-
-
-  The container engines, Docker and rkt are part of the distribution, and are automatically updated by the OS.
+  Core to CoreOS philosophy is automatic software updates: Operating system updates and security patches are regularly pushed to the CoreOS Container Linux machines,  and applied without requiring any intervention by admins.
 
 
-  Containers are means of achieving virtualisation : from teh perspective of the application appears as if it was running on its own customised and dedicated machine; whereas in actual fact it is just running as one process on a host machine.
+**Automated Provision
 
-  Containers are a much lighter weight means of achieving virtualisation than tru Virtual Machines. VM are typically in the GB range, where a container is a much smaller, less resource intensive thing.
+  Another of Coreos's central tenets is that boxes can be built and completely configured at build time WITHOUT significant administrator intervention. This allow services to be easily up and scaled down by the automated deployment of additional nodes with clusters configuration. It allows allows services to migrated to alternative platforms with reactive ease.
 
 
-  CoreOS is commited to OS
+**Containers
+
+  A central part of the philosophy of Coreos is that all software running on the platform does so within Containers.
+
+  Containers are means of achieving virtualisation : from the perspective of the application appears as if it was running on its own customised and dedicated machine; whereas in actual fact it is just running as one process on a host machine.
+
+  Containers are a much lighter weight means of achieving virtualisation than true Virtual Machines. VM are typically in the GB range, where a container is a much smaller, less resource intensive thing.
+
+  This approach to hosting its software  applies just as much to the system software as it does to the application. For this reason, coreOS does not come with a package manner (yum, rpm, etc).  (The containers themselves will hold a much richer set of related applications, dependencies, libraries etc. - and these are plugged in or unplugged as a single, isolated unit)
+
+  The container engines, Docker and rkt form a central part of the distribution, and are automatically updated by the OS whenever necessary.
+
+
+**Open Software
+
+  CoreOS is committed to using Open Source software to provide its services.
 
     * kubernetes
 
@@ -28,46 +57,51 @@ Container Linux (CoreOS)
 
     * docker.
 
+    * locksmith
 
-    It
-    provides no package manager,
-
-    uses systemd as its primary inint system
+    []
 
 
-    docker
-    flannel
-    etcd
-    locksmith
-    pw
+**Platforms
+
+  Coreos can be simply deployed to various Hardware virtualisation platform, notably:
+
+    * Amazon ECR;
+
+    * Google Compute;
+
+    * OpenStack;
+
+    []
+
+====
+
+*Systemd Units and Targets
 
 
-  Can be deployed to various Hardware virtualization plato=rsm,
+**About systemd
 
-    Amazon ECR
-    Google Compute
-    OpenStack
-
-
-Systemd Units and Targets
-
-  systemd is an init systems that provides features for stopping, starting and managing processes.
+  CoreOS uses systemd as its primary init system. <<<systemd>>> is an init system that provides features for stopping, starting and managing processes. It the system favoured by CoreOs.
 
   It consists of 2 main concepts:
 
-    * a Unit  : A unit is a configuration file that describes the propoerties of a process managed by systemd.
+    * a Unit  : A unit is a configuration file that describes the properties of a process managed by systemd.
 
-    * a Target : A target is a grouping mechanism that allows systemd to start groups of processes at the same time. It is a little analalous to a run-level in other varieties of unix.
+    * a Target : A target is a grouping mechanism that allows systemd to start groups of processes at the same time. It is a little analogous to a run-level in other varieties of unix.
 
-  systemd is the first process started on coreos (process no = 1), which will then read various targets and start the processes so started.
+    []
 
-  The multi-user.target holds all the general use units. It is implemented as a simple configuration file (/usr/lib64/systemd/system/multi-user.target) plus a directory (/usr/lib64/systemd/system/multi-user.targets) which basically just holds a list of links to the service unit files that make up the target.
+  <<<systemd>>> is the first process started on coreOs (process no = 1), which will then read various targets and start the processes so started.
 
-  These links are maintained by the systemctl process.
+  The target <multi-user> holds all the general use units. It is implemented as a simple configuration file (<<</usr/lib64/systemd/system/multi-user.target>>>) plus a directory (<<</usr/lib64/systemd/system/multi-user.targets>>>) which basically just holds a list of links to the service unit files that make up the target.
 
+  These links are maintained by the <<<systemctl>>> process. For instance, the command:
+
+---
     systemctl enable foo.service
+---
 
-  will scan the foo unit configuraton file /etc/systemd/system/foo.service. One of the fields within this file will be the WantedBy=multi-user.target. systemctl will read this and amend the links in the target direcory accordingly.
+  will scan the foo unit configuraton file <<</etc/systemd/system/foo.service>>>. One of the fields within this file will be the <WantedBy=multi-user.target>. <<<systemctl>>> will read this and create/amend the links in the target directory accordingly.
 
   A typical Unit file looks like:
 
@@ -87,20 +121,18 @@ Systemd Units and Targets
   [Install]
   WantedBy=multi-user.target
 ---
+  Note that it is usual for most user services to be Docker containers, rather than direct systemd services.
 
-  Note that it is usual for most user services to be Docker containers.
 
+**Customising Systemd drop-in unit behaviour.
 
-Customizing Systemd drop-in unit behaviouir.
-
-  The main configurartion file that control the <<<systemd>>> servics are held on <<</usr/lib64>>>, which is a read-only filesystem. However, there are secondary locations that you can use to override these default settings
+  The main configuration file that control the <<<systemd>>> services are held on <<</usr/lib64>>>, which is a read-only filesystem. However, there are secondary locations that you can use to override these default settings
 
   <<</etc/systemd/system/<unit.conf>>>> : If you copy the <<</usr/lib64/systemd/system>>> version of the file to this directory, then this version will be used in preference to the read-only original.
 
-    <<</etc/systemd/system/<unit.d>/<unit.conf>>>> : These files contain <<JUST>> the particular setting that you want to change. The remaining settings will be taken from the original read-only <<</usr/lib64/systemd/systemi>>> file.
+  <<</etc/systemd/system/<unit.d>/<unit.conf>>>> : These files contain <<JUST>> the particular setting that you want to change. The remaining settings will be taken from the original read-only <<</usr/lib64/systemd/system>>> file.
 
-  The second option is the recomendded approach, since it allows you to stay up to date with any additions to the configuraion paramters that migh come with newer releases od the <<<OS>>>
-
+  The second option is the recommended approach, since it allows you to stay up to date with any additions to the configuration parameters that might come with newer releases of the <<<OS>>>
 
   To see what settings have been overridden, you can use the command:
 
@@ -109,22 +141,41 @@ Customizing Systemd drop-in unit behaviouir.
 ---
 
 
+====
+
+*Operating System Updates.
 
 
+**Streams
+
+  Container linux is designed to be reliably updated via continuous stream of updates. CoreOs is supplied on one of three streams of development, each reflecting a different stage of maturity of the product. These are:
+
+    * stable;
+
+    * belta;
+
+    * alpha;
+
+    []
+
+  Each installation ofd the OS is aware of the particular stream on which it is based and will update itself reliably in order to keep itself in step it.
+
+  To see the operating system release that the system is running at any particular moment:
+
+---
+    cat /usr/share/coreos/os-release
+---
 
 
+**Active and Passive Partitions
 
-Operating System Updates.
+  Stability during automatic updates is ensured by hosting much of the operating system on two parallel filesystems : 1 Active , 1 passive. Specifically, the /usr partition (where the kernel and most of the shell are located) is readonly. The root filesystem itself is read/write and is available to record state change type information as the system runs.
 
-  Container linux is designed to be reliably updated via continuous stream of updates. It achieves this by hosting much of the operating system on Two parallel filesystems : 1 Active , 1 passive. Specifically, the /usr partition (where the kernel and most of the shell are located) is readonly. The root filesystem itself is read/write and is available to record state change type information as the system runs.
-
-  During normal operation, the Active partition is mounted <<readonly>>.  While it is running, it periodiucally monitors the <release channel> upon which it is based. When an update appears on that release channel, it is automatically dowloaded and applied to the Passive partition.
+  During normal operation, the Active partition is mounted <<readonly>>.  While it is running, it periodically monitors the <release channel> upon which it is based. When an update appears on that release channel, it is automatically dowloaded and applied to the Passive partition.
 
   At the next reboot, the role of the 2 partitions will swap.
 
-
-  To Support this, coreos use a very particular partition layout on their disks:
-
+  To support this, coreOs use a very particular partition layout on their disks:
 
 ---
       Number 	Label 	Description 	Partition Type
@@ -139,16 +190,12 @@ Operating System Updates.
         9 	ROOT 	Stateful partition for storing persistent data 	EXT4, BTRFS, or XFS
 ---
 
-    <NB: Not sure how this squares up with any partition scheme you might inject at boot time>>
+    <NB: Not sure how this squares up with any partition scheme you might inject at boot time, however...>
 
 
+**The Update Engine
 
-
-  TO see the operating system release that the sytem is running:
-
-    cat /usr/share/coreos/os-release
-
-  The <update-engine> service is responsible for controlling this. In normal circumstances, the engine will check for updates every hour or so. The channel that is monitors is defined within
+  The <update-engine> service is responsible for controlling, monitoring and auto updating the systems operating system. In normal circumstances, the engine will check for updates every hour or so. The channel that it monitors is defined within:
 
     * /usr/share/coreos/update.conf
 
@@ -160,13 +207,17 @@ Operating System Updates.
 
     NOTE: the system will not perform downgrades. If you switch to a channel with a lower release, it will remain on the current release until the current channel moves ahead of it.>>>
 
-    In order for the change to take effect, the <update-engine> service needs to be resttarted.
+    In order for the change to take effect, the <update-engine> service needs to be restarted.
 
-    sudo systemctl restart <update-engine>
+---
+     sudo systemctl restart <update-engine>
+---
 
     The status of the engine itself can be checked with the engines client tool:
 
+---
     update_engine_client --status
+---
 
     Its working can also be tracked, by monitoring the journal log, e.g
 
@@ -205,19 +256,21 @@ Operating System Updates.
 ---
 
 
-  These changes do no not take effect unti the system is rebooted, and the system supports several strategies for controlling how this happens.
+**Reboot Strategy
+
+  These changes do no not take effect until the system is rebooted, and the system supports several strategies for controlling how this happens.
 
     * reboot : The system will reboot automatically after an update has been applied.
 
     * off : Do not reboot. The new kernel/root will come into operation at the next manual reboot.
 
-    * etcd-lock : Reboot ONLY after securing a distrinbuted lock from etcd
+    * etcd-lock : Reboot ONLY after securing a distributed lock from etcd
 
     []
 
-  The etcd-lock strategy is aimed at clusterred configurations, and ensures that machines in the cluster do not all reboot at teh smae time. They will communicate to ensure that there is always a minimaum no of nodes up at one time.
+  The etcd-lock strategy is aimed at clustered configurations, and ensures that machines in the cluster do not all reboot at the same time. They will communicate to ensure that there is always a minimum no of nodes up at one time.
 
-  This is controlled by the locksmith service, and can be manipulate by its client tool, e.g.:
+  Within coreos, this is controlled by the locksmith service, which can be manipulate by its client tool, e.g.:
 
 ---
     locksmithctl set-max 4
@@ -225,29 +278,26 @@ Operating System Updates.
     locksmithctl status
 ---
 
-  Locksmiteh can also enforce maintenance windows, so that re-boots do not occur within the production day, for example.
+  Locksmith can also enforce maintenance windows, so that re-boots do not occur within the production day, for example.
 
 
+**Partition Switching
 
-  In order to determin which of the canbdidate usr- partitions to boot, coreos maintains a couple of attributes attached to the filesystem:
+  In order to determine which of the candidate <<<usr>>> partitions to boot, coreos maintains a couple of attributes attached to the filesystem:
 
     * priority: each candidate usr partition will have a different priority number. The one with the highest priority will get booted first. If unsuccessful, lower priority disks will be attempted.
 
-    * tries: This indicates how many attempts to boot this filestem are outstanding. Typically, this will be 1 for a newly updated parttion that have yet to be booted.
+    * tries: This indicates how many attempts to boot this filesystem are outstanding. Typically, this will be 1 for a newly updated partition that have yet to be booted.
 
-    * successful: This is set to 1 on the first occasion that the partition successfully boots. This may not happen immediately : it is maintained by the update-engine, so wonlt get updated till teh update-engine runs for the first time.
+    * successful: This is set to 1 on the first occasion that the partition successfully boots. This may not happen immediately : it is maintained by the update-engine, so won't get updated till the update-engine runs for the first time.
 
-  The system will attempt to boot hte partitijon with the highest priority (Note: 2 is a higher priority than 1)
+  The system will attempt to boot the partition with the highest priority (Note: 2 is a higher priority than 1)
 
-
-
-
-  The passive and active partitions can be listed
+  The passive and active partitions can be listed:
 
 ---
   cgpt find -t coreos-usr
 ---
-
 
   You can see the attributes on the various partitions on a coreos disk using:
 
@@ -267,9 +317,9 @@ Operating System Updates.
 ---
 
 
-Rolling Back
+**Rolling Back
 
-  Somewhat worryingly, Coreos suggest that manually rolling back is not a recommended practice, but then go on to tell you how to do it.
+  If application of a system update leads to intability or failure, then you may wish to rollback to the previous operating system. Somewhat worryingly, Coreos suggest that manually rolling back is not a recommended practice, but then go on to tell you how to do it.
 
 ---
   sudo cgpt prioritize /dev/sda4
@@ -282,138 +332,205 @@ Rolling Back
   NB. If necessary, it is possible to force a downgrade to a differnt channel, or lower revision. However, once again, this is NOT a practise recommended by coreos. It is documented in the manuals however.
 
 
+====
 
-Ignition
-
-  Ignition is a pprovioning utility designed specifically for Container Linux that allow the manaipulation of disks during the early boot process:
-    * partitionin disks
-    * fromatteing partitions
-    writing files ( regular files, systemd units, networks units etc)
-    * configuring users
-
-  It only runs once, during the first boot of the system.  It forms part of the temporary initial root filesystem initramfs.  When it runs, it finds configuration data in a named location ( file, or URL) and applies it to the machine.
-
-  Ignition is supported on the following platforms
-    Bare metal
-    Amazon Web Services
-    Digital Oceon
-    Google Compute
+*Provisioning with Ignition
 
 
+**Introduction
+
+  Ignition is a provisioning utility designed specifically for Container Linux that allow the manipulation of disks, files and other resources  during the early boot process. It support one of Coreos's central tenets, that boxes are built and completely configured at build time <<WITHOUT>> significant administrator intervention. It involves:
+
+    * partitioning disks;
+
+    * formatting partitions;
+
+    * writing files ( regular files, systemd units, networks units etc);
+
+    * configuring users;
+
+    * configuring services (such as Docker, etcd, flannel, locksmith);
+
+    []
+
+  It only runs <<once>>, during the first boot of the system.  It forms part of the temporary initial root filesystem initramfs.  When it runs, it finds configuration data in a named location (file, or URL) and applies it to the machine.
+
+  On boot, GRUB checks the EFI system partition for a file <<<coreos/first_boot>>>. If found, it passes the coreos.first_boot=detected parameter into <<<initramfs>>> and Ignition will be triggered to process its scripts. The coreos/first_boot file will be deleted when Ignition has finished its processing.
+
+  Note PXE installations fo not use GRUB, so the <<<coreos.first_boot>>> must be passed explicitly.
 
 
-*CoreOS Linux on Vagrant
+**Ignition Scripts
 
-  It is possible to run CoreOS virtually on Vagrant/VirtualBox, both in:
+  The script that Ignition process are JSON based and have a very particular syntax, whose reference can be found {{{https://github.com/coreos/fcct/blob/master/docs/configuration-v1_0.md}here}}. Note: the coreOs and Fedora-CoreOS versions of the syntax are slightly different.
 
-    * single Node
+  Because Ignition is very particular with regard to syntax and because the boot process does not make uncovering errors especially easy, it is recommended that the json scripts should <<not>> be written by hand.
 
-    * multi-node configutations
+  Instead, tools like <<<ct>>>, its <<<fedora-coreos>>> brother <<<fcct>>>, or <<<matchbox>>> should be used to generate json. The <<<ct>>> tool is described below.
 
-  The setup is considerably more involved than many installations, reuiring MORE than just the ususal Vagrant file and a Boxfile from a repository somewhere. The additional files are reuired to configure an ignition plugin for CoreOS and then to inject Ignition scrtipts into the o/s as its being provision ( described more fully below).
+**The Coreos-Installer
 
-  It also allows you to set up a Multinode cluster
+  The <<<coreos-installer>>> is actually just a shell script that forms part of the initram kernel image that is loaded by the bootloader at installation time.  It processes 3 main parameters:
 
-  git clone {{https://github.com/coreos/coreos-vagrant.git}}
+    * the destination device for the install
 
-  cd coreos-vagrant
+    * the raw image file to be installed
 
-  Set the number of nodes you'd like in config.rb
+    * An Ignition script to perform any pre/post installation steps
 
-  Set the update channel you'd like to use in config.rb
+    []
 
-  This sets the source that teh installation will be
+  Note that the Ignition scripts are not run at this point. instead, the scripts are over-layed over the install image, so that they effectively appear in the filesystem in places that Ignition expects to find them. They will then get processed by ignition during the first boot of the system.
 
+  In practice, injecting a Ignite file is a tricky thing to get right. The syntax of the <Ignition> script is quite complicated, and difficult to write accurately.
 
+  If there is anything untoward with it, the build won't succeed. It can be quite tricky to get any diagnostic information back from the machine at this point. This is in large part because in failing it doesn't leave behind a running ssh daemon that will allow you to get onto the system to investigate.
 
-    https://coreos-stable.release.core-os.net/amd64-usr/current/coreos_production_vagrant_virtualbox.json
+  When the first boot is in progress, it seems to drop back through to the emergency console...but since this seems to be no longer connected to a terminal this is not at all evident that that is what has happened. And even when you so realise, there doesn't seem to be a console that is attached and allows you to take advantage of that.
 
-
-  vagrant up
-
-  vagrant status
-
-
-  vagrant status core-01
+  Partly for this reason, Ignition json scripts should not be written by hand, but generated by tools capable of syntax checking. Some of these are described in the following sections.
 
 
+**Config Transpiler (ct)
 
-*Automated provision
+  To simplify the process of generating syntactically correct Ignition scripts, <Container Linux> provides what is called a <Config Transpiler>. This utility, called <ct>, takes a simpler <YAML> formatted script and turns it into JSON for <Ignition> to consume.
 
-  <Ignition> is the utility inside of <Container Linux> that is responsible for setting up a machine when it is installed. It takes a configuration (in <JSON>) an instructs it to do things such as:
+  Note that fedora-coreOs has a similar tool (fcct), but it generates the slightly different output required by <<<fedora-coreos>>>.
 
-    * add users;
+  In both cases, the output is platform specific; consequently, you have to tell it which platform you are intending to host on. The following targets are explicitly supported.
 
-    * format disks;
+    * Amazon EC2;
 
-    * install systemd units
-
-  The <JSON> script is injected into the Linux installation process when the OS is being installed, and it will then configure itself accordingly.
-
-
-**Config Transpiler
-
-  The syntax of the <Ignition> script is quite complicated, and difficult to write accurately. To this end <Container Linux> provides what is called a <Config Transpiler>. This utility, called <ct>, takes a simpler <YAML> formatted script and turns it into JSON for <Ignition> to consume.
-
-  The output is platform specific; consequently, you have to tell it which platform you are intending to host on, e.g.:
-
-    * Amazon EC2
-
-    * Google
+    * Google;
 
     * Bare Metal server.
 
-  There are other provioning tools such as <matchbox> which can also read the YAML
+    []
+
+  There are other provisioning tools such as <matchbox>, or plugins for tools like vagrant which can also read the YAML.
 
 
-***Installing on OSX
+***Installing ct on OSX
 
-  brew install coreos-ct
-
-***USe
-
-
-      ct -platform vagrant-virtualbox \< cl.yaml
+---
+   brew install coreos-ct
+---
 
 
+***Using the ct tool.
+
+---
+      ct -platform vagrant-virtualbox \< in.yaml \> out.json
+---
+
+ <<NB: ct can't handle <TAB> characters. Indent using spaces only.>>
 
 
-*Automated provision and Vagrant boxes.
+**Troubleshooting problems with Ignition installs
 
-  When using teh VirtualBox provider for Vagrant, Ignitionis used to provision the machine via a special plugin to vagrant
+  If you can get to it, the best source of information is the usual journalling system.
+
+---
+    journalctl --identifier=ignition -all
+---
+
+  If the box is still in the early stages of booting and you do not yet have access to a login session, capturing the console output and looking at that is your best option. For VirtualBox installs, this is described {{{./onVirtualBox.html}here}}.
 
 
+====
+
+*Installing Container Linux (CoreOS) Linux on Vagrant/VirtualBox
+
+
+**Additional considerations for Vagrant installs of CoreOs
+
+  {{{./onVagrant.html}Vagrant}} is a tool to help build and manage virtual machine environments;
+  basically, it aids the creation and management of {{{./onVirtualBox.html}Virtual Box}} (or VMware environments).
+
+  Coreos provide a packaged set of files on {{{https://github.com/coreos/coreos-vagrant.git}GitHub}} that can be used to set up CoreOs on Vagrant/Virtual Box.
+
+  It is possible to use this package to set up and run CoreOS both as:
+
+  * single Node;
+
+  * in a multi-node configurations.
+
+  []
+
+  Multi-node configurations will more closely reflect what real world production deployments will look like. coreOs installations will almost certainly be running containerized applications, which are typically deployed in clusters with multiple copies of the application operation.
+
+  Because the setup of Coreos involves full build-time provisioning rather than just installation, the setup is somewhat more involved than that of many vagrant installations. It requires <<MORE>> than just the usual <<<Vagrantfile>>> configuration file and a Vagrant boxfile from a repository somewhere. The additional files are required to:
+
+    * install an ignition plugin for CoreOS
+
+    * inject Ignition scripts into the o/s as its being provision (described more fully below).
+
+    []
+
+
+**Creating a basic coreOs installation
+
+  Coreos provide a packaged set of files on {{{https://github.com/coreos/coreos-vagrant.git}GitHub}} that can be used to set up both a Single Node and a Multi-Node Cluster.
+
+  Its use is pretty well described {{{https://coreos.com/os/docs/latest/booting-on-vagrant.html}here}}.
+
+  [[1]] git clone {{https://github.com/coreos/coreos-vagrant.git}}
+
+  [[1]] cd coreos-vagrant
+
+  [[1]] Set the number of nodes you'd like to create in config.rb
+
+  [[1]] Set the update channel you'd like to use as the source of the installation in config.rb e.g.
+
+    {{https://coreos-stable.release.core-os.net/amd64-usr/current/coreos_production_vagrant_virtualbox.json}}
+
+  [[1]] vagrant up
+
+  [[1]] vagrant status
+
+---
+    vagrant status core-01
+---
+
+
+**Automated provision via Ignition on Vagrant boxes.
+
+  When using the VirtualBox provider for Vagrant, Ignition is used to provision the machine via a special plugin to vagrant (vagrant-ignition). This is available in the default vagrant repository, so can be manually installed as
+  follows:
+
+  ---
+  vagrant plugin install vagrant-ignition
+  ---
+
+  Quite often, this will be coded in the <<<Vagrantfile>>> so that the plugin will be installed as a vagrant virtual server is built. This is what happens with the <<<coreos-vagrant>>> package described above.
+
+  The supplied provision works pretty well out of the box. Should further configuration be required, the ct utility should be used
+
+  ---
   ct --platform=vagrant-virtualbox < cl.conf > config.ign
+  ---
 
 
-  NB: ct can't handle <TAB> characters. Indent using spaces only.
+***Some ct Examples
 
-
-**Some Examples
-
----
-# This config is meant to be consumed by the config transpiler, which will
-# generate the corresponding Ignition config. Do not pass this config directly
-# to instances of Container Linux.
-
-passwd:
-users:
-  - name: core
-    password_hash: "$6$43y3tkl..."
-    ssh_authorized_keys:
-      - key1
-  - name: user2
-    ssh_authorized_keys:
-      - key3
+  Some examples of ct scripts are given below, and more extensive example are given {{{https://coreos.com/os/docs/latest/clc-examples.html}here}}
 
 ---
+  passwd:
+  users:
+    - name: core
+      password_hash: "$6$43y3tkl..."
+      ssh_authorized_keys:
+        - key1
+    - name: user2
+      ssh_authorized_keys:
+        - key3
+---
+
+  or
 
 ---
-# This config is meant to be consumed by the config transpiler, which will
-# generate the corresponding Ignition config. Do not pass this config directly
-# to instances of Container Linux.
-
-passwd:
+  passwd:
   users:
     - name: user1
       password_hash: "$6$43y3tkl..."
@@ -427,581 +544,14 @@ passwd:
       shell: /bin/bash
 ---
 
-**Ways of generating a password
 
-      openssl passwd -1
-
-
-*Files
+***Ways of generating a password for Ignition
 
 ---
-# This config is meant to be consumed by the config transpiler, which will
-# generate the corresponding Ignition config. Do not pass this config directly
-# to instances of Container Linux.
-
-storage:
-  files:
-    - path: /opt/file1
-      filesystem: root
-      contents:
-        inline: Hello, world!
-      mode: 0644
-      user:
-        id: 500
-      group:
-        id: 501
-
-        # This config is meant to be consumed by the config transpiler, which will
-        # generate the corresponding Ignition config. Do not pass this config directly
-        # to instances of Container Linux.
-
-        storage:
-          files:
-            - path: /opt/file2
-              filesystem: root
-              contents:
-                remote:
-                  url: http://example.com/file2
-                  compression: gzip
-                  verification:
-                    hash:
-                      function: sha512
-                      sum: 4ee6a9d20cc0e6c7ee187daffa6822bdef7f4cebe109eff44b235f97e45dc3d7a5bb932efc841192e46618f48a6f4f5bc0d15fd74b1038abf46bf4b4fd409f2e
-              mode: 0644
-
-
-
-
-Filesystems
-
-# This config is meant to be consumed by the config transpiler, which will
-# generate the corresponding Ignition config. Do not pass this config directly
-# to instances of Container Linux.
-
-storage:
-filesystems:
-  - name: filesystem1
-    mount:
-      device: /dev/disk/by-partlabel/ROOT
-      format: btrfs
-      wipe_filesystem: true
-      label: ROOT
-
-
----
-
-*Kubernetes with Vagrant and CoreOS
-
-
-
-  {{{https://coreos.com/kubernetes/docs/1.6.1/kubernetes-on-vagrant.html}Kubernetes install with Vagrant on CoreOS}}
-
-  Installed kubectl as follows:
-
-  brew install kubectl
-
-  GIt repository cloned
-
-    ~/dvl/gitClones
-
-    git clone https://github.com/coreos/coreos-kubernetes.git
-
-
-  This creates subdirectories, for both single node and multinode builds:
-
-  Had a go with the Multinode opton first.
-
-  vagrant up
-
-  Failed with
-  Can't open /opt/vagrant/embedded/openssl.cnf for reading, No such file or directory
-  140735799092096:error:02001002:system library:fopen:No such file or directory:crypto/bio/bss_file.c:74:fopen('/opt/vagrant/embedded/openssl.cnf','r')
-  140735799092096:error:2006D080:BIO routines:BIO_new_file:no such file:crypto/bio/bss_file.c:81:
-
-  Vagrant shipps with an embedded version of openssl. However this version ove vagrant, does not seem to include the ssl configuration file that the Vagrantfile is expecting to find.
-
-  Could not find on on the system, so downloaded on from git hub and stuck it where Vagrantfile is expecting to find it.
-
-  https://github.com/openssl/openssl/blob/master/apps/openssl.cnf
-
-  copied it to:
-    /opt/vagrant/embedded/openssl.cnf
-
-
-    Now it fails with SSH problems.
-
-
-
-DOESNT WORK!!!
-
-
-  Suspect this is because the SSH keys don't get injected with Ignition??
-
-  However....
-
-    it does seem to work with the Beta Channel version of the CoreOS?
-
-    So...
-
-  Either the core configuraion already exists in the Beta channe .box, ( and so don;t need to be injected in)
-
-  or
-
-  The injection porcess is injecting ok on the Beta image.
-
-
-  I think it is probably the first suggestion: if I change the
-
-      config.ssh.username to something other than "core" and the builds fail!
-
-  So I think the config is NOT being injected.
-
-
-Can check whether the plus is configured:
-
-  vagrant plugin list
-
-    vagrant-ignition (0.0.3, global)
-
-    so it is.
-
-
-  I suspect this plugin is one that was provided by CoreOS and intalled automatically when we did a vagrant up. Note that it has been installed GLOBALLY
-
-
-  I think the way that it works, is basically to set up a drive mapping within the guest os that points to a Ignition file held locally on the host o/s.  When the Guest O/S gets provisioned, the Ignition System reads the file from teh mapped drive and configures the box accordingly.
-
-  If there is no Ignition File, it will create a default one, that injects the desired user, plus public key etc.
-
-  Other wise it merges the above in fo into the Ignition file provided.
-
-
-*Fixing the supplied Vagrant File
-
-    https://github.com/coreos/vagrant-ignition
-
-
-
-    config.ignition.enabled: Set to true to enable this plugin
-
-    config.ignition.path: Set to the path of the base ignition config (can be nil if there is no base)
-
-    config.ignition.config_obj: Set equal to config.vm.provider :virtualbox
-
-    config.ignition.drive_root: Set to desired root directory of generated config drive (optional)
-
-    config.ignition.drive_name: Set to desired filename of generated config drive (optional)
-
-    config.ignition.hostname: Set to desired hostname of the machine (optional)
-
-    config.ignition.ip: Set to desired ip of eth1 (only applies if a private network is being created)
-
-
-    Bit tricky but eventually manged it.
-
-
-
-A simple tftp Server
-
-  In order to get Ignite to
-
-  The coreos-installer  has the ability to read files across networks using several protocols (http, https, tftp).  At the time the system is booted.
-
-  trivial ftp (tftp) is a stripped down version of ftp without any authentication mechanisms
-
-  OSX comes bundled with its own tftp server. This does not run by default. If it is not running, it can be started:
-
----
-  sudo launchctl load -F /System/Library/LaunchDaemons/tftp.plist
-  sudo launchctl start com.apple.tftpd
----
-
-  By default tftpd uses the following folder:
-
----
-    /private/tftpboot
----
-
-  Be sure Read/Write/eXecute permissions are set on the tftpboot folder and any files you wish to transfer:
-
----
-  sudo chmod 777 /private/tftpboot
-  sudo chmod 777 /private/tftpboot/*
----
-
-  Note, if you’ll be transferring a file TO your TFTP server, the file will technically need to exist on the server beforehand so create it with touch. For example:
-
----
-  sudo touch /private/tftpboot/<someFile>
-  sudo chmod 777 /private/tftpboot/<someFile>
----
-
-  Likewise, there is a tftp to send/get files using the particular protocol.
-
-===
-
-A simple HTTP Server
-
-  Python come packaged with a simple Http Server capable of serving files from a single directory. Just Run it from the directory containing the files to be served.
-
----
-  cd <targetDir>
-
-  python -m SimpleHTTPServer
----
-
-===
-
-Preboot Execution Environment (PXE) Installs and VirtualBox
-
-  PXE (Preboot Execution Environment) describes a standardised client-server environment, that boots a software assembly retrieved from the network. In other words, rather then booting from a hard disk or cdrom, a clinet computer retrieves its boot image across the network.
-
-  On the client side, it merely needs a PXE-capable network card and a config change in the BIOS to set the Netork as the first choice Boot option.
-
-  The Server side requires 2 components:
-
-    * A DHCP service to provide the appropriate client network parameters ( e.g. ipaddress), and the address of the PXE server to be used
-
-    * A PXE server to supply the boot image.
-
-  Often the PXE server is able to work as a DHCP proxy, so both service can be supplied from the same server.  On booting, the client will broadcast a DHCPDISCOVER packet to which the server(s) will respond.
-
-  The PXE server will supply the boot image to the client using the tftp protocol (Trivial FTP). tftp is essentially a stripped down version of ftp, and is noptably missing any sort of authentication requirement.
-
-
-
-  It is possible to <emulate> PXE booting within Virtualbox. The network cards within a VirtualBox environemtn are themselves virtual, and rather than looking for a PXE server on the network to supply it a boot image, it will look in a particular directory on the host operating system for the boot image. To use PXE within the virtual box environment, you need to:
-
-    Set the VM to use the NAT networkin as the FIRST Network device,
-
-    Set the VM to boot off the netowk
-
-    Provide a suitable boot image within hte  ~/Library/VirtualBox/TFTP of the host o/s
-
-
-  VirtualBox expects to find a file named <vmname>.pxe within that directory, whic hneed to be a valid boot image. The file must be named afer the virtual machine that is being booted. So, if you are booting a vm called PxeBootTest, it looks for file:
-
-      ~/Library/VirtualBox/TFTP/PxeBootTest.pxe
-
-  Typically this would be a soft link into the actual boot image. Note: that Virtual Box DOES not provide any boot images : you need to track doiwn a suitable boot image for whatever o/s you want ant install it yoursel.
-
-  For Linux, the pxe boot loader image forms part of the standard boot utilites available at various mirrors including the below:
-
-    https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/syslinux-6.03.tar.gz
-
-  The name of the boot loader is
-
-    pxeLinux.0
-
-  and it is just a pxe variant of the standard boot0/syslinux0 bootsector, and is configured in a similar way.
-
-  pxeLinux.0 expectes to find a subdireecty
-
-      ./pxelinux.cfg  ( NB This is a directory)
-
-  and from within there it looks for a boot configuration file:
-
-    It starts by looking for one named after the clients unique id ( e.g. b8945908-d6a6-41a9-611d-74a6ab80b83d)
-
-    Then it attempts to find one based on various hardware id, and if it can't find that reads a files called:
-
-    default.cfg
-
-    This configuration file is described within documentation in the syslinux-6.03.tar bundle, but broadly provides the kernel image to be secondstage booted and any paramters that it might need, including the image of the virtual root defic that it should iuse.
-
-    It will look something like the below.
-
-    DEFAULT pxeboot
-    TIMEOUT 100
-    PROMPT 0
-    LABEL pxeboot
-        KERNEL fedora-coreos-30.20191014.0-installer-kernel-x86_64
-        APPEND ip=dhcp rd.neednet=1 initrd=fedora-coreos-30.20191014.0-installer-initramfs.x86_64.img coreos.inst=yes
-    	  IPAPPEND 2
-
-    Obviously the various parameters supplied will be dependendent on the os you are tring to boot.
-
-  Note that,  in theory, pxeLinux.0 will support both http and ftp transfers, so it would be usual in a PXE boot for the kernal and rootfs images to be network destinations, and typically would address from a TFTP server.
-
-  <<HOWEVER>>, because our virtual network is only emulating PXE functionality it <<CANNOT>> truly see the network as it runs, only the TFTP direcory. This means that both kernel and initrd images MUST be in this location. It should also be noted that tftp seems to be a pretty slow protocol, and when it is being emulated as here it is very, slow.
-
-  Consequently, it is only really feasible to retrieve fairly small images via this route: anything more than about 70 or 80 Mb takes to long to practically load. Hence we can only really use <installer> type images here, not full y ditributiuonus.
-
-
-
-  Once, the kernel and intrd images have been loaded, the system is properly network aware, so other files such as Ignition scripts and raw images can be loaded from remote http or tftp locations. The http protocol shopuld be used in preference to tftp because it is much faster.
-
-
-
-
-Fedora-coreos
-
-
-  Fedora CoreOs is, or will be,  the upstream community version of Container Linux (formerly coreos). Currently it is only available on a 'testing' stream ( in contrast to the stable, beta, alpha streams of Container Linux). In keeping with the container os philosophy, it has no install-time configuration : it begins with a generic, unconfigured disk-image. On first boot, it is expected that configuration will be injected via Ignition Scripts.
-
-  It is supplied in:
-
-    * Cloud launchable formats ( notably for Amazon EC2)
-
-    * Bare Metal - in several varieties for PXE, Installer, Standard ISO bootable CD images, Raw Disk Images).
-
-    * As images in various Virtualised platforms ( vmware). Currently VirtualBox /  image for it don't exist.
-
-  At the moment, this doesnlt seem to be available as an uimage for the Vitual Box, but it seemed to me not unreasonable that the Bare Metal Images would install.
-
-  As it turned out, this was herhaps a litlle optimistic...
-
-  I did stuggle for many days, always feeling that I was on the point of getiing it working but ultimately decided that there was probaly something not quite compataible. THis is described more fully below.
-
-
-  The installation was attepted 2 ways:
-
-    * As an ISO image based install, where an image was mounted to Virtual Box as a cdrom
-
-    * As a PXE intall, where the server is booted to the Network and the install is performed with the aid of a PXE server.
-
-
-
-
-
-*Installing fedora-coreos onto Virtual Box via a CDROM
-
-**Configuration of the Empty Virtual box
-
-  An intitial Virtual Box Server was starte dwith the following characteristics:
-
-    * 2GB of Memory (CoreOS Container Linux needs a minimum of 2Gb of RAM in order to install. I think it can be reduced a bit when installation is complete). Note this is really important. If there is insufficient memory, the install will fail, and be quite difficult to diagnose as to why.
-
-    * 8Gb of Dynamically allocates VMDK ( Installation will consume 1.5 GB of this). Note: VMDK is an open format, so decided to go for it for this reason.
-
-    * 1 Network interface (NAT). The first attached Network Controller MUST be NAT.
-
-    * 1 Network interface (Host-Only). Donl;t think this is entirely necessary but went for it anyway.
-
-
-**ISO image
-
-  The image chosen fo the istallation was and Installer-type image: basically an image suffient to get RAM-based mionimum version up and running and pointing at a remote source where the actual installation can be performed fro. The image was down loaded from {{https://builds.coreos.fedoraproject.org/prod/streams/testing/builds/30.20191014.0/x86_64/fedora-coreos-30.20191014.0-installer.x86_64.iso}}. Note the only images available at the moment are from the testing stream.
-
-  Also downloder the bit-for-bit image that the installer is essentially going to copy onto the server.  This was
-
-    {{https://builds.coreos.fedoraproject.org/prod/streams/testing/builds/30.20191014.0/x86_64/fedora-coreos-30.20191014.0-metal.x86_64.raw.xz}}
-
-  The installer is network aware, able and able to locate files using either tftp or http protocols. The orginalk plan was to use the OSX included tftp server in order to deleiver the file, so the image was placed in the /private/tftpboot directory.
-
-**Initial Boot
-
-  This seemed to proceed without too many issues. The Fedora CoreOs Installer boot menu was presented and the
-  default Boot Chosen
-
-    /images/vmlinuz initrd=/images/initramfs.img nomodeset rd.neednet=1 coreos.inst=yes
-
-  This proceeded OK until...
-
-**Emergency Kernel
-
-  It becam apparant to the installer that it didnot have enough information provided to it for it to complete its job, so it dropped intothe emergency kernel, with a prompt to complete the instrallation via an invokactionof the coreos-insstaller.
-
-  These parameters COULD have been added to the boot loader command line above: but it is quite a lot to type manually.
-
-  It took a while for me to track down where on the system theis installer was located, since it wasn't in the usual bin direcories, but eventually tracked it down in /usr/libexec direcory. Invocation of this script required the following:
-
-    * the destination device for the install
-
-    * the raw image file to be installed
-
-    * An Ignition script to perform any pre/post installation steps
-
-  Script was invoked as follows:
-
----
-  /usr/libexec/coreos-installer \
-    -d sda \
-    -i http://192.168.0.17:8000/ignition3.json \
-    -b http://192.168.0.17:8000/fedora-coreos-30.20191014.0-metal.x86_64.raw.xz
----
-
-  Note: in order to make repeated installs easier, a copy of this script was also placeed on /private/tftpboot. It was pulled over as reuired using curl
-
----
-      curl --get http://192.168.0.17:8000/install.sh > tmp.sh
----
-
-  Note that although the original intention was to use tftp, it was discovered that http was MUCH faster. In fact, for an file the size of the raw install image, tftp was too slow to be workable. So instead the simple python webserver was run over the /provate/tftboot dir.
-
-**Initial Ignite file.
-
-  To begin with, I was not too bothered about trying to do too much with the Ignite file. It is unclear what is in place already in the raw image : does it include a useable disk layout? does it include
-
-
-
-
-
-
-  CONTINUE HERE  NEED TO
-  Complete the right up the completeion of the cdrom install
-  Talk through the trouble shooting
-  Tidy up the formatting
-
-  Give up on fedora-coreos forn now : go with Conatiner-OS
-
-  Talk through some of the key services that Container OS proveides
-    etcd
-    locksmith
-    docker
-    kerberos/
-
-
-
-
-**Post installation.
-
-  The remainder of the install at first site seemed to go reasonably ok.
-
-  Messages of the form:
-
----
-      dc: stack empty
-      43583897600%
----
-
-  where streamed constantly to the console. I suspect the dc line is the number of bytes: at a guess I'd says its doing some checksum verificatoin before proceeding...
-
-  The installation appeared to complete OK. It was hard to be sure because at that stage there was nothing available to capture the scrren output, whioch was scolling fast.  However, the system did reboot iself successsfully and appeared to comeup.
-
-  However, I had real difficulties logging on. These issues are discussed in detail {{here.}}
-
-
-
-
-
-
-
-
-* The Coreos-Installer and Ignite
-
-  As with Container Linux, non-interactive intallations are a fundamental part of the the philosophy of fedora-coreos. To achieve this, the coreos-install leans heavily on Ignite to automatically configure the box acording to a given json specification. Both ethe Ignite scripts and the base OS images can be specified as command parameters to the boot loader, meaning a fully functioning machine can be built without further intervention.
-
-
-
-
-*  This is bloody fiddly.
-
-  In practice, injecting a Ignite file is a tricky thing to get right. If there is anything untoward with it, the build won't succeed, but it quite tricky to get any diagnostic information back from the machine. This is in large part because in failing it doesn't leave behind a running ssh daemon tha will allo you to get onto the system and have a goot root around.
-
-  It seems to drop back through to the emergency console...but since this seems to be nolonger connected to a terminal this is not at all evident that that is what has happened. And even when you so realise, there doesn't seem to be a console that is attached and allows you to take advantage of that
-
-
-
-
-
-* A PXE Install
-
-  A PXE install ( i.e. network install) is the recommended form of installation. It has the following advantages:
-
-    * In theory, you can point the installer to the offical online stream, and so the latest updates etc are always available to it.
-
-    * It is possible to plug the necessary command line paramters into a configuration file for use by the bootloader. This means the install can run through WITHOUT dropping into the emergency kernel as per the cdrom installation.
-
-    []
-
-  Some of these advantages are eroded, however, since the install is only an emulated PXE install rather than a proper PXE install. The emulated PXE install REQWUIRES the kernel and rootfs iamges to be copied to the ~/Library/VirtualBox/TFTP dirrectory.
-
-  And also loadeing of these biggish images is pretty slow...
-
-  However the kernel and rootfs images were down loaded from here.
-
-      {{https://builds.coreos.fedoraproject.org/prod/streams/testing/builds/30.20191014.0/x86_64/fedora-coreos-30.20191014.0-installer-kernel-x86_64}}
-
-      {{https://builds.coreos.fedoraproject.org/prod/streams/testing/builds/30.20191014.0/x86_64/fedora-coreos-30.20191014.0-installer-initramfs.x86_64.img}}
-
-  The install also required the same raw bit-image that we used in the cdrom install.
-
-
-**Bootloder configuration File.
-
-  The specific coreos.inst paramters that allow us to boot without intervention were added into the bootloader configuration file:
-
----
-  ~/Library/VirtualBox/TFTP/pxelinux.cfg/default
-
-  DEFAULT pxeboot
-  TIMEOUT 100
-  PROMPT 0
-  LABEL pxeboot
-    KERNEL fedora-coreos-30.20191014.0-installer-kernel-x86_64
-    APPEND ip=dhcp rd.neednet=1 initrd=fedora-coreos-30.20191014.0-installer-initramfs.x86_64.img coreos.inst=yes coreos.autologin console=tty0  console=ttyS0 ignore_loglevel coreos.inst.install_dev=sda coreos.inst.image_url=http://192.168.0.17:8000/fedora-coreos-30.20191014.0-metal.x86_64.raw.xz coreos.inst.ignition_url=http://192.168.0.17:8000/ignition2.json
-	IPAPPEND 2
+  openssl passwd -1
 ---
 
 
-  Installing to
+**Networking
 
-  Installed the Installer Iso Image to cd
-
-  ---Started it normally, and just accepted the defualt boot paramters. but it hung during initial boot
-
-     MOuse got captured by and got locked out
-
-  --Restartered, it turned off mouse integration
-
-  and restarted
-
-
-    This dropped through to the emergency mode - pretty quick.
-
-    made sure the local tftp server was running
-
-    The host machine is contactable via its ip-address ( 192.168.0.17), so fetched an install script
-
-    from the tftp serrver running on it
-
-
-      curl --get tftp://192.168.0.17/install.sh
-
-
-      Tried a install from the Web...
-
-      https://builds.coreos.fedoraproject.org/prod/streams/testing/builds/30.20191014.0/x86_64/fedora-coreos-30.20191014.0-metal.x86_64.raw.xz
-
-      Messages of the form:
-
-      dc: stack empty
-      43583897600%
-
-        I suspect the dc line is the number of bytes: at a guess I'd says its doing some checksum verificatoin before proceeding...
-
-      Embedding provided Ignition config
-        Not embedding networking options: none provided.
-        Install Complete
-
-        However system won't boot:
-
-          No bootable Media found
-
-            I think this s becuase I didn't inject a configuration for the hda device via ignition...
-
-
-
-      Tried again, this time pulling the image from a local tftp server, AND configuring a sda device
-
-      This worked better: screeen was blank for a while making me think things ahad gone a bit awry,
-
-
-
-
-  /usr/libexec/coreos-installer
-
-    is a basic shell script that uses curl to down load an image
-
-
-    pulls the info into /tmp
-
-
-
-
-
-
-openssl passwd -1
-
-ssh-keygen -y -e -f ./insecure_private_key
+  Container Linux comes preconfigured with networking customised for each platform. Additional networking can be configured via Ignition if so desired.

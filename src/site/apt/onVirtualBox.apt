@@ -7,6 +7,22 @@ On Virtual box
   To Release press the Release button. THis is indicated at teh bottom right of the virtual bopx window, and is usually by Option-key ( next to Contol on the Left Hand Side.)
 
 
+*Starting / Shutting Down
+
+  VboxManage startvm
+
+  VBoxManage controlvm <vm> acpipowerbutton
+
+*Controlling the default boot device
+
+  VBoxManage modifyvm  <vm> --boot1 net
+
+  VBoxManage modifyvm  <vm> --boot1 disk
+
+*Changing the timeout on the  Boot Options Splash Screen
+
+    VBoxManage modifyvm <VMNAME> --bioslogodisplaytime 10000
+
 *Capturing console output during a system boot on a Linux system
 
   First make sure that a suitable serial device is configured on the linux side. This is by way of a parameter to the linux kernel you are trying to boot.
@@ -16,11 +32,156 @@ On Virtual box
 
         tty0    : use the specified Virtual console device
 
-    This need to provided to the kernel at boot time.  Usually these are presented to the kernel via the bootloader
+    ignore_loglevel : to make sure it sends everything.
 
+
+
+    This need to provided to the kernel at boot time.  Usually these are presented to the kernel via the bootloader. If this is happening during a virtual install it will be specified on the bootloader in the PXF direcory ( ~/Library/VirtualBox/TFTP/pxelinux.cfg/default or similar).
+
+    If in a kernel boioting from dik it will be in  /boot/loader/entris/<file>.conf or similar
 
     Secondly, on the VirtualBox conole, enable the corresponding serial port (Port1 for tty0), set the mode to 'RawFile' and reedirect its path to an apporpriate file.
 
+
+* The Vagrant Ignition Plugin
+
+  A plugin to vagrant (Vagrant::Ignition) exist, whose purpose is to inject Ignition json scripts inot the virtual server tht it is intending to build.
+
+  Rather than provide the scripts as command line paramters to the installer, the plugin generates  images of gpts formatted drives and places the json files it generates on that. It directs the guest os to mount the drives, and so the files become available to the guest os in a location where it knows where to look for them.
+
+  Vagrant is cabable of generating Ignition scripts in accordance with directives in the Vagrant configuration file. Any specific ignition scripts that the user wishes to add is merged into the default before it is presented.
+
+  This is fully described {{{https://github.com/coreos/vagrant-ignition}here}}.
+
+
+*Preboot Execution Environment Installs and VirtualBox
+
+    PXE (Preboot Execution Environment) describes a standardised client-server environment, that boots a software assembly retrieved from the network. In other words, rather then booting from a hard disk or cdrom, a clinet computer retrieves its boot image across the network.
+
+    On the client side, it merely needs a PXE-capable network card and a config change in the BIOS to set the Network as the first choice Boot option.
+
+    The Server side requires 2 components:
+
+      * A DHCP service to provide the appropriate client network parameters ( e.g. ipaddress), and the address of the PXE server to be used
+
+      * A PXE server to supply the boot image.
+
+      []
+
+    Often the PXE server is able to work as a DHCP proxy, so both service can be supplied from the same server.  On booting, the client will broadcast a DHCPDISCOVER packet to which the server(s) will respond.
+
+    The PXE server will supply the boot image to the client using the tftp protocol (Trivial FTP). tftp is essentially a stripped down version of ftp, and is noptably missing any sort of authentication requirement.
+
+    It is possible to <emulate> PXE booting within Virtualbox. The network cards within a VirtualBox environemtn are themselves virtual, and rather than looking for a PXE server on the network to supply it a boot image, it will look in a particular directory on the host operating system for the boot image. To use PXE within the virtual box environment, you need to:
+
+      * Set the VM to use the NAT networkin as the FIRST Network device,
+
+      * Set the VM to boot off the netowk
+
+      * Provide a suitable boot image within hte  ~/Library/VirtualBox/TFTP of the host o/s
+
+      []
+
+
+    VirtualBox expects to find a file named <vmname>.pxe within that directory, whic hneed to be a valid boot image. The file must be named afer the virtual machine that is being booted. So, if you are booting a vm called PxeBootTest, it looks for file:
+
+        ~/Library/VirtualBox/TFTP/PxeBootTest.pxe
+
+    Typically this would be a soft link into the actual boot image. Note: that Virtual Box DOES not provide any boot images; you need to track down a suitable boot image for whatever o/s you want and install it yourself.
+
+    For Linux, the pxe boot loader image forms part of the standard boot utilites available at various mirrors including the below:
+
+      https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/syslinux-6.03.tar.gz
+
+    The name of the boot loader is
+
+      pxeLinux.0
+
+    and it is just a pxe variant of the standard boot0/syslinux0 bootsector, and is configured in a similar way.
+
+    pxeLinux.0 expectes to find a subdireecty
+
+        ./pxelinux.cfg  ( NB This is a directory)
+
+    and from within there it looks for a boot configuration file:
+
+      It starts by looking for one named after the clients unique id ( e.g. b8945908-d6a6-41a9-611d-74a6ab80b83d)
+
+      Then it attempts to find one based on various hardware id, and if it can't find that reads a files called:
+
+      default.cfg
+
+      This configuration file is described within documentation in the syslinux-6.03.tar bundle, but broadly provides the kernel image to be secondstage booted and any paramters that it might need, including the image of the virtual root defic that it should iuse.
+
+      It will look something like the below.
+
+   ---
+      DEFAULT pxeboot
+      TIMEOUT 100
+      PROMPT 0
+      LABEL pxeboot
+          KERNEL fedora-coreos-30.20191014.0-installer-kernel-x86_64
+          APPEND ip=dhcp rd.neednet=1 initrd=fedora-coreos-30.20191014.0-installer-initramfs.x86_64.img coreos.inst=yes
+      	  IPAPPEND 2
+   ---
+
+      Obviously the various parameters supplied will be dependendent on the os you are tring to boot.
+
+    Note that,  in theory, pxeLinux.0 will support both http and ftp transfers, so it would be usual in a PXE boot for the kernal and rootfs images to be network destinations, and typically would address from a TFTP server.
+
+    <<HOWEVER>>, because our virtual network is only emulating PXE functionality it <<CANNOT>> truly see the network as it runs, only the TFTP direcory. This means that both kernel and initrd images MUST be in this location. It should also be noted that tftp seems to be a pretty slow protocol, and when it is being emulated as here it is very, slow.
+
+    Consequently, it is only really feasible to retrieve fairly small images via this route: anything more than about 70 or 80 Mb takes to long to practically load. Hence we can only really use <installer> type images here, not full y ditributiuonus.
+
+    Once, the kernel and intrd images have been loaded, the system is properly network aware, so other files such as Ignition scripts and raw images can be loaded from remote http or tftp locations. The http protocol shopuld be used in preference to tftp because it is much faster.
+
+**A simple tftp Server
+
+  trivial ftp (tftp) is a stripped down version of ftp without any authentication mechanisms
+
+  OSX comes bundled with its own tftp server. This does not run by default. If it is not running, it can be started:
+
+ ---
+  sudo launchctl load -F /System/Library/LaunchDaemons/tftp.plist
+  sudo launchctl start com.apple.tftpd
+ ---
+
+  By default tftpd uses the following folder:
+
+ ---
+    /private/tftpboot
+ ---
+
+  Be sure Read/Write/eXecute permissions are set on the tftpboot folder and any files you wish to transfer:
+
+ ---
+  sudo chmod 777 /private/tftpboot
+  sudo chmod 777 /private/tftpboot/*
+ ---
+
+  Note, if you’ll be transferring a file TO your TFTP server, the file will technically need to exist on the server beforehand so create it with touch. For example:
+
+ ---
+  sudo touch /private/tftpboot/<someFile>
+  sudo chmod 777 /private/tftpboot/<someFile>
+ ---
+
+  Likewise, there is a tftp to send/get files using the particular protocol.
+
+
+**A simple HTTP Server
+
+  Python come packaged with a simple Http Server capable of serving files from a single directory. Just Run it from the directory containing the files to be served.
+
+ ---
+  cd <targetDir>
+
+  python -m SimpleHTTPServer
+ ---
+
+
+
+===
 
 
 * Useful command line stuff
