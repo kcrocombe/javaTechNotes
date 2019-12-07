@@ -1,0 +1,344 @@
+Experiments and Learning from building the Simple Rest Service
+
+		Spring-Boot : is just a set of standard Java libraries ( spring-boot-*.jar ). To use just
+		include these along the CLASSPATH.
+
+		 Recommended to use Maven or Gradle to manage dependency, but not required to do so.
+
+		All Boot dependencies use the org.springframework.boot groupId ( in a Maven Co-ordinate system).
+
+	Typically your Maven POM file will inherit from the spring-boot-starter-parent project and declare dependencies to one or more “Starter POMs”.
+
+	Spring Boot also provides an optional Maven plugin to create executable jars
+
+
+
+	1) Fire up InterlliJ and create a new Project.
+
+
+	2) Select a new Maven Project :
+			: for our immediate purposes, don’t choose an archetype : This means
+					a default directory structure will be created (
+							src/main/java
+							src/main/resources
+							test/java
+							)
+					a blank maven.xml
+
+					The workbench tool also creates a .iml file ( for its own purposes).
+
+
+
+
+			: By choosing a pre-defined archetype ( e.g. maven-webapp ), a different directory structure will be created,
+			  possibly with some template configuration files installed. The pom.xml file will also created but with some
+			  predefined dependencies already populated : In this case, a dependency on junit to facilitate unit testing.
+
+
+			The best way to see the available archetypes is to use the
+
+---
+				mvn archetype:generate
+---
+
+			command from the command line ( There are hundreds )
+
+
+			It includes various sample projects from spring, which are then downloadable just by
+			selecting the archetype concerned.
+
+
+			To generate a project from outside the workbench, non-interactively
+
+
+---
+				mvn archetype:generate \
+					-DgroupId=com.apress.gswmbook \
+					-DartifactId=gswm-web \
+					-Dversion=1.0.0-SNAPSHOT \
+					-Dpackage=war \
+					-DarchetypeArtifactId=maven-archetype-webapp
+---
+
+
+			or
+
+---
+				mvn archetype:generate -DarchetypeArtifactId=maven-archetype-webapp
+---
+
+			and then the tool will just prompt the required parameters.
+
+
+
+	3) The Tool will open, showing the basic jdk libraries of the java environment selected when the projects was set up
+	   ( under External Libraries), plus the dirs/files created by maven.
+
+
+
+	4) If the generated pom.xml contains any dependency lines,  Intellij will issue an info box allowing you to import the libraries concerned. (The
+	   tool may be configured to auto-import any changes to pom.xml.)
+
+	   These dependencies will then appear under External Libraries.
+
+	   If the libraries exist in the local maven repository, they will be imported from there, otherwise they will be downloaded. ( from whatever
+	   repositories are configured in the pomp, or the maven default if none are.)
+
+
+	5) Develop the POM for the Spring REST example.
+
+		add the parent dependency : spring.boot.starter.parent
+
+		don’t fully understand what this does, save to say it provides a common environment for the other spring dependencies to work in
+
+
+		add in the spring-boot-starter-web dependency.
+
+		This will pull in a whole load of org.springframework.boot libraryies.
+
+
+		Adds in the spring-boot-maven-plugin. This is not essential to the building of the app, but provides a couple of additional
+		useful routines :
+			repackage :
+			run :
+
+
+	6) Add in the classes
+
+		The guts of this is the GreetingContoller, which makes use of the facilities provided by the Spring MVC ( Model View Controller)
+		Framework.
+
+			In essence, the framework provides a DispatcherServet object, which listens for the incoming HTTP requests, identifies
+			an appropriate handler for those requests, and then formats the response for rerun to the caller.
+
+			The DispatcherServlet generally you don’t need to get too involved with.
+
+
+			The handlers are what Spring MVC calls controllers.
+
+			Controllers provide access to the application behavior that you typically define through a service interface. Controllers
+			interpret user input and transform it into a model that is represented to the user by the view.
+
+			The @Controller annotation indicates that a particular class serves the role of a controller.
+
+			The dispatcher scans such annotated classes for mapped methods and detects @RequestMapping annotations
+
+
+
+		GreetingController
+			In Spring’s approach to building RESTful web services, HTTP requests are handled by a controller.
+			Controllers interpret user input and transform it into a model that is represented to the user by the view.
+
+
+			This seems little more than
+
+				creating a class and Annotating with @RestController
+
+
+				annotating the methods that are to provide the particular REST services with @RequestMapping()
+
+						@RequestMapping(method=GET)
+						@RequestMapping(method=POST) etc
+
+						@RequestHapping() alone will map all ( GET, POST etc
+
+
+				binding any parameters that might be provides with the @RequestParameter annotation
+
+				RequestMapping can be specified at the Class level, or on the methods.
+
+				Additional path elements can be extracted with the
+					@PathVariable() function or
+					@RequestParam()
+
+
+			The dispatcher will then essentially route requests of the given path to the relevant method on the controller.
+
+
+			The @ResponseBody annotation on a function indicates that its output is to be written directly to the HTTP response stream
+			and not interpretated via Model/VBiew.
+
+			REST web services, typically serve just data, so it is common for such functions to labelled @ResponseBody. By using the annotation
+			@RestController, this is a shortcut which will ensure all functions returned by the controller will be annotated as
+			@ResponseBody.
+
+
+		Application
+			The @SpringBootApplication is a convenience tag that lumps together several others
+
+				@Configuration tags the class as a source of bean definitions for the application context.
+
+				@EnableAutoConfiguration tells Spring Boot to start adding beans based on classpath settings,
+				other beans, and various property settings. Normally you would add @EnableWebMvc for a
+				Spring MVC app, but Spring Boot adds it automatically when it sees spring-webmvc on the classpath.
+				This flags the application as a web application and activates key behaviors such as setting up a DispatcherServlet.
+
+				@ComponentScan tells Spring to look for other components, configurations, and services in the the hello
+				package, allowing it to find the HelloController.
+
+
+		Greeting
+			This class is just the payload, and represents nothing interesting really.
+
+
+	7) The project can then be built using the standard Maven directive
+
+			package : ( it will do the necessary preceding steps…)
+
+
+	8) IT can then be deployed and run directly using the spring-boot goal
+
+			spring-boot:run
+
+	9) The spring-boot-starter-web contains a built in Tomcat web server, so it can be run directly as a jar,  which will then start-up
+	   as a tomcat server will ing to serve the given embedded web app.
+
+	10) If you don’t want to use the default built in Tomcat web server, there are several other available, jetty, undertow ( i.e. what is used
+	    in wildfly)
+
+	11) Just exclude the tomcat libs from the starter set, and add in the undertow libs.
+
+---
+	     <dependencies>
+	        <dependency>
+	            <groupId>org.springframework.boot</groupId>
+	            <artifactId>spring-boot-starter-web</artifactId>
+	            <exclusions>
+	                <exclusion>
+	                    <groupId>org.springframework.boot</groupId>
+	                    <artifactId>spring-boot-starter-tomcat</artifactId>
+	                </exclusion>
+	            </exclusions>
+	        </dependency>
+	        <dependency>
+	            <groupId>org.springframework.boot</groupId>
+	            <artifactId>spring-boot-starter-undertow</artifactId>
+	        </dependency>
+	    </dependencies>
+---
+
+
+	12) Converting to run under a standard web server.
+
+		This takes 3 steps:
+
+		a) First we need a subclass of the SpringBootServletInitializer and override its configure method. Typically you
+		   would use the applications main class to extend SpringBootInitializer.
+
+
+---
+			@SpringBootApplication
+			public class Application extends SpringBootServletInitializer {
+
+			@Override
+	    		protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+	        		return application.sources(Application.class);
+	    			}
+
+			    public static void main(String[] args) throws Exception {
+	        		SpringApplication.run(Application.class, args);
+	    			}
+
+			}
+---
+
+
+		b) Explicitly tell the build to produce a WAR rather then a JAR by including a packaging clause
+
+---
+			    <groupId>pegortech.co.uk</groupId>
+	    		    <artifactId>Greeter</artifactId>
+	    		    <version>1.0-SNAPSHOT</version>
+	                    <packaging>war</packaging>
+---
+
+		c) Make sure the embedded servlet container does not interfere with the servlet container to which
+		   the war file will be deployed. To do this mark the servlet container as provided
+
+---
+			        <dependency>
+	            			<groupId>org.springframework.boot</groupId>
+	           			<artifactId>spring-boot-starter-tomcat</artifactId>
+	            			<scope>provided</scope>
+	        		</dependency>
+---
+
+
+		  NB : If you get a
+			cannot access javax.servlet.ServletException
+
+		  There is probably a missing web server library.
+		  Even though the functionality is to be provided buy the web server environment and so not built into our application,
+		  you still need to include the library in the POM, but mark it PROVIDED.
+
+
+	13)  Changing the context url of the web server
+
+
+		Wildfly. By default, the web server will provide URL’s at the following
+
+		localhost:8080:/DeploymentWarName/get etc.
+
+		In order to remap the url to something else, then a jboss-web.xml file needs to be provided, with the following
+
+---
+			<jboss-web>
+	    			<context-root>tifosi</context-root>
+			</jboss-web>
+---
+
+
+		This needs to be in the WEB-INF dir of the deployed WAR.
+
+		In order for maven to build it into this location, it need to be placed in the
+			src/main/webapp/WEB-INF directory.
+
+
+
+
+	14) Setting Debug Mode on the wildly Webserver
+
+		Essentially this is set in one of the various xml file controlling the configuration. However, the
+		recommendation is not to change these files manually
+
+		Instead, use the jboss-cnt.sh tool to manipulate them.
+
+		Remember that the app-server ids made up of many components, and each will have its own logging system that can be
+		configured seperataly.
+
+
+		However configuring the CONSOLE and ROOT logging levels seems to be a good place to start…
+
+
+*CONSOLE
+
+---
+		cd /subsystem=logging/console-handler=CONSOLE
+
+		ls ( will show current settings )
+---
+
+		TO change, use the following commands:
+
+---
+			/subsystem=logging/console-handler=CONSOLE:write-attribute(name=level,value=DEBUG)
+
+			/subsystem=logging/console-handler=CONSOLE:write-attribute(name=level,value=INFO)
+---
+
+		or, if you are in the relevant ‘dir’
+
+---
+			:write-attribute(name=level,value=INFO)
+---
+
+
+*ROOT
+
+---
+		cd /subsystem=logging/console-handler=CONSOLE
+
+			:write-attribute(name=level,value=DEBUG)
+
+			:write-attribute(name=level,value=INFO)
+---

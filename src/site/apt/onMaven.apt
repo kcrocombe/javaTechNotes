@@ -1,0 +1,855 @@
+Maven Notes
+
+Need to do some cutting and pasting on this and get some of the bits in a more logical order again.
+
+*Introduction
+
+	[[1]] Maven is a Yiddish word meaning 'accumulation of knowledge'.
+
+	[[1]] Maven is a tool for tool for Building and Managing any Java Based Project (NB really only Java - it is not so good with C etc.).
+
+	[[1]] It tries to provide:
+
+		* An easy build process
+
+		* a UNIFORM build process
+
+		* quality project information
+
+		* guidelines on best practises.
+
+
+	[[1]] Features
+
+		* simple project setup that follows best practices;
+
+		* consistent usage across projects;
+
+		* superior dependency management;
+
+		* large repository of libraries;
+
+		* model based builds;
+
+		* release management and distribution;
+
+		* dependency management.
+
+	[[1]] It is embedded within Eclipse, but I don't think that it is used by default for all Eclipse projects. You have to choose to set up your eclipse project as an Maven Project
+
+	[[1]] Had some difficulty working out how it is configured/used from within Eclipse, so installed it standalone outside of Eclipse.
+
+
+*My Initial Installation
+
+	This was installed using the osx <<<brew>>> utility, as follows:
+
+---
+
+	brew install maven
+---
+		This installed it to <<</usr/local/cellar>>>, with a set of links to the executables in <<</usr/local/bin>>>.
+
+		(Note, I had originally installed maven manually (as a tar ball) in /apps/maven. Once I am happy that the new installation works ok, this will be removed.)
+
+		Updated my .bash_profile to include:
+
+---
+	MAVEN_HOME=/usr/local/cellar/maven/3.6.3
+
+	and
+
+	PATH=${MAVEN_HOME}/bin:${PATH}
+---
+
+
+*General Configuration
+
+	In general, Maven does not need a lot of configuration: it works pretty well out of the box. Should you need to tweak anything, its behaviour is largely controlled by:
+
+		* $\{MAVEN_HOME\}/conf/settings.xml;
+
+		* ~/.m2/settings.xml.
+
+	One thing that you may with to change is the location of any local repositories used by Maven. By default, these will be in ~/.m2/repository. However, you may wish to use a project specific or company global one.
+
+
+*Generation of a Project Structure using archetypes
+
+	Maven emphasises the use of standard project layouts, but allows for different types of project to have different layouts. It does this via the concept of a Project Archetype. A project archetype is basically a template specifying:
+
+		* the directory structure for your project;
+
+		* a pom.xml file with some suitable plugins specified, and some standard dependencies configured.
+
+	A whole bunch of Standard Archetypes are available via an online repository, so, in theory, its just a question of choosing which archetype is most appropriate for your project and away you go.  In practise, it is not quite so easy.
+
+	The problem is that there are hundreds of archetypes available, but little in the way of information to help you decide which one you want. Consequently, it is better to do some research on-line, maybe on various suppliers web-sites, to work out which one you might want beforehand. Once you know that, it is easy enough to track it down in hte repository.
+
+	By default, the tool uses the archetype repository defined at Maven Central. However, should you wish to, you can configure a custom archetype repository by creating a suitable entry in the maven <settings.xml> file. It may be worth doing this once you have built up your own library of useful archetypes.
+
+	Maven has a specific plugin (maven-archetyp-plugin) that can be used to interrogate the online repository. This is well documented at {{https://maven.apache.org/archetype/maven-archetype-plugin/index.html}} The tool can work in a predominantly interactive manner. Just typing:
+
+---
+	mvn archetype:generate
+---
+
+	will trigger a conversation with the server. In brief, it will list the totality of archetypes available, and either ask you to choose one, or some specify some filter criteria to narrow it down.
+
+	Alternatively, if you already know exactly what you want, you can specify everything you need in batch mode.
+
+	So, for example:
+
+---
+	mvn archetype:generate -B \
+		-DarchetypeGroupId=org.maven.archetype
+		-DarchetypeArtifactId=maven-archetype-quickstart \
+		-DarchetypeVersion=1.4 \
+		-DgroupId=uk.co.pegortech \
+		-DartifactId=tester \
+		-Dversion=1.0-SNAPSHOT
+---
+
+	This will generate a project based on the maven-archetype-quickstart archetype of name: tester
+
+	The classes will be organised in a hierarchy reflecting the originating company. In this case:
+
+			src/main/uk/co/pegortech/\*.java
+
+			test/main/uk/co/pegortech/\*.java
+
+	It will also generate a pom.xml ({{Project Object Model}}) which contains all the info needed to build the project, including which tools are needed for each step of the process.  Note that every pom will INHERIT its values from any parent pom it might have, possibly overriding some of them.  There is also a system-wide SUPER POM, which is part of the installation itself. Every project ultimately inherits values from this.
+
+	Note that in all likelihood, this pom.xml file will just act as your starting position. Almost certainly, additional dependencies etc will need to be drawn in which are specific to your project, and these would be reflected by additions to the pom.xml.
+
+
+*Project Object Model
+
+	All of the object that need to be modelled within your project are described within an xml file called the Project Object Model (pom.xml). It tells maven what sort of project it is dealing with and how to modify its behaviour to A deal with it. It is broadly equivalent to the <<<makefile>>> in <<<make>>>.
+
+	The pom contains 4 differnt types of information:
+
+	* General Project Information : detailing project metadata such as its name, owner, developers etc.
+
+	* Build Settings : detailing the plugins used during the build, and what functions within those plugins are used during which steps of the build process; location of source and destination files etc.
+
+	* Build environemnt : Often we wish to build our project slightly differently depending upon where we wish to deploy it; e.g. development, test or production environments. Or maybe different builds for different customers.
+
+	* Relationships : detailing what other artefacts the project might be dependent on, and relationship with parent or child projects.
+
+		{{{https://mvnrepository.com/}Repository of Maven Artifacts}}
+
+
+[./images/mavenModel.png]
+
+
+*Plugins
+
+	The 'tools' used to process the given step in the build process are provided as one or more 'plug-ins' to maven. These are configured into the pom.xml (again, downloaded as part of the archetype). Different steps in the build process are likely to need different plugins, so it is common to see several of these configured in.
+
+	During the build, the plugins are downloaded and installed if they are not already part of the configuration. For example:
+
+		*	maven-compiler-plugin:	will drive the java compilation process
+
+		*	maven-jar-plugin:			will drive the building of jar files
+
+		*	maven-install-plugin:	will drive the installation process
+
+		*	maven-project-info-reports-plugin:  Will provide reporting etc.
+
+	A full list of the available plugins is maintained on the {{{https://maven.apache.org/plugins/index.html}Maven Plugins}} webpage.
+
+
+	There are 2 types of plugins:
+
+		* Build plugins  - configured under the <<<<build>>>> section of the pom;
+
+		* Reporting plugins  - configured under the <<<<reporting>>>> section of the pom.
+
+	Each <<<plugin>>> will publish the <<<goal>>>s (see below) it supports, so Maven becomes aware of them as they are plugged in.
+
+
+
+* Goals
+
+		Maven uses the concept of goals to represent granular tasks : e.g. compile
+
+		Goals are packaged within plug-ins which are essentially just a collection of goals.
+
+		Goals are specified to maven as follows:
+
+---
+	mvn <plugin>:<goal>
+---
+
+		So,  <<<mvn clean:clean>>>
+
+		will execute the 'clean' goal of the 'clean' plugin
+
+
+* Lifecycles
+
+		A lifecycle is made up of a sequence of Phases and the lifecycle will define the ORDER of phases.
+
+		Maven has 3 built in Lifecycles:
+
+			* Default - compiling, packaging, deploying
+
+			* Clean - Basically for removing all generated artefacts.
+
+			* Site  - Is used to create the sites documentation.
+
+
+** Default LifeCycle
+
+		The Default LifeCycle consists of the following major phases (NB there are other less important phases not listed below):
+
+			* Validate phase - checks the project and that all dependencies are available;
+
+			* Compile phase - compiles all source;
+
+			* Test phase - Runs Unit tests using frameworks;
+
+			* Package phase - assembles compiled code into a WAR, JAR or whatever;
+
+			* Verify phase - Run any checks to verify the package is valid and meets quality criteria;
+
+			* Install phase - Installs the package to a local repository;
+
+			* Deploy Phase - pushes the build to a remote repository for use by other teams/projects.
+
+	i<<NB NEED TO SAY SOMETHING ABOUT THE DEFAULT LIFECYCLE AND A PACKAGEING!!!!>>
+
+** Clean LifeCycle
+
+		The Clean Lifecycle comprises the following phases:
+
+			* pre-clean phase;
+
+			* clean phase;
+
+			* post-clean phase.
+
+** Site Lifecycle
+
+		The Site Lifecycle comprises the following:
+
+			* pre-site phase;
+
+			* site phase;
+
+			* post-site phase;
+
+			* site-deploy phase.
+
+
+* Phase Processing
+
+		By invoking a particular maven phase, e.g.
+
+---
+	mvn package
+---
+
+		all phases up to and including the package <<<phase>>> will be invoked. Note that phases can be pipelined as single command e.g.:
+
+---
+	mvn clean deploy site-deploy
+
+	mvn verify
+---
+
+		Each <<<phase>>> is associated with one or more <<<goals>>> of a <<<plugin>>>, and the <<<phase>>> just delegates to the associated <<<goals>>>.
+
+		Some <<<phases>>> have <<<goals>>> bound to them by default:
+
+		Packaging = jar/war/ejb/ejb3/par/rar
+
+			clean <<<phase>>> 	: is bound to the clean <<<goal>>> of the <<<clean>>> phase  (<<<clean:clean>>>).
+
+			compile <<<phase>>> : is bound to the compile <<<goal>>> of the <<<compile>>> phase (<<<compile:compile>>>).
+
+			test <<<phase>>>		: is bound to the surefire <<<goal>>> of the <<<test>>> phase (<<<surefire:test>>>).
+
+			package <<<phase>>> : is bound to the jar <<<goal>>> of the <<<jar>>> phase (<<<jar:jar>>>).
+
+									war:war OR
+
+									ejb:ejb OR
+
+			install phase --> install:install
+
+			deploy phase --> deploy:deploy
+
+
+		Each plugin will publish what goals it offers, and on 'plugging in', these will become associated with a phase within a lifecycle. FOr example:
+
+
+			* the maven-compiler-plugin offers the compile and testCompile <<<goals>>>, and will bind these to the compile <<<phase>>>.
+
+			* the modello plugin binds its <<<goal>>> 'java' to the generate-sources <<<phase>>>.
+
+		It is also possible to manually bind plugin-goals to particular phases via entries in the pom.xml file.
+
+
+*Invocation
+
+---
+	mvn <plugin:<goal>>
+
+	or
+
+	mvn <phase>
+---
+
+	Note: a plugin:goal does not HAVE to be bound into a phase within a lifecycle. Such goals can be invoked directly from the command line, as above, i.e.
+
+---
+	mvn <plugin:<goal>>
+---
+
+
+
+*Getting Help
+
+	Maven does not have particularly extensive man pages, nor does it have a helpful --help option that you can specify. What it has instead, is a 'help' plugin. This provides 4 goals:
+
+		* help:describe - describes the attributes of a particular plugin
+
+		* help:effective-pom - collates pom information form default, local and global pom files and collates it as one.
+
+		* help:effective-settings
+
+		* help:active-profiles - lists any profiles that may be active on the project
+
+	So, to see the full range of facilities offered by the help plugin:
+
+---
+	mvn help:describe -Dplugin=help -Ddetail
+---
+
+*Examining the Wiring of the Build
+
+	We can use the <<<help>>> plugin in order to ascertain how each phase of the build is being implemented. So, to see the detail of the processing with regard to a given <<<phase>>>, in this case <<<compile>>>, use:
+
+---
+	mvn help:describe -Dcmd=compile -Ddetail
+
+		'compile' is a phase corresponding to this plugin:
+		org.apache.maven.plugins:maven-compiler-plugin:3.1:compile
+
+		It is a part of the lifecycle for the POM packaging 'jar'. This lifecycle includes the following phases:
+		* validate: Not defined
+		* initialize: Not defined
+		* generate-sources: Not defined
+		* process-sources: Not defined
+		* generate-resources: Not defined
+		* process-resources: org.apache.maven.plugins:maven-resources-plugin:2.6:resources
+		* compile: org.apache.maven.plugins:maven-compiler-plugin:3.1:compile
+		* process-classes: Not defined
+		* generate-test-sources: Not defined
+		* process-test-sources: Not defined
+		* generate-test-resources: Not defined
+		* process-test-resources: org.apache.maven.plugins:maven-resources-plugin:2.6:testResources
+		* test-compile: org.apache.maven.plugins:maven-compiler-plugin:3.1:testCompile
+		* process-test-classes: Not defined
+		* test: org.apache.maven.plugins:maven-surefire-plugin:2.12.4:test
+		* prepare-package: Not defined
+		* package: org.apache.maven.plugins:maven-jar-plugin:2.4:jar
+		* pre-integration-test: Not defined
+		* integration-test: Not defined
+		* post-integration-test: Not defined
+		* verify: Not defined
+		* install: org.apache.maven.plugins:maven-install-plugin:2.4:install
+		* deploy: org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy
+
+---
+	This shows where the phase sits in relation to the other phases in its lifecycle, and the <<<plugin>>> and <<<goal>>> that will be invoked to process it. In this case, the <<<compile>>> <<<phase>>> is implemented by the <<compile>> goal of version <<<3.1>>> of the <<<maven-compiler-plugin>>> plugin of group <<<org.apache.maven.plugins>>>
+
+	Given the plugin name,
+
+	We can look at all the goals that a particular plugin offers. For example:
+
+---
+		mvn help:describe -Dplugin=org.apache.maven.plugins:maven-compiler-plugin:3.1 -Dfull
+
+		or, (if we know the goal prefix)
+
+		mvn help:describe -Dplugin=compiler -Dfull
+
+			Name: Maven Compiler Plugin
+			Description: The Compiler Plugin is used to compile the sources of your
+	  	project.
+			Group Id: org.apache.maven.plugins
+			Artifact Id: maven-compiler-plugin
+			Version: 3.1
+			Goal Prefix: compiler
+
+			This plugin has 3 goals:
+
+			compiler:compile
+	  	Description: Compiles application sources
+
+			compiler:help
+	  	Description: Display help information on maven-compiler-plugin.
+	    	Call mvn compiler:help -Ddetail=true -Dgoal=<goal-name> to display
+	    	parameter details.
+
+			compiler:testCompile
+	  	Description: Compiles application test sources.
+---
+
+	Note that when the plugin registers within maven, it also registers a Goal Prefix (in this case <<<compiler>>>) which can be used as shorthand for the full GroupId:ArtifactId:version plugin specification.
+
+	We can use this, or the full specification, to establish the full processing details of a given goal.
+
+---
+	mvn help:describe -Dcmd=org.apache.maven.plugins:maven-compiler-plugin:3.1:compile -Ddetail
+
+	or
+
+	mvn help:describe -Dcmd=compiler:compile -Ddetail
+
+
+		[INFO] 'compiler:compile' is a plugin goal (aka mojo).
+		Mojo: 'compiler:compile'
+		compiler:compile
+		  Description: Compiles application sources
+		  Implementation: org.apache.maven.plugin.compiler.CompilerMojo
+		  Language: java
+		  Bound to phase: compile
+
+		  Available parameters:
+
+		    annotationProcessors
+		      Names of annotation processors to run. Only applies to JDK 1.6+ If not
+		      set, the default annotation processors discovery process applies.
+
+		    compilerArgs
+		      Sets the arguments to be passed to the compiler if fork is set to true.
+		      Example:
+
+		      <compilerArgs>
+		       <arg>-Xmaxerrs=1000</arg>
+		       <arg>-Xlint</arg>
+		      </compilerArgs>
+
+			....
+---
+
+* Dependencies
+
+		The external dependencies required for a particular project must be configured into the POM.xml
+
+		The dependencies themselves are held within one or more local maven repositories.
+
+		If an dependency does not exist in the local repository, a remote Maven repository will be
+		contacted and the dependency downloaded to the local repository from there.
+
+		The remote repository or repositories to use are specified in the Settings.xml file (either
+		global or local).
+
+		By default, the local repository is ~/.m2/repository (and local settings file ~/.m2/settings.xml)
+
+		In order to facilitate sharing of repositories, say within an organisation, very often a repository
+		manager (such as Sonatype Nexus) sits between the global and local repositories. In these cases,
+		maven gets its dependencies from the repository manager, and the repository manager talks to the
+		external repository.
+
+		There are a wide range of external repositories available that can supply dependencies (jar files, plugins) etc.
+		The default is {{{http://central.maven.org/maven2/} Maven Central}}, but most of the major players have their own.
+
+		The dependency is specified by 4 things:
+
+			* groupId: 	The owner of the artefact;
+
+			* artifectId:	The name of the artefact;
+
+			* version:		The particular version;
+
+			* scope:  e.g. compile, provided, runtime, test, system, import ( ie where and how the dependency is used).
+
+		The <<scopes>> may be variously:
+
+			* compile - default. will be available in all classpaths of project;
+
+			* provided - like compile, but indicates you expect the JDK or a container to provide the dependency at runtime;
+
+			* runtime - not required for compilation, but is required to execute;
+
+			* test - not required for normal use of the app, just for testing phases;
+
+			* system - similar to provided except the JAR which contains it needs to be specifically stated (it is not looked up in the repository);
+
+			* import - ???
+
+		You only have to specify primary dependencies : the secondary dependencies ( transitive dependencies) are
+		managed automatically by the tool.
+
+		I'm not sure quite how you work out what libraries you actually need. Obviously you can look at the
+		classes themselves...
+
+				javax.servlet.GenericServlet
+
+		However there are loads of .jar files that actually supply this.
+
+			{{https://search.maven.org/classic/#advancedsearch}}
+
+		can be used to track down possibilities.
+
+		Plugging in javax.servlet finds 39 options of which this seems the most appropriate to the wildfly container I have.
+
+---
+	GroupId			org.jboss.spwc.javax.servlet
+	ArtifactId		jboss-servlet-api_4.0_spec
+	LatestVersion	1.0.0.Final
+---
+		You can see the how Maven will expand out the transitive dependencies using the following:
+
+---
+	mvn dependency:tree
+---
+
+		This will print out a nice formatted list of all the library/jars that are depended upon.
+
+
+* Customising a build process
+
+	Whenever you need to customise the build, you do it by adding or reconfiguring plugins.
+
+	There are a wide variety of plugins available in the repository.
+
+	e.g. wildfly-maven-plugin provides facilities to deploy/undeploy applications, start/stop webservers
+	execute wildfly cli commands.
+
+	example goals:
+
+		* wildfly:deploy
+
+		* deploy:undeploy
+
+		* wildfly:startup
+
+		* wildfly:run (basically startup and deploy)
+
+
+	What each plugin defines as goals and how and where it integrates them into the Maven Lifecycle is up to the plugin concerned. You must refer to the documentation of that plugin for specifics.
+
+* Custom plugins
+
+	If a plugin does not exist for what you want to do, you can write your own!
+
+
+* Dealing with Multiple Projects as Modules.
+
+	Bigger projects are usually split into multiple modules, with each module responsible for generating their own
+	artefacts, quite often of different types.
+
+	Maven supports this by allowing multiple projects to be nested under a single Parent project
+
+	Define the master project
+
+---
+	mvn archetype:generate -DgroupId=uk.co.pegortech -DartifactId=testMasterProject -DarchetypeArtifactId=pom-root -DarchetypeVersion=1.4
+---
+
+	This basically downloads not much more than a pom.xml
+
+	Now use <<<mvn>>> to create the sub-projects from within the master project
+
+---
+	cd testMasterProject
+
+	mvn archetype:generate -DgroupId=uk.co.pegortech -DartifactId=tester1 -DarchetypeArtifactId=maven-archetype-quickstart -DarchetypeVersion=1.4
+
+	mvn archetype:generate -DgroupId=uk.co.pegortech -DartifactId=tester2 -DarchetypeArtifactId=maven-archetype-quickstart -DarchetypeVersion=1.4
+---
+
+
+  This does two additional things of note:
+
+  [[a]] it adds the new modules tester1, tester2 to the pom.xml of the master project;
+
+  [[b]] it adds the testMasterProject to the pom.xml of the two subordinate projects.
+
+  Now when you run phases or goals against the master project it will run it against all sub-projects.
+
+
+* Parent-Child relationships in Maven
+
+	Do not confuse <<composition>> relationships in Maven with <<Inheritance>> Relationships
+
+	Declaring a sub-module (B) in a project(A) is just a means of organising it from a <<<build>>> perspective : it does <NOT> mean that the PARENT of the module B is necessarily A. B can have an entirely different parent module.
+
+	A module X which declares Y as its parent module, will <<inherit>> the identifiers dependencies, plugins, plugin configuration and plugin execution from its parent without having to declare them itself.
+
+
+
+* Grouping Dependencies
+
+	It is considered good practice to group together sets of dependencies that might be shared in a project, and stick them in a 'project' of it own.  Anything that need to use that can then just declare it as a dependency.
+
+
+* Adding Maven Dependencies Under eclipse
+
+	Adding Dependencies to the POM
+
+	Right Click on the Maven Project concerned and use
+
+		Maven --> Add Dependency
+
+		Added the details above in.  This updated the POM accordingly.
+
+	However, maven failed to locate and download the requested resource. When examining the pow in the xml editor, it suggested that it could not find the dependency in any of the configured repositories.
+
+	It also suggested a fix, which was to add a new repository. When I selected the fix it opened a Settings.xml editor. I was able to add a jboss repository and that sorted things out.
+
+	I have never been able to find that settings editor subsequently(!).
+
+====
+
+
+
+
+Executing a packaged Jar.
+
+  The output of your <<<mvn package>>> command will be a <<<jar>>> file (assuming your packaging is 'jar'). Depending how you wish to deploy and use this, there may be some configuration choices that need to be made.
+
+
+*Executable jar files
+
+**Main Class
+
+  If the intention is to create an executable jar, runnable using the command line similar to:
+
+---
+  java -jar <someJarFile>>
+---
+
+  ...then java needs something to help it decide which class method within the jar to execute (there could be several classes with a main()). An <<<Main-Class>>> entry within the jars MANIFEST file is the way that this is determined. e.g.
+
+---
+    Main-Class: uk.co.pegortech.fitStat.FitStats
+---
+
+  By default, when maven packages a jar with the <<<maven-jar-plugin>>>, it will NOT create such an entry. Consequently, if you attempt to run the command, you will get the following error.
+
+---
+        no main manifest attribute, in fitStat-1.0-SNAPSHOT.jar
+---
+
+  In order, to get maven to build this in, you need to add a <manifest> section to the plugins configuration within the pom.
+
+---
+  <plugin>
+    <artifactId>maven-jar-plugin</artifactId>
+    <version>3.2.0</version>
+    <configuration>
+      <archive>
+       <manifest>
+        <addClasspath>false</addClasspath>
+        <mainClass>uk.co.pegortech.fitStat.FitStats</mainClass>
+      </manifest>
+      </archive>
+    </configuration>
+  </plugin>
+---
+
+**Class Path
+
+  When you execute a jar file directly, both the <<<CLASSPATH>>> and any jar you may have supplied on the command line are ignored. Consequently, if your jar file has dependencies on other jars, it will fail:
+
+---
+  java -jar <someJarFile>>  --classpath someDir/someLibrary.jar
+
+  Exception in thread "main" java.lang.NoClassDefFoundError: com/garmin/fit/FitRuntimeException
+  	at java.lang.Class.getDeclaredMethods0(Native Method)
+  	at java.lang.Class.privateGetDeclaredMethods(Class.java:2693)
+    ...
+
+---
+  In other words, all the classes that the program needs (apart form the standard runtime ones in $JAVA_HOME/lib) MUST be present in the one jar.
+
+  However, the jar can be configured to search in other jars for the classes it needs by specifying them with the <<<Class-Path>>> qualifier within the MANIFEST.MF file.
+
+---
+  Class-Path: commons-math3-3.6.1.jar fit-20.85.0.jar
+---
+
+  In these circumstances, java will expect to find these jars IN THE SAME DIRECTORY as the jar it is executing. Whilst this is quite useful in some circumstances, it doesn't work too well if any of the classes reference third party jars or shared jars, which would reasonably be expected to be located elsewhere.
+
+
+*Uber Jars and Shaded Jars
+
+  One way that might be used to get around this problem is to use Uber Jars or Shaded Jars.
+
+**Uber JAR
+
+  An Uber JAR is a JAR which contains the contents of multiple JARs (or, less commonly, multiple other JARs themselves)
+
+  Your application will almost certainly use other packages and these packages might be provided as JARs. When using Maven these dependencies would be expressed as follows:
+
+---
+  <dependency>
+      <groupId>...</groupId>
+      <artifactId>...</artifactId>
+      <version>...</version>
+  </dependency>
+---
+
+  At runtime your application will expect to find the classes contained in this JAR on its classpath. If they are not there on the target machine, then the application will fail.
+
+  Rather than shipping each of these dependent JARs independently along with your application, you could create an Uber JAR which contains all of the classes etc from these dependent JARs and then simply run your application from this Uber JAR.
+
+
+**Shading
+
+  Shading provides a way of creating an Uber JAR and renaming the packages which that Uber JAR contains. If your Uber JAR is likely to be used as a dependency in another application then there's a risk that the versions of the dependent classes in the Uber JAR might clash with versions of those same dependencies in this other application. Shading helps to avoid any such issue by renaming the packages within the Uber JAR.
+
+  For example:
+
+    * You create an Uber JAR which contains v1.0.0 of the Foo library.
+
+    * Someone else uses your Uber JAR in their application, Bar
+
+    * The Bar application has its own dependency on Foo but on v1.2.0 of that library.
+
+  Now, if there is any clash between versions 1.0.0 and 1.2.0 of Foo we may have a problem because the owner of Bar cannot rely on which one will be loaded so either their code will misbehave or your code - when running within their application - will misbehave.
+
+  Shading helps to avoid issues such as this and also allows the provider of Foo to be explicit about the versions of the dependent libraries it uses.
+
+  There is a maven plugin (maven-shade-plug) which will help create such jars if necessary ( although I have not been able to get it to work)
+
+
+*A Better Solution
+
+    A better solution is just not to invoke your application using the --jar syntax in the first place. For instance, the following might naively be expected to work, since we are specifying exactly where all the necessary jars ar to be found.
+
+---
+java -cp fitStat-1.0-SNAPSHOT.jar:./tmp/fit-20.85.0.jar:./tmp/commons-math3-3.6.1.jar -jar fitStat-1.0-SNAPSHOT.jar
+
+    Exception in thread "main" java.lang.NoClassDefFoundError: com/garmin/fit/FitRuntimeException
+    	at java.lang.Class.getDeclaredMethods0(Native Method)
+    	at java.lang.Class.privateGetDeclaredMethods(Class.java:2693)
+      ...
+---
+
+    However, it doesn't though, because when we use --jar, classpaths, even explicitly stated classpaths, are ignored.
+
+    This however works fine.
+
+---
+  java -cp ./classes:./tmp/fit-20.85.0.jar:./tmp/commons-math3-3.6.1.jar uk.co.pegortech.fitStat.FitStats
+
+    FIT Decode Example Application - Protocol 2.0 Profile 20.85 Release
+    Usage: java -jar DecodeExample.jar <filename>
+---
+
+  In this second instance, java is able to use the classpath to locate the necessary classes (here explicit, but the CLASSPATH environment variable would work too.)
+
+===
+
+*Building assemblies
+
+	An <<<assembly>>> is, in Maven speak, an aggregation of a projects output artefacts, along with its dependencies, sub-modules, documentation etc. into a single, distributable archive : basically everything you need to run and use you application all in one place.
+
+	The <<<install>>> and <<<deploy>>> plugins deal only with the specific artefacts generated by the project. However at run-time, applications will have need to be put together to access additional dependancies, such as libraries, other jar files etc. It is likely that the application will be deployed on a different machine, and we do not necessarily know whether the dependencies will even exist on that machine, let alone where they might reside.
+
+	To avoid pre-installation and configuration steps to put those dependencies in place, we can bundle everything together in out release packet.
+
+	Note that building an assembly does not make up part of the default Lifecycle; however, the process can be configure to do so if required.
+
+	Maven supplies the maven-assembly-plugin to support this activity
+
+**maven-assembly-plugin
+
+	This provides essentially just one goal: <<<assembly:single>>>.
+
+	The parameters this can take is available in the usual way:
+
+---
+	mvn assembly:help -Ddetail=true -Dgoal=single
+---
+
+	Amongst other things, the assembly plugin will take the jar produced by the <<<jar>>> plugin under the <<<package>>> step and add in all the class files from all the jars that it is dependents on creating one bug Uber tar.
+
+***Configuration
+
+	The documentation recommends that if this plugin is used, it should be wired into the <<<package>>> phase, as follows:
+
+---
+	<executions>
+	 <execution>
+			<id>make-assembly</id>
+			<phase>package</phase> <!-- bind to the packaging phase -->
+			<goals>
+				 <goal>single</goal>
+			</goals>
+	 </execution>
+ </executions>
+---
+
+	However, in practise you don't need to create a assembly every time you build a package. To this end, you can use the plugin without associating it with a lifecycle step. However, there may be some bug in it somewhere; the natural way to use it in this way would be to execute:
+
+---
+	mvn package
+	mvn  assembly:single
+
+	[WARNING] Cannot include project artifact: uk.co.pegortech:fitStat:jar:1.0-SNAPSHOT; it doesn't have an associated file or directory.
+---
+
+	...but this seems to fail (as above).
+
+	However, when the 'package' and 'assembly:single' are pipelined, it seems to work ok. i.e.
+
+---
+	mvn package assembly:single
+---
+
+*Release Plugin
+
+	Just note in passing, that there is a plugin <<<maven-release-plugin>>> that will integrate with a version control system and build release for you. I have not looked at this in any detail, but it might be fun to play with at some point.
+
+=====
+
+
+
+Repository Stuff
+
+	Sometimes we will wish to work with third part jars which aren't available in a mvn repository somewhere. Perhaps it will be supplied just as a native <<<zip>>> file or <<<jar>>> file. It is still really useful to access these artefacts in the same way that we would the repository based ones.
+
+	Fortunately we can use maven to upload the jar file to our local repository as follows,
+
+---
+	mvn install:install-file -DgroupId=com.garmin.fit -DartifactId=fit -Dversion=20.85.0 -Dfile=/Users/kevin/Desktop/javaTechnologiesLearning/messingAboutWithFITfiles/FitSDKRelease_20.85.00/java/fit.jar -Dpackaging=jar -DgeneratePom=true
+---
+
+	Once this is done, it can be references as a dependency in a pom.xml file just like any other.
+
+---
+	<!-- Installed to local repository from jar file in SDK -->
+	<dependency>
+ 		<groupId>com.garmin.fit</groupId>
+ 		<artifactId>fit</artifactId>
+ 		<version>20.85.0</version>
+	</dependency>
+---
+=====
+
+Test Plugins
+
+		* Maven Surefire - designed for running unit tests;
+
+		* Maven FailSafe - designed for running unit tests;
+
+
+		in order to use either with JUnit5, it needs the junit5 jupiter engine
+
+---
+<dependency>
+	<groupId>org.junit.jupiter</groupId>
+	<artifactId>junit-jupiter-engine</artifactId>
+	<version>5.3.1</version>
+	<scope>test</scope>
+</dependency>
+---

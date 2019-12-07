@@ -1,0 +1,120 @@
+Wildfly Stuff
+
+	New Installation downloaded ( wildfly-16.0.0 )
+
+	As user wildfly:wildfly unzipped to /apps/wildfly-16.0.0
+
+	As user kevin, tried to start it
+			bin/standalone.sh
+
+	..but threw various permissions errors
+
+	Frigged various directories to try and get it started as a different user ( kevin ). This is so that I can start it up and shut it down from within Eclipse.
+
+---
+		chmod g+w standalone
+		chmod g+w standalone/tmp
+		chmod g+w standalon/configuration
+		chmod g+r standalon/configuration/\*
+		chmod g+r standalon/deployment
+---
+
+	Had to move existing deployment out out of the way.
+
+---
+		mv /apps/wildfly-16.0.0.Final/standalone/deployment /apps/wildfly-16.0.0.Final/standalone/deployment.old
+---
+
+	Instance would then start ok...
+
+	Added 2 users: 1 Admin and 1 Normal as follows:
+
+		Admin User:
+
+---
+	./add-user.sh
+
+		a) Management User (mgmt-users.properties)
+
+		Username : kevin
+		What groups do you want this user to belong to? (Please enter a comma separated list, or leave blank for none)[  ]:
+		About to add user 'kevin' for realm 'ManagementRealm'
+		Added user 'kevin' to file '/apps/wildfly-16.0.0.Final/standalone/configuration/mgmt-users.properties'
+		Added user 'kevin' to file '/apps/wildfly-16.0.0.Final/domain/configuration/mgmt-users.properties'
+		Added user 'kevin' with groups  to file '/apps/wildfly-16.0.0.Final/standalone/configuration/mgmt-groups.properties'
+		Added user 'kevin' with groups  to file '/apps/wildfly-16.0.0.Final/domain/configuration/mgmt-groups.properties'
+		Is this new user going to be used for one AS process to connect to another AS process? No
+---
+
+		Normal User:
+
+---
+	./add-user.sh
+
+		b) Application User (application-users.properties)
+		Using realm 'ApplicationRealm' as discovered from the existing property files.
+		Username : kevin
+		What groups do you want this user to belong to? (Please enter a comma separated list, or leave blank for none)[  ]:
+		About to add user 'kevin' for realm 'ApplicationRealm'
+		Added user 'kevin' to file '/apps/wildfly-16.0.0.Final/standalone/configuration/application-users.properties'
+		Added user 'kevin' to file '/apps/wildfly-16.0.0.Final/domain/configuration/application-users.properties'
+		Added user 'kevin' with groups  to file '/apps/wildfly-16.0.0.Final/standalone/configuration/application-roles.properties'
+		Added user 'kevin' with groups  to file '/apps/wildfly-16.0.0.Final/domain/configuration/application-roles.properties'
+		Is this new user going to be used for one AS process to connect to another AS process? No.
+---
+
+		Once all the above was done, the Server could be at least started from eclipse.
+
+ 		...But not stop!. (Actually this is a bit of a red herring - eclipse reports that it has not stopped, but all the external signs are that it does.)
+
+
+* Using Wildfly with Maven.
+
+	Jboss (or possibly other third parties) provide a convneient plugin for use in Maven projects to help manage a server during the build and/or deployment processes.
+
+	The plugin, <<wildfly-maven-plugin>>,  provides facilities to deploy/undeploy applications, start/stop webservers execute wildfly cli commands.
+
+		example goals:
+
+			* wildfly:deploy;
+
+			* deploy:undeploy;
+
+			* wildfly:startup;
+
+			* wildfly:run (basically startup and deploy).
+
+
+* Using a Maven Build archetype
+
+	In order to provide a basic environment to evaluate and develop on from, built up an initial project based on a jboss/wildfly provided maven archetype.
+
+	Note the version : v 8.2.0.Final
+
+---
+	mvn archetype:generate \
+	-DgroupId=uk.co.pegortech.apps \
+	-DartifactId=wildflyDemo2 \
+	-DarchetypeArtifcactId=wildfly-javaee7-webapp-archetype:8.2.0.Final \
+	-Dversion=1.0-SNAPSHOT \
+	-DinteractiveMode=No
+---
+	Then build and run as follows:
+
+---
+	mvn package
+
+	mvn wildfly:run
+---
+
+NB This seems to download and install its own versio of wildfly under target.???
+
+	This build up quite an extended example encorporating
+		Java Server Faces;
+		JPA - Java Persistance Architecture
+		EJB - Enterprise Java beans
+		JAX-RS - Java API for Restful Web SERVICES
+
+
+
+===========

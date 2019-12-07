@@ -1,0 +1,690 @@
+Fedora-coreos - the future development of CoreOs
+
+
+*Introduction
+
+  Fedora CoreOs is, or will be,  the upstream community version of {{{./onContainerLinux.html}Container Linux}} (formerly coreos). Currently it is only available on a 'testing' stream (in contrast to the stable, beta, alpha streams of Container Linux).
+
+  My experience to date, as summarised within this page, is that it still requires a bit more work before you would want to base a project on it: bits of it, particularly Ignition configuration, are not yet fully developed. However, since it is likely to be the future it is worth keeping an eye on.
+
+  This page describes my experience building a Fedora-Coreos machine form a raw-image (both from cdrom and pxe installs), creating a custom vagrant-ignition plugin in order to support it, and packaging it a vagrant Box file.
+
+===
+
+*Design Philosophy
+
+  It shares the same design philosophy as CoreOs, as I've {{{./onContainerLinux.html}documented}}
+
+  In keeping with the container os philosophy, it has no install-time configuration : it begins with a generic, un-configured disk-image. On first boot, it is expected that configuration will be injected via Ignition Scripts. At the moment installation images are available to support:
+
+    * Cloud launch-able formats (notably for Amazon EC2)
+
+    * Bare Metal - in several varieties for PXE, Installer, Standard ISO bootable CD images, Raw Disk Images).
+
+    * As images in various Virtualised platforms (vmware). (Currently VirtualBox images for it don't exist).
+
+    []
+
+  A standard installation will feature the following open-source products:
+
+    * docker;
+
+    * podman;
+
+    * zincati to manage auto software updates (rather than locksmith);
+
+    []
+
+  The following are not part of the installation package, but would normally run as containers on the platform:
+
+    * etcd;
+
+    * kubernnetes.
+
+    []
+
+  At the moment, this doesn't seem to be available as an installation image specifically for Virtual Box, but it seemed to me not unreasonable that the Bare Metal Images would install. My understanding is that the various platform packagings of coreos differ only in the default configuration packaged within each. Therefor, it should still be able to install to a platform which does not have its own custom packaging; I think it may just mean that a little more work will need to be done in crafting Ignition scripts etc.
+
+  Consequently decided to give it a go.
+
+===
+
+
+*Installing Fedora-Coreos on QEMU
+
+  One of the virtual platforms that Fedora-coreos has chosen to support is QEMU.  It provides a installation image in qcow2 format, that has qemu configuration files embededded in it that the qemu hypervisor can access. At the time of writing, I have not played around with this too much, but some more details of this are included in my {{{./onVirtualization.html} general notes on virtualisation}}.
+
+  This may be worth coming back to at a later date, but I'm not going to look at it further just now.
+
+===
+
+
+*Installing Fedora-Coreos on Virtual Box
+
+  The general process of the installation will be as follows:
+
+  [[1]] Create a Virtual Machine, with access to installation media (either on a virtual CD or on a virtual network)
+
+  [[1]] Prepare the parameters that you wish to give to the boot loader (grub or isolinux), so that it can pass them to the coreos-installer program. This will include a reference to a kernel and root image to be used in the installation itself. (These will reside completely in RAM), It will also include the location of the raw image of <<<fedora-coreos>>> that you wish to install.
+
+  [[1]] Prepare the Ignite scripts that you wish the bootloader to pass to the installer.
+
+  [[1]] Boot from the media of choice. This will load the kernel and root filesystem images. The raw image of the <<<fedora-coreos>>> will then read, crc checked and written to disk. It will include the Ignition scripts that have supplied to it ( Though it will not execute them). It will configure the bootloader on disk and write the required grub parameters to it.
+
+  [[1]] Machine will then reboot.
+
+  [[1]] The machine will then boot from the installed <<<fedora-coreos>>>  image. During this first boot Ignite will run the scripts provided to it in order to configure the machine. This will include a set of standard ones that form part of the actual distribution plus whatever ones you chose to inject in the above steps. The standard Ignition scripts may well vary depending on the platform : the boot parameter coreos.oem.id will determine which scripts get run.
+
+  [[1]] Once complete a login will be presented, and the box should now be fully configured and production ready. ( If it isn't then you've forgotten something in your Ignition script.)
+
+  [[1]] On subsequent boots, the Ignition scripts do not run. (The bootloader checks for a file in the EFI partition <<<coreos/first_boot>>>)
+
+  The installation was attempted in 2 ways:
+
+    * As an ISO image based install, where an image was mounted to Virtual Box as a cdrom;
+
+    * As a PXE install, where the server is booted to the Network and the install is performed with the aid of a PXE server.
+
+    []
+
+
+**Installing fedora-coreos onto Virtual Box via a CDROM
+
+
+***Configuration of the Empty Virtual box
+
+  An initial Virtual Box Server was started with the following characteristics:
+
+    * 2GB of Memory (CoreOS Container Linux needs a minimum of 2Gb of RAM in order to install. I think it can be reduced a bit when installation is complete). Note this is really important. If there is insufficient memory, the install will fail, and be quite difficult to diagnose as to why.
+
+    * 8Gb of Dynamically allocates VMDK ( Installation will consume 1.5 GB of this). Note: VMDK is an open format, so decided to go for it for this reason.
+
+    * 1 Network interface (NAT). The first attached Network Controller MUST be NAT.
+
+    * 1 Network interface (Host-Only). Don't think this is entirely necessary but went for it anyway.
+
+    []
+
+
+***ISO image selection
+
+  The image chosen fo the installation was and Installer-type image: basically an image sufficient to get RAM-based minimum version up and running and pointing at a remote source where the actual installation can be performed fro. The image was down loaded from {{https://builds.coreos.fedoraproject.org/prod/streams/testing/builds/30.20191014.0/x86_64/fedora-coreos-30.20191014.0-installer.x86_64.iso}}. Note the only images available at the moment are from the testing stream.
+
+  Also downloaded the bit-for-bit image that the installer is essentially going to copy onto the server.  This was
+
+    {{https://builds.coreos.fedoraproject.org/prod/streams/testing/builds/30.20191014.0/x86_64/fedora-coreos-30.20191014.0-metal.x86_64.raw.xz}}
+
+  The installer is network aware, able and able to locate files using either tftp or http protocols. The original plan was to use the OSX included tftp server in order to deliver the file, so the image was placed in the /private/tftpboot directory.
+
+
+***Initial Boot
+
+  This seemed to proceed without too many issues. The Fedora CoreOs Installer boot menu was presented and the
+  default Boot Chosen
+
+    <<</images/vmlinuz initrd=/images/initramfs.img nomodeset rd.neednet=1 coreos.inst=yes>>>
+
+  This proceeded OK until...
+
+
+***Emergency Kernel
+
+  It became apparent to the installer that it did not have enough information provided to it for it to complete its job, so it dropped into the emergency kernel, with a prompt to complete the installation via an invocation of the <<<coreos-installer>>>.
+
+  These parameters COULD have been added to the boot loader command line above: but it is quite a lot to type manually.
+
+  It took a while for me to track down where on the system this installer was located, since it wasn't in the usual bin directories, but eventually tracked it down in <<</usr/libexec>>> directory. Invocation of this script required the following:
+
+    * the destination device for the install
+
+    * the raw image file to be installed
+
+    * An Ignition script to perform any pre/post installation steps
+
+    []
+
+  Script was invoked as follows:
+
+---
+  /usr/libexec/coreos-installer \
+    -d sda \
+    -i http://192.168.0.17:8000/ignition3.json \
+    -b http://192.168.0.17:8000/fedora-coreos-30.20191014.0-metal.x86_64.raw.xz
+---
+
+  Note: in order to make repeated installs easier, a copy of this script was also placed on <<</private/tftpboot>>>. It was pulled over as required using curl
+
+---
+      curl --get http://192.168.0.17:8000/install.sh > tmp.sh
+---
+
+  Note that although the original intention was to use tftp, it was discovered that http was MUCH faster. In fact, for a file the size of the raw install image, tftp was too slow to be workable. So, instead the simple python webserver was run over the <<</private/tftboot>>> directory.
+
+
+***Initial Ignite file.
+
+  To begin with, I was not too bothered about trying to do too much with the Ignite file. I decided I probably needed one because it is unclear to me what is in place already in the raw image : does it include a useable disk layout? does it include nay actual users in order to login?
+
+  Consequently just found a simple one from the coreos examples below. <<HOWEVER THIS TURNED OUT TO BE A MISTAKE. SEE BELOW : THE INSTALLED VERSION OF COREOS SEEEMS TO HAVE A DIFFICULT-TO-DIAGNOSE PROBLEM WITH VERSIONS 2.1.0.>>
+
+  {{{https://coreos.com/os/docs/latest/clc-examples.html}Official examples are available here}}
+
+---
+  {
+    "ignition": {
+      "config": {},
+      "timeouts": {},
+      "version": "2.1.0"
+    },
+    "networkd": {},
+    "passwd": {
+      "users": [
+        {
+          "name": "core",
+          "passwordHash": "$6$43y3tkl...",
+          "sshAuthorizedKeys": [
+            "key1"
+          ]
+        }
+      ]
+    },
+    "storage": {},
+    "systemd": {}
+  }
+---
+
+
+***fcct in generating Ignition Configurations
+
+  fcct is the <<<fedora-coreos>>> version of the ct transpiler. Part f th edifficulties described above where down to the fact I was using the ct transpile rather then ct.
+
+  It is recommended that this should be installed as a docker image on the server.
+
+---
+    docker pull quay.io/coreos/fcct:v0.2.0
+
+    # Run fcct using standard in and standard out
+    docker run -i --rm quay.io/coreos/fcct:v0.2.0 -pretty -strict < your_config.fcc > transpiled_config.ign
+
+    # Run fcct using files.
+    docker run --rm -v /path/to/your_config.fcc:/config.fcc:z quay.io/coreos/fcct:v0.2.0 -pretty -strict -input /config.fcc > transpiled_config.ign
+---
+
+
+****fcct examples
+
+  Good starting points for fcct based configuration can be found {{{https://github.com/coreos/fcct/blob/master/docs/examples.md}here}}.
+
+
+***Post installation
+
+  The remainder of the install at first sight seemed to go reasonably ok.
+
+  Messages of the form:
+
+---
+      dc: stack empty
+      43583897600%
+---
+
+  were streamed constantly to the console. I suspect the dc line is the number of bytes: at a guess I'd says its doing some checksum verification before proceeding...
+
+  The installation appeared to complete OK. It was hard to be sure because at that stage there was nothing available to capture the screen output, which was scrolling fast.  However, the system did seemingly reboot itself successfully and appeared to come up ok...
+
+  However, I had real difficulties logging on. These issues are discussed in detail {{{#Troubleshooting the Fedora-coreos installs}here}}.
+
+
+===
+
+
+*Installing fedora-coreos onto Virtual Box via a PXE (Network) Install
+
+
+**PXE Installs
+
+  Network installs of fedora-coreos are possible via PXE. How PXE works within the VirtualBox setting are described  {{{./onVirtualBox.html#Preboot_Execution_Environment_Installs_and_VirtualBox}here}}.
+
+
+**Installation Media
+
+  A PXE install (i.e. network install) is the recommended form of installation. It has the following advantages:
+
+    * In theory, you can point the installer to the official online stream, and so the latest updates etc are always available to it.
+
+    * It is possible to plug the necessary command line parameters into a configuration file for use by the bootloader. This means the install can run through WITHOUT dropping into the emergency kernel as per the cdrom installation.
+
+    []
+
+    Some of these advantages are eroded, however, since the install is only an emulated PXE install rather than a proper PXE install. The emulated PXE install REQUIRES the kernel and rootfs images to be copied to the <<<~/Library/VirtualBox/TFTP>>> directory.
+
+  And also loading of these biggish images is pretty slow...
+
+  However the kernel and rootfs images were down loaded from here.
+
+    {{https://builds.coreos.fedoraproject.org/prod/streams/testing/builds/30.20191014.0/x86_64/fedora-coreos-30.20191014.0-installer-kernel-x86_64}}
+
+    {{https://builds.coreos.fedoraproject.org/prod/streams/testing/builds/30.20191014.0/x86_64/fedora-coreos-30.20191014.0-installer-initramfs.x86_64.img}}
+
+  The install also required the same raw bit-image that we used in the cdrom install.
+
+    {{https://builds.coreos.fedoraproject.org/prod/streams/testing/builds/30.20191014.0/x86_64/fedora-coreos-30.20191014.0-metal.x86_64.raw.xz}}
+
+  Note, however, that this image seemingly must reside locally. It <<can>> be accessed via the http protocol but in the configurations I have tried, the PXE boot loader has been unable to access the external internet, again presumably because the PXE environment is only virtual.
+
+
+**Simple File Servers
+
+  The <<<coreos-installer>>>  has the ability to read files across networks using several protocols (http, https, tftp).  At the time the system is booted. It is possible for those images to be hosted locally, and simple means of doing that are described:
+
+    * {{{./onVirtualBox.html#A_simple_tftp_Server}for ftp}};
+
+    * {{{./onVirtualBox.html#A_simple_HTTP_Server}for HTTP}}
+
+    []
+
+
+**Bootloader configuration File.
+
+  The specific <<<coreos.inst>>> parameters that allow us to boot without intervention were added into the bootloader configuration file, as follows:
+
+---
+  ~/Library/VirtualBox/TFTP/pxelinux.cfg/default
+
+  DEFAULT pxeboot
+  TIMEOUT 100
+  PROMPT 0
+  LABEL pxeboot
+    KERNEL fedora-coreos-30.20191014.0-installer-kernel-x86_64
+    APPEND ip=dhcp rd.neednet=1 initrd=fedora-coreos-30.20191014.0-installer-initramfs.x86_64.img coreos.inst=yes coreos.autologin console=tty0  console=ttyS0 ignore_loglevel coreos.inst.install_dev=sda coreos.inst.image_url=http://192.168.0.17:8000/fedora-coreos-30.20191014.0-metal.x86_64.raw.xz coreos.inst.ignition_url=http://192.168.0.17:8000/ignition2.json coreos.inst.first_boot=detected
+	IPAPPEND 2
+---
+
+  Note that this is a mixture of directives: some of them are the standard directives accepted by most Linux kernels:
+
+  * console=ttyS0
+
+  * ip=dhcp : This is the usual setting, but can be set to an ip address if dhcp was not available. Note that this ip is only operational during installation. It has no effect one everything is properly operational.
+
+  * ignore log_level : causes boot log output to be verbose.
+
+  []
+
+  Others are one which are there specifically to support the coreOs installation:
+
+  * sshkey : in theory, the provided key will be added to the 'core' users <<<authorizedkeys>>>, and so allow you to login as that user. Coreos does not provide any default passwords or anything like that, so you need to create a way in as part of the ignition process.
+
+  * coreos.inst=yes
+
+  * coreos.autologin[=ttyS0]
+
+  * coreos.inst.install_dev=sda
+
+  * coreos.inst.image_url= <some URL to a disk image>
+
+  * coreos.inst.ignition_url=<some URL to a valid ignition script>
+
+  * coreos.first_boot=1 : Normally GRUB will be responsible for setting this parameter. Since PXE installs do not use GRUB, this needs to be set explicitly for PXE installs. I would guess that it causes the coreos/first_boot file to be created in the EFI partition so that when the system get booted for the first time, Ignition get executed.
+
+  []
+
+  I am not sure that all of these options work. I have yet to be able to get an autologin session up, for instance.
+
+
+**Custom OEM
+
+    As well as injecting an Ignition script via the coreos.inst.ignition_url above, it is also possible to supply one within the PXE boot directory. The file needs to be packaged up as a gzipped cpio archive of <<<./usr/share/oem/congfig.ign>>>.
+
+    Haven't tried to see if this works on the emulated PXE environment yet...
+
+
+**Booting and Post Installation
+
+  Fired up the local {{{#A Simple HTTP Server}python simpleHTTPServer}} over directory holding the installation media <<</private/tftfboot>>>.
+
+  Once these bits and pieces were in place, then installation appeared to run ok. Unlike the CD installation, the installer had all the necessary information available to it, so it did not need to drop out to the Emergency Shell. Instead, it ran through, seemingly ok.
+
+  The machine then rebooted itself, and seemingly came up ok. However, as with CD-based install, it proved impossible to logon to the booted server. The issues that caused this are discussed {{{#Troubleshooting the Fedora-coreos installs}here}}.
+
+===
+
+
+*Troubleshooting the Fedora-coreos installs
+
+  Both CD and PX installations described above seemed the boot successfully after installation, but it proved impossible to log into either of these machines. Was not sure whether it was:
+
+    * an account problem - I'm assuming I was supposed to be using the <<<core>>> account to login, but all the passwords I tried and all the keys I offered didn't seem to work.
+
+    * a network problem - It was not possible to get the console to offer any sort of login session, so was limited to trying SSH. In this, I was hampered by not really knowing what IP address I should be using. During the install, it did not really offer this information. Also unclear as to which network adapter I ought to be hitting: during initial; installations, 2 were configured the NAT adapter and a host-only adapter. I suspect only the former is required however ) plus a port forwarding rule).
+
+    []
+
+  Decided to capture the output from the console to see if that gave any clues. The mechanism for this is described {{{./onVirtualBox.html}here}}.
+
+  Examination of the console output showed that the system had NOT actually booted successfully at all : it had dropped down to the Emergency Kernel and was awaiting some form of input. Since we couldn't attach to the console, there was no way we could progress this.
+
+  This also explains why the machine then rebooted itself after 5 mins!.
+
+  Examining the log further suggested that Ignition was not happy with one of the characters in the Ignition.json file that I had specified.
+
+  Corrected this error and re-installed, however this was still no good. Tried various other example configuration files and even a {} empty configuration file, but all failed in as similar manner. The message was always complaining about a bad configuration but was not overly specific on what.
+
+  Eventually, tracked down what was the problem: the file was simple labelled with a version that Ignite was not happy with:
+
+    * the failing scripts were all labelled a v2.0.0 or earlier.
+
+    * when I tried a v3.0.0 script then that seemed to work ok
+
+    Examples of working Ignition scripts were found {{{https://github.com/coreos/ignition/blob/master/doc/examples.md} here}} and the script which finally worked for me is indicated below.
+
+---
+  {
+    "ignition": { "version": "3.0.0" },
+    "storage": {
+      "files": [{
+        "path": "/etc/hostname",
+        "mode": 420,
+        "overwrite": true,
+        "contents": { "source": "data:,core1" }
+      }]
+    },
+    "passwd": {
+      "users": [
+        {
+          "name": "kevin",
+          "passwordHash": "$1$8KY6wFcF$3mppaXmMlYlyNLLIqHz8F1",
+          "sshAuthorizedKeys": [
+            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC2ld+zRqkKLN0M7EV1Z+MBUXcrWKrI5i3CMfGQSO67hqnaGwk4gWThEl1dv1JWtgEAmG1X0BgjpJVoQdI7BeF3IibKs29s+bA/IR4oLmVCA8xVNG9dLnO/7oVdO7Vdacj4o4H/IXiVFf2h/5BpxHd/xqlMrp7vE48RJsWC1DoMofkfNhxsZ3w6Ctz8z14qFdMeZv9B93SGcEw7kQcsBBvsTaq11McetmmJmKkoA7t7tES/J3i1u8GhCS4S0DRaNgKMvZoIzLdOol8pp+vF7PVDL3aqOBoQVJ2ktZwpU4Eg1mk9NSOuvUI34Ll5SMoEGHEcjKRQjupfk75dF0OdZA1N"
+          ]
+        },
+        {
+          "name": "core",
+          "passwordHash": "$1$8KY6wFcF$3mppaXmMlYlyNLLIqHz8F1",
+          "sshAuthorizedKeys": [
+            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC2ld+zRqkKLN0M7EV1Z+MBUXcrWKrI5i3CMfGQSO67hqnaGwk4gWThEl1dv1JWtgEAmG1X0BgjpJVoQdI7BeF3IibKs29s+bA/IR4oLmVCA8xVNG9dLnO/7oVdO7Vdacj4o4H/IXiVFf2h/5BpxHd/xqlMrp7vE48RJsWC1DoMofkfNhxsZ3w6Ctz8z14qFdMeZv9B93SGcEw7kQcsBBvsTaq11McetmmJmKkoA7t7tES/J3i1u8GhCS4S0DRaNgKMvZoIzLdOol8pp+vF7PVDL3aqOBoQVJ2ktZwpU4Eg1mk9NSOuvUI34Ll5SMoEGHEcjKRQjupfk75dF0OdZA1N"
+          ]
+  		}
+      ]
+    }
+  }
+---
+
+===
+
+
+*Packaging the fedora-coreos install for Vagrant.
+
+  At the moment, no official 'box' is available for the vagrant platform. However, it is probably relatively easy to create one. This is my, ultimately unsuccessful,  stab at it.
+
+
+**The process
+
+  In short, what we need to do is:
+
+  [[1]] Generate a public key that pairs with the 'insecure public key' that comes out of the box with vagrant. These are available on the internet, but it simple enough to generate it from the existing private key. This is so that we can logon tothe server we ultimately create.
+
+---
+    ssh-keygen -y -e -f ${VAGRANT_HOME}/insecure_private_key
+---
+
+  [[1]] Create an Ignition script to inject the standard id that vagrant uses to control a operating system. This is the vagrant id, and needs to be a member of various admin groups in order to control the box. We also need to provide it with the public key that we generated above.
+
+---
+  example vagrant.ign script
+
+  {
+    "ignition": { "version": "3.0.0" },
+    "passwd": {
+      "users": [
+        {
+        "name": "vagrant",
+  		  "groups": ["adm","wheel","sudo","systemd-journal"],
+          "sshAuthorizedKeys": [
+  			 "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key"
+          ]
+  		}
+      ]
+    }
+  }
+---
+
+  [[1]] Build a vanilla <<<fedora-coreos>>> installation using Virtual Box using one of the 2 method described above(cdrom or px), but inject only the vagrant.ign script prepared earlier. Let it run through till it reboots and returns to the login console. At this point the build will be complete, along with any Ignition customisations.
+
+  [[1]] If necessary, put in place a port-forwarding rule and then ssh onto the box using the id installed via Ignition
+
+---
+    ssh 127.0.0.1 -p 2222 -i /volumes/media/vagrant/.vagrant.d/insecure_private_key -l vagrant
+---
+
+  The port forwarding rule lets us address a local port (2222 in above), but have that be forwarded on to the actual port on the virtual server (22)
+
+  [[1]] Some say that it helps the compression algorithm if we fill the unused space on the virtual disk with zeros and then compress it, so:
+
+---
+      dd if=/dev/zero of=/sysroot/empty.dat bs=1M
+---
+
+  When space runs out, remove the file
+
+---
+      rm /sysroot/empty.dat
+---
+
+  [[1]] Prepare a default <<<Vagrantfile>>> for inclusion with the box, along with any include files that that file may need. This <<<Vagrantfile>>> will be merged into the project <<<Vagrantfile>>>, so represents, in a sense, a default setting.
+
+  [[1]] We need a minimum <<<Vagrantfile>>> in order to issue the <<<package>>> command, so put something in place similar the the below.
+
+---
+  Vagrant.configure("2") do |config|
+    # Every Vagrant development environment requires a box. You can search for
+    # boxes at https://vagrantcloud.com/search.
+    config.vm.box = "base"
+    config.ssh.username="core"
+  end
+---
+
+  [[1]] Check that the port-forwarding rule is still in place. The <<<package>>> command tries to connect to the server on port 22.  If this succeeds, <<<package>>> will close the server down cleanly. Otherwise, it will just kill the server.
+
+
+  [[1]] Package every thing up. Note that you need to refer to the virtual machine being packaged by its VirtualBox name, and the base parameter MUST be specified.
+
+---
+ vagrant package pegortech-fedora-coreos \
+      --base fedora-coreos \
+      --output pegortech-fedora-coreos.box \
+      --include base_mac.rb,change_host_name.rb,configure_networks.rb --vagrantfile <vagrantfile to be embedded>
+---
+
+  [[1]] The package is now available for use. In theory, it can be uploaded to a shared repository at this stage ({{https://app.vagrantup.com}}). However, it is probably a good idea to test it first, since the box-file will rarely be correct first time around.
+
+---
+    vagrant init pegortech-fedora-coreos.box
+---
+
+  This will create a base VirtualBox file that you can edit as you please.
+
+  [[1]] Start it up
+
+---
+  vagrant up
+---
+
+  [[1]] Check it out.
+
+---
+  vagrant ssh
+---
+
+
+**The problems
+
+  When I was trying to package up specifically the <<<fedora-coreos>>> distribution, I ran into some fairly niche problems which I'm documenting below as a aide-memoir.
+
+
+***Problem 1.
+
+  When pairing the distribution with the vagrant-Ignition plugin...
+
+  The <<<vagrant-ignition>>> plugin is an add-on to vagrant, which in theory provides a way of provisioning via Ignition scripts. I does it in a fairly peculiar way. Remember Ignition would only normally run at the first boot.
+
+  The script generates a disk image with the required Ignition scripts written to it, which it then attaches to one of the disk controllers as the system boots.
+
+  All this is driven by entries within the <<<Vagrantfile>>>.
+
+  However, during the process of booting the following error was thrown:
+
+---
+  There was an error while executing `VBoxManage`, a CLI used by Vagrant
+  for controlling VirtualBox. The command and stderr is shown below.
+
+  Command: ["storageattach", "eb9ff556-5f1d-4dd3-ac79-0876d1531b8e", "--storagectl", "IDE Controller", "--device", "0", "--port", "1", "--type", "hdd", "--medium", ".//config1.vmdk"]
+---
+
+  The problem was that the script was trying to attach the generated virtual disk to a controller called 'IDE Controller'. However, mine was called 'IDE', so it all crashed out.
+
+  This was fixed by renaming the IDE controller to 'IDE Controller'.
+
+
+***Problem 2.
+
+  However, once the problem above was fixed, the resulting system would still not boot.
+
+---
+  ...
+  00:00:06.628517 VMMDev: Guest Log: BIOS: Boot from Hard Disk 0 failed
+  00:00:06.629854 VMMDev: Guest Log: BIOS: Boot : bseqnr=2, bootseq=0004
+  00:00:06.630844 VMMDev: Guest Log: BIOS: Booting from LAN...
+  00:00:06.644212 PCnet#0: Init: ss32=0 GCRDRA=0x0009ccc2[1] GCTDRA=0x0009ccca[1]
+  00:00:06.652925 NAT: DHCP offered IP address 10.0.2.15
+  00:00:08.658205 NAT: DHCP offered IP address 10.0.2.15
+  00:00:08.683426 NAT TFTP: /Users/kevin/Library/VirtualBox/TFTP/hack_core-01_1574903058841_80729.pxe -> VERR_FILE_NOT_FOUND
+  00:00:08.687309 NAT TFTP: /Users/kevin/Library/VirtualBox/TFTP/hack_core-01_1574903058841_80729.pxe -> VERR_FILE_NOT_FOUND
+  00:00:11.566768 VMMDev: Guest Log: BIOS: Boot from LAN failed
+  00:00:11.571471 VMMDev: Guest Log: Could not read from the boot medium! System halted.
+---
+
+  This seems to be because the new disk attached by the vagrant:ignition plugin gets attached to the IDE controller which has greater higher priority than the SATA controller that the actual boot disk is attached too. When it fails on attempting to boot the IDE it does not look for a second disk/controller.
+
+  Looking at where this is occurring, it seems to be hard coded within the <<<vagrant-ignition>>> plugin.
+
+  The plugin gets installed to <<<.vagrant.d/gems/2.4.9/gems/vagrant-ignition-0.0.3/lib/vagrant-ignition>>>
+
+  The controller that the disk gets attached to is Hard Coded in <<<setup_ignition.rb>>>
+
+
+***Problem 3.
+
+  In order to try and fix the problem above cleanly, attempted to create my own version of the plugin.
+
+  So, forked <<<vagrant-ignition>>> for my own purposes --> <<<GitHub repo: pegortech/vagrant-ignition>>>.
+
+  Recoded this as the <<<pegortech-vagrant-ignition>>>. This was just the original <<<vagrant-ignition>>> plug, but recoded so that the plugin took an additional parameter <<<ignition.controller>>>. This allows the user to specify the name of the controller to attach to with in the <<<Vagrantfile>>>.
+
+  However, once this is packaged up into a gem file, it does not seem to want to install as a plugin.
+
+  ---
+       gem build  pegortech-vagrant-ignition.gemspec
+
+       vagrant plugin install
+  ---
+
+  By naming the plugin <<<pegortech-vagrant-ignition>>>, this seemed to imply that the packaged gem was expecting a particular internal directory structure ( basically the - character implies a subdirectory). Consequently, the files packaged into the gem should have been in:
+
+---
+        lib/pegortech/vagrant/ignition
+
+        or
+
+        lib/pegortech-vagrant-ignition
+---
+
+  with the former being the preferred.
+
+  This required an editing some of the 'require' clauses before it could find all the files they were referencing.
+
+
+***Problem 4.
+
+  Even with the gem correctly re-coded, I initially struggled to get vagrant to take notice of it. Uninstalling and reinstalling did not seem to do the trick.
+  ---
+   plugin uninstall vagrant-ignition
+
+   Uninstalling the 'vagrant-ignition' plugin...
+   Vagrant failed to properly resolve required dependencies. These
+   errors can commonly be caused by misconfigured plugin installations
+   or transient network issues. The reported error is:
+  ---
+
+  However plugin does seem to have been deinstalled...
+
+  vagrant plugin uninstall <package>  : seems to inactivate a plugin, but NOT remove it from the system. If it is subsequently reinstalled, the existing code gets reactivated NOT reinstalled. So any changes that you might have made to the plugin code will NOT get picked up.. Need to <<expunge>> the plugin instead. For example, the following commands may be necessary:
+
+---
+  vagrant plugin uninstall <package>
+
+  vagrant plugin repair
+
+  vagrant plugin expunge
+
+  vagrant plugin expunge --reinstall
+---
+
+
+***Problem 5.
+
+  Have noted elsewhere that <<<Fedora-Coreos>>> seems to have bundled the V3 Ignition System. The <<<vagrant-ignition>>> plugin however seems to generate its basic template in V2 syntax. This basic template is generated within the <<<merge_ignition.rb>>> script within the plugin. Amended this to generates a json file carrying the version no 3.0.0.
+
+  However, when the plugin was built:
+
+---
+      gem build  pegortech-vagrant-ignition.gemspec
+---
+
+  and installed:
+
+---
+      vagrant plugin install
+---
+
+  The changes to the version did not seem to be being picked up: the config.ign.marged file was still indicating use of Version2 ignition.
+
+  Took a while to track down BUT it appeared I'd managed to install a LOCAL version of the plugin at some time prior. This was OVERRIDING the GLOBAL version of the plugin that I was attempting to install. Once the LOCAL version of the plugin was removed, the new version of the GLOBAL plugin started being used correctly.
+
+
+***Problem 6
+
+  Once the above was fixed, it did become possible to bring up system configured with the correct version of json. However the box still had network issues : the eth1 device should have been configured with an ip-adddress from the <<<Vagrantfile>>> file, but this was not happening. Instead, when you log in you get a message similar to
+
+---
+  [systemd]
+  Failed Units: 1
+    NetworkManager-wait-online.service
+---
+
+  Apparently this is because <<<fedora-coreos>>> uses a different network manager than Container Linux. Fedora-coreos uses NetworkManager while Container Linux uses networkd.
+
+  The <<<vagrant-ignition>>> plugin does not support NetworkManager out of the box, and is trying to configure the machine as if networkd was present (hence we see the ip-config not available messages in the journal).
+
+  It is possible to fix this by configuring the missing interface manually, e.g.
+
+---
+  nmcli connection show
+  NAME                UUID                                  TYPE      DEVICE
+  Wired connection 1  98d4dd79-6928-364e-ac78-dc5c9a1d3acb  ethernet  eth0
+  Wired connection 2  a0d3feee-0370-3690-baac-bcad709946ef  ethernet  --
+
+  sudo nmcli connection modify 'Wired connection 2' ipv4.addresses 172.17.8.101
+---
+
+  Then re-start the network manager
+
+---
+  sudo systemctl restart NetworkManager-wait-online
+---
+
+  The nmcli seems to generate configuration files in /etc/NetworkManager/system-connections as a result of the configuration. So to get Ignition to do a full job on this box, it would be necessary to inject this configuration file at boot time.
+
+  It would be possible to get pegortech-vagrant-plugin to do this, but at this moment I do not have the inclination.
+
+  It has turned out to be far harder to get <<<vagrant-ignition>>> working with <<<fedora-coreos>>> then I hoped, so think I will abandon this now. At some point, I'm sure <<<fedora-coreos>>> will fix it.
+
+====

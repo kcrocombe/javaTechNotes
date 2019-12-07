@@ -1,0 +1,21 @@
+Technology Glossary
+
+	[Ruby] - A object orientated, interpretated scripting language : quite powerful
+
+	[Rails] - A Ruby-based Rapid Application Development tool, well suited to CRUD/database/web Applications
+
+	[Groovy] - Java-like language (and in fact compiles to java byte code), but can be interpreted. Has features similar to Perl, Python, Ruby, Smalltalk. Supposedly simpler than Java.
+
+	[Grails] - A Groovy based WebFramework ( uses Spring)
+
+	[Gradle] - A popular build tool bases on Groovy
+
+	[Spring Roo] - Springs Rapid Application Development Tool.
+
+	[Kotlin] - An alternative to jave. Will interoperate, and run on the same JVM, I think. Need to find out more.
+
+	[Docker] - dfsdf
+
+	[Jenkins] - sdfds
+
+	[Kubernetes] - ssdfds

@@ -1,0 +1,62 @@
+
+
+  The RedHat OpenShift Containier platform is a enterprise-ready, commercial ditribution of OKD ( OpenShift Origin Kerbetes Distribution).  It is available via anuual subscription, and adds on facilities such as
+
+  * additional hardwar and sofwware verificatoin
+
+  * iguaranteed support services
+
+  * security guarantees
+
+  * stability guaranteees
+
+  So OpenShift IS a particular version of OKD at its core,  but waits for bugs in OKD to be shaken out. Generally, it does't lag to far behind OKD
+
+  This is why OKD is referred to a s the 'upstream' of Openshift.
+
+
+  Note: this is similar tot he model employed betweeen Fedora and Red Hat Enterprise
+
+
+
+  OKD (Openshift Origin Kerbetes Distribution) was originally known as Openshift Origin, but was renamed at v3.1 ( Aug 2018)
+
+
+
+  it is a family of containerization software developed by Red Hat. Its key objective is to facillitate continuous applicaiton development: ie
+
+  * Rapid Applicaiotn Development
+
+  * easy deployment
+
+  * easy scaling
+
+  * long term lifecycle maintenance
+
+
+  It is a layering of other Software Products. In particualer, it is:
+
+  * built around Docker Containeres, that are
+
+  * orchestrated and managed by Kubernetes, and
+
+  * suppported by security, applicaiton lifecycle and DevOPs tooling
+
+
+  Together, the platform provides 'Software as Service' (SAS)
+
+
+  OKD versioning corresponds to underlying version of Kubernetes : so OKD 1.10 includes Kubernetes v1.10.
+
+
+
+
+
+
+
+
+There are several ways to install a OKD type environemnt
+
+  minishift
+
+  Installing an OpenShift Server as a Vitual Machine.

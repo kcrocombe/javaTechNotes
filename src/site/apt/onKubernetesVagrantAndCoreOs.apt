@@ -1,0 +1,354 @@
+Kubernetes with Vagrant and CoreOS
+
+  The following page describes an effort to get a kubernetes installation up and running from the official coreos vagrant package on GitHub {{https://github.com/coreos/coreos-kubernetes}}. My previous experience with coreos repositories, has been goog. However this one did seem to be a bid more problematic...
+
+
+  The guide I was following for this was {{{https://coreos.com/kubernetes/docs/1.6.1/kubernetes-on-vagrant.html}Kubernetes install with Vagrant on CoreOS}}
+
+
+*Client kubectl install
+
+  Installed kubectl as follows:
+
+ ---
+  brew install kubectl
+ ---
+
+*Repository Forking.
+
+  As is suggested above, the official package from coroes did not work too well out of th ebox, and I had to make some modifcation to it in order to get anything up and running. Consequently chose to Fork their repository as a basis for my own forward developement.
+
+  Forked via the GitHub GUI
+
+    coreos/coreos-kubernetes --> kcrocombe/coreos-kubernetes
+
+  A local, repository was then forked
+
+
+ ---
+    ~/dvl/gitClones
+
+    git clone -separate-git-dir=/users/gitRepos/kevin/coreos-kubernetes.git https://github.com/kcrocome/coreos-kubernetes.git
+ ---
+
+
+
+ The cloning process creates two notable subdirectories, one each for:
+
+  * single node, and
+
+  * multinode builds:
+
+  []
+
+Attempt1
+
+ Had a go with the single Node and Multi-node options.
+
+ Chose to leave the COntainer runtime as Docker
+
+ Chose to leave the Network Policy as it was (USE_CALICO=false)
+
+
+ ---
+  cd <dir>
+
+  vagrant up
+ ---
+
+  Both Failed with
+ ---
+  Can't open /opt/vagrant/embedded/openssl.cnf for reading, No such file or directory
+  140735799092096:error:02001002:system library:fopen:No such file or directory:crypto/bio/bss_file.c:74:fopen('/opt/vagrant/embedded/openssl.cnf','r')
+  140735799092096:error:2006D080:BIO routines:BIO_new_file:no such file:crypto/bio/bss_file.c:81:
+ ---
+
+  Vagrant ships with an embedded version of openssl. However this version of vagrant, does not seem to include the ssl configuration file that the <<<Vagrantfile>>> is expecting to find.
+
+  Could not find on on the system, so downloaded one from git hub and stuck it where <<<Vagrantfile>>> is expecting to find it.
+
+ ---
+  https://github.com/openssl/openssl/blob/master/apps/openssl.cnf
+ ---
+
+  copied it to: <<</opt/vagrant/embedded/openssl.cnf>>>
+
+
+Attempt 2
+
+  vagrant up
+
+  Now it seems to i
+      generate the ssl artifacts ok
+
+      configure and initially start a virtual server.
+
+  However, once the newly built server is started and running,  vagrant cannot seem to logon to it in order to complete the configuratrion.
+
+---
+==> default: Importing base box 'coreos-alpha'...
+==> default: Matching MAC address for NAT networking...
+==> default: Checking if box 'coreos-alpha' version '2331.0.0' is up to date...
+==> default: Setting the name of the VM: single-node_default_1575408048012_36301
+==> default: Fixed port collision for 22 => 2222. Now on port 2204.
+==> default: Clearing any previously set network interfaces...
+==> default: Preparing network interfaces based on configuration...
+  default: Adapter 1: nat
+  default: Adapter 2: hostonly
+==> default: Forwarding ports...
+  default: 22 (guest) => 2204 (host) (adapter 1)
+==> default: Running 'pre-boot' VM customizations...
+==> default: Booting VM...
+==> default: Waiting for machine to boot. This may take a few minutes...
+  default: SSH address: 127.0.0.1:2204
+  default: SSH username: core
+  default: SSH auth method: private key
+  default: Warning: Connection reset. Retrying...
+  default: Warning: Connection reset. Retrying...
+  default: Warning: Authentication failure. Retrying...
+  default: Warning: Authentication failure. Retrying...
+  default: Warning: Authentication failure. Retrying...
+---
+
+  attempted to connect manually via ssh
+
+---
+  vagrant ssh core
+
+  vagrant ssh vagrant
+---
+
+
+Attempt 3
+
+  Within the Vagrantfile, changed Channel from alpha --> stable ( within config.rb for the Multinode configuration)
+
+  However this failed with the same result.
+
+Attempt 4
+
+  Within the Vagrantfile, changed Channel from alpha --> beta ( within config.rb for the Multinode configuration)
+
+  This time it seems to work ok in both Single-Node and Multi-Node options.
+
+---
+  vagrant up
+
+  ==> default: Importing base box 'coreos-beta'...
+  ==> default: Matching MAC address for NAT networking...
+  ==> default: Checking if box 'coreos-beta' version '2303.2.0' is up to date...
+  ==> default: Setting the name of the VM: single-node_default_1575408570878_2596
+  ==> default: Fixed port collision for 22 => 2222. Now on port 2204.
+  ==> default: Clearing any previously set network interfaces...
+  ==> default: Preparing network interfaces based on configuration...
+      default: Adapter 1: nat
+      default: Adapter 2: hostonly
+  ==> default: Forwarding ports...
+      default: 22 (guest) => 2204 (host) (adapter 1)
+  ==> default: Running 'pre-boot' VM customizations...
+  ==> default: Booting VM...
+  ==> default: Waiting for machine to boot. This may take a few minutes...
+      default: SSH address: 127.0.0.1:2204
+      default: SSH username: core
+      default: SSH auth method: private key
+      default: Warning: Connection reset. Retrying...
+      default: Warning: Connection reset. Retrying...
+  ==> default: Machine booted and ready!
+  ==> default: Configuring and enabling network interfaces...
+  ==> default: Running provisioner: file...
+      default: /Users/kevin/dvl/gitClones/coreos-kubernetes/single-node/ssl/controller.tar => /tmp/ssl.tar
+  ==> default: Running provisioner: shell...
+      default: Running: inline script
+  ==> default: Running provisioner: file...
+      default: /Users/kevin/dvl/gitClones/coreos-kubernetes/single-node/user-data => /tmp/vagrantfile-user-data
+  ==> default: Running provisioner: shell...
+      default: Running: inline script
+---
+
+  Looking at the Vagrantfile and all the files surrounding it, I can find nothing resembling an Ignition Script, or anything which might be injectable into the o/s on its first boot. In particular I can find no reference to any 'core' user or 'vagrant' user which might typically be used to logon to the server.
+
+  Either the core user already exists in the Beta channel boxfile, (and so doesm't need to be injected in)
+
+  or
+
+  The injection process is injecting ok on the Beta image, but ina way that I dont undestand.
+
+
+  I think it is probably the first suggestion: if I change the
+
+      config.ssh.username to something other than "core" and the builds fail!
+
+  So I think the config is NOT being injected.
+
+
+  On other coreos packagings, the proviioning is performed by a plugin to vagrant, and this does seem to be available to vagrant
+
+ ---
+  vagrant plugin list
+
+    vagrant-ignition (0.0.3, global)
+ ---
+
+ However, there does not seem to be anything the Vagrant file that makes use of any of the Ignition features that the plugin provides. All the provisioning seems to be way of inline provisioning scripts, which it can't run because it can't logon to the server.
+
+OK... for now lets just crack on with the remaining steps of the guide paper....
+
+---
+
+
+
+   kubectl config set-credentials vagrant-multi-admin \
+        --certificate-authority=${PWD}/ssl/ca.pem \
+        --client-key=${PWD}/ssl/admin-key.pem \
+        --client-certificate=${PWD}/ssl/admin.pem
+
+   User "vagrant-multi-admin" set.
+
+
+   kubectl config set-context vagrant-multi  \
+        --cluster=vagrant-multi-cluster \
+        --user=vagrant-multi-admin
+
+   Context "vagrant-multi" created.
+
+
+   kubectl config use-context vagrant-multi
+
+   Switched to context "vagrant-multi".
+
+
+   kubectl get nodes
+   The connection to the server 172.17.4.101:443 was refused - did you specify the right host or port?
+---
+
+  Logged onto the machines in order to try and work out wahta was going on...
+
+    The conttoller server (c1), seems to have started all of its services ok, but seems to be struggling to talk to the etc server e1
+
+---
+    journalctl -r | more
+
+  -- Logs begin at Wed 2019-12-04 09:59:38 UTC, end at Wed 2019-12-04 10:06:17 UTC. --
+  Dec 04 10:06:17 c1 bash[1395]: Trying: http://172.17.4.51:2379
+  Dec 04 10:06:16 c1 bash[1395]: Trying: http://172.17.4.51:2379
+  Dec 04 10:06:15 c1 bash[1395]: Trying: http://172.17.4.51:2379
+  Dec 04 10:06:14 c1 bash[1395]: Trying: http://172.17.4.51:2379
+  Dec 04 10:06:13 c1 bash[1395]: Trying: http://172.17.4.51:2379
+  Dec 04 10:06:12 c1 bash[1395]: Trying: http://172.17.4.51:2379
+---
+
+  The etc server (e1) (172.17.4.51) failed to start its service:
+
+    user-cloudinit@var-lib-coreos\x2dvagrant-vagrantfile\x2duser\x2ddata.service
+
+  This seems to be because the server does not have the etcd software installed anymore.
+
+ Dec 03 23:19:09 e1 coreos-cloudinit[1279]: 2019/12/03 23:19:09 line 6: warning: deprecated key "etcd2" (etcd2 is no longer shipped in Container Linux)
+
+ Seems to be because etcd is no longer shipped with coreos - should be run in container instead.
+
+
+ The worker server (w1) also fails to start the one of its services
+
+---
+Container Linux by CoreOS beta (2303.2.0)
+Failed Units: 2
+coreos-cloudinit-255695975.service
+update-engine.service
+---
+
+  This seems to fail on the
+
+  Dec 04 10:07:53 w1 systemd[1]: coreos-cloudinit-255695975.service: Main process exited, code=exited, status=1/FAILURE
+
+  This looks to be a service that set up the  flanneld.service and kubelet services.
+
+  I suspect the flanned.d service is not starting
+
+---
+Dec 04 10:39:27 w1 flannel-wrapper[2029]: timed out
+Dec 04 10:39:26 w1 flannel-wrapper[2029]: E1204 10:39:26.778232    2029 main.go:382] Couldn't fetch network config: client: etcd cluster is unavailable or misconfigured; error #0: dial tcp 172.17.4.51:237
+9: connect: connection refused
+---
+
+  So everything seems to be coming back to the etc.d service not running on the e1 server.
+
+
+
+
+
+
+Invstigating trying to get a containerized version of it running.
+
+  This does seem to get things moveing a little. The processes on c1 and w1 seem to managet to talk to it at least...
+
+---
+  docker run -d -v /usr/share/ca-certificates/:/etc/ssl/certs -p 4001:4001 -p 2380:2380 -p 2379:2379 \
+    --name etcd quay.io/coreos/etcd:v2.3.8 \
+    -name etcd0 \
+    -advertise-client-urls http://172.17.4.51:2379,http://172.17.4.51:4001 \
+    -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 \
+    -initial-advertise-peer-urls http://172.17.4.51:2380 \
+    -listen-peer-urls http://0.0.0.0:2380 \
+    -initial-cluster-token etcd-cluster-1 \
+    -initial-cluster etcd0=http://172.17.4.51:2380 \
+    -initial-cluster-state new
+---
+
+  ..bits of it seem to start working
+
+---
+  etcdctl member list
+
+  ea651507af29316f: name=etcd0 peerURLs=http://172.17.4.51:2380 clientURLs=http://172.17.4.51:2379,http://172.17.4.51:4001 isLeader=true
+---
+    ...but not everthing
+
+---
+  kubectl get nodes
+
+  Error from server (NotAcceptable): the server was unable to respond with a content type that the client supports (get nodes)
+---
+
+  Some suggestion that this might just be a version compatability thing...
+
+
+  Goint to leave this for now and maybe pick it up later.
+
+
+Fixing the supplied Vagrant File
+
+  I think the way that it works, is basically to set up a drive mapping within the guest os that points to a Ignition file held locally on the host o/s.  When the Guest O/S gets provisioned, the Ignition System reads the file from teh mapped drive and configures the box accordingly.
+
+  If there is no Ignition File, it will create a default one, that injects the desired user, plus public key etc.
+
+  Other wise it merges the above in fo into the Ignition file provided.
+
+
+Fixing the supplied Vagrant File
+
+
+ ---
+    https://github.com/coreos/vagrant-ignition
+ ---
+
+
+
+ ---
+    config.ignition.enabled: Set to true to enable this plugin
+
+    config.ignition.path: Set to the path of the base ignition config (can be nil if there is no base)
+
+    config.ignition.config_obj: Set equal to config.vm.provider :virtualbox
+
+    config.ignition.drive_root: Set to desired root directory of generated config drive (optional)
+
+    config.ignition.drive_name: Set to desired filename of generated config drive (optional)
+
+    config.ignition.hostname: Set to desired hostname of the machine (optional)
+
+    config.ignition.ip: Set to desired ip of eth1 (only applies if a private network is being created)
+ ---
+
+
+    Bit tricky but eventually managed it.

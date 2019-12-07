@@ -1,0 +1,643 @@
+Container Linux (CoreOS)
+
+
+* Introduction
+
+  Container Linux (CoreOS) is a distribution of Linux specifically geared to supporting Container based application. It is stripped down to the bare essentials, and shipped as an integral unit.
+
+  It was originally package by CoreOS company, and supplied in both community (CoreOS) and commercial (Tectonic) forms. As of December 2018, CoreOS have merged, or entered into some form of deal, with RedHat with the view to create an new distribution. Once again there will be 2 packagings : Fedora CoreOS (FCOS) as the community edition and Red Hat Linux CoreOS (RHCOS). As of now, Fedora Coreos is only available from a 'Testing' stream. My {{{./onFedoraCoreOs.html}experience playing with Fedora CoreOS}} has been documented.
+
+  Decent documentation on Container Linux is available {{{https://coreos.com/os/docs/latest/}here}}.
+
+  There are certain features that can be considered to the design philosophy of CoreOs:
+
+    * automated provision of servers;
+
+    * automated operating system updates;
+
+    * containerisation of the applications it runs;
+
+    * a commitment to open source software.
+
+  This is described more below.
+
+
+**Automatic OS Updates
+
+  Core to CoreOS philosophy is automatic software updates: Operating system updates and security patches are regularly pushed to the CoreOS Container Linux machines,  and applied without requiring any intervention by admins.
+
+
+**Automated Provision
+
+  Another of Coreos's central tenets is that boxes can be built and completely configured at build time WITHOUT significant administrator intervention. This allow services to be easily up and scaled down by the automated deployment of additional nodes with clusters configuration. It allows allows services to migrated to alternative platforms with reactive ease.
+
+
+**Containers
+
+  A central part of the philosophy of Coreos is that all software running on the platform does so within Containers.
+
+  Containers are means of achieving virtualisation : from the perspective of the application appears as if it was running on its own customised and dedicated machine; whereas in actual fact it is just running as one process on a host machine.
+
+  Containers are a much lighter weight means of achieving virtualisation than true Virtual Machines. VM are typically in the GB range, where a container is a much smaller, less resource intensive thing.
+
+  This approach to hosting its software  applies just as much to the system software as it does to the application. For this reason, coreOS does not come with a package manner (yum, rpm, etc).  (The containers themselves will hold a much richer set of related applications, dependencies, libraries etc. - and these are plugged in or unplugged as a single, isolated unit)
+
+  The container engines, Docker and rkt form a central part of the distribution, and are automatically updated by the OS whenever necessary.
+
+
+**Open Software
+
+  CoreOS is committed to using Open Source software to provide its services.
+
+    * kubernetes
+
+    * etcd - provides cluster distributed key-value storage  and is the backing data store for kubernetes
+
+    * flannel - provides a software defined networkin layer for kubernetes clusters
+
+    * docker.
+
+    * locksmith
+
+    []
+
+
+**Platforms
+
+  Coreos can be simply deployed to various Hardware virtualisation platform, notably:
+
+    * Amazon ECR;
+
+    * Google Compute;
+
+    * OpenStack;
+
+    []
+
+====
+
+*Systemd Units and Targets
+
+
+**About systemd
+
+  CoreOS uses systemd as its primary init system. <<<systemd>>> is an init system that provides features for stopping, starting and managing processes. It the system favoured by CoreOs.
+
+  It consists of 2 main concepts:
+
+    * a Unit  : A unit is a configuration file that describes the properties of a process managed by systemd.
+
+    * a Target : A target is a grouping mechanism that allows systemd to start groups of processes at the same time. It is a little analogous to a run-level in other varieties of unix.
+
+    []
+
+  <<<systemd>>> is the first process started on coreOs (process no = 1), which will then read various targets and start the processes so started.
+
+  The target <multi-user> holds all the general use units. It is implemented as a simple configuration file (<<</usr/lib64/systemd/system/multi-user.target>>>) plus a directory (<<</usr/lib64/systemd/system/multi-user.targets>>>) which basically just holds a list of links to the service unit files that make up the target.
+
+  These links are maintained by the <<<systemctl>>> process. For instance, the command:
+
+---
+    systemctl enable foo.service
+---
+
+  will scan the foo unit configuraton file <<</etc/systemd/system/foo.service>>>. One of the fields within this file will be the <WantedBy=multi-user.target>. <<<systemctl>>> will read this and create/amend the links in the target directory accordingly.
+
+  A typical Unit file looks like:
+
+---
+  [Unit]
+  Description=MyApp
+  After=docker.service
+  Requires=docker.service
+
+  [Service]
+  TimeoutStartSec=0
+  ExecStartPre=-/usr/bin/docker kill busybox1
+  ExecStartPre=-/usr/bin/docker rm busybox1
+  ExecStartPre=/usr/bin/docker pull busybox
+  ExecStart=/usr/bin/docker run --name busybox1 busybox /bin/sh -c "trap 'exit 0' INT TERM; while true; do echo Hello World; sleep 1; done"
+
+  [Install]
+  WantedBy=multi-user.target
+---
+  Note that it is usual for most user services to be Docker containers, rather than direct systemd services.
+
+
+**Customising Systemd drop-in unit behaviour.
+
+  The main configuration file that control the <<<systemd>>> services are held on <<</usr/lib64>>>, which is a read-only filesystem. However, there are secondary locations that you can use to override these default settings
+
+  <<</etc/systemd/system/<unit.conf>>>> : If you copy the <<</usr/lib64/systemd/system>>> version of the file to this directory, then this version will be used in preference to the read-only original.
+
+  <<</etc/systemd/system/<unit.d>/<unit.conf>>>> : These files contain <<JUST>> the particular setting that you want to change. The remaining settings will be taken from the original read-only <<</usr/lib64/systemd/system>>> file.
+
+  The second option is the recommended approach, since it allows you to stay up to date with any additions to the configuration parameters that might come with newer releases of the <<<OS>>>
+
+  To see what settings have been overridden, you can use the command:
+
+---
+  systemd-delta --type=extended
+---
+
+**systemctl cheat sheet
+
+***status
+
+  systemctl  is-active <unit>
+
+  systemctl  is-enabled <unit>
+
+  systemctl  is-failed <unit>
+ <unit>
+  systemctl  list-units <unit>
+
+  systemctl  list-unit-files
+        state
+          - static  ( Unit does not contain an Install Section)
+          - disabled ( i.e. will not be brought at boot time)
+          - enabled ( i.e. will come up at boot time.)
+          - masked ( A masked unit has been linked to /dev/null, making it un-enableable/unstartable)
+
+***Information
+
+  systemctl  cat <unit>
+
+  systemctl  show <unit>
+
+  systemctl  list-dependencies
+
+***Deleting a service
+
+  systemctl stop <unit>
+
+  systemctl disable <unit>
+
+    This will remove the symbolic links in etc/systemd/system/<target>.target.wants
+
+
+  systemctl daemon-reload <unit>
+
+  systemctl reset-failed <unit>
+
+
+***Restarting a Service
+
+  systemctl restart <unit>
+
+  systemctl reload <unit>
+
+  systemctl reload-or-restart <unit>
+
+***masking a service
+
+  Masking a service makes it unstartable and un-enableable until it is unmasked. It works by essentially creating links to /dev/null
+
+  systemctl mask <unit>
+
+  systemctl unmask <unit>
+
+
+***Enabling and Starting Services
+
+  Systemd will start a Unit at boot time if the Unit is enabled. When a Unit is enabled, the symbolic links will be created within /etc/systemd/system/<target>.target.wants
+
+  systemctl enable  <unit>
+
+
+  systemctl kill <unit>
+
+  systemctl start <unit>
+
+  systemctl load <unit>
+
+  systemctl status <unit>
+
+
+***System Boot State/Run ignore_log
+
+    systemctl multi-user
+
+    systemctl rescue
+
+    systemctl halt
+
+    systemctl poweroff
+
+    systemctl reboot
+
+
+====
+
+*Operating System Updates.
+
+
+**Streams
+
+  Container linux is designed to be reliably updated via continuous stream of updates. CoreOs is supplied on one of three streams of development, each reflecting a different stage of maturity of the product. These are:
+
+    * stable;
+
+    * belta;
+
+    * alpha;
+
+    []
+
+  Each installation ofd the OS is aware of the particular stream on which it is based and will update itself reliably in order to keep itself in step it.
+
+  To see the operating system release that the system is running at any particular moment:
+
+---
+    cat /usr/share/coreos/os-release
+---
+
+
+**Active and Passive Partitions
+
+  Stability during automatic updates is ensured by hosting much of the operating system on two parallel filesystems : 1 Active , 1 passive. Specifically, the /usr partition (where the kernel and most of the shell are located) is readonly. The root filesystem itself is read/write and is available to record state change type information as the system runs.
+
+  During normal operation, the Active partition is mounted <<readonly>>.  While it is running, it periodically monitors the <release channel> upon which it is based. When an update appears on that release channel, it is automatically dowloaded and applied to the Passive partition.
+
+  At the next reboot, the role of the 2 partitions will swap.
+
+  To support this, coreOs use a very particular partition layout on their disks:
+
+---
+      Number 	Label 	Description 	Partition Type
+        1 	EFI-SYSTEM 	Contains the bootloader 	FAT32
+        2 	BIOS-BOOT 	Contains the second stages of GRUB for use when booting from BIOS 	grub core.img
+        3 	USR-A 	One of two active/passive partitions holding Container Linux 	EXT4
+        4 	USR-B 	One of two active/passive partitions holding Container Linux 	(empty on first boot)
+        5 	ROOT-C 	This partition is reserved for future use 	(none)
+        6 	OEM 	Stores configuration data specific to an OEM platform 	EXT4
+        7 	OEM-CONFIG 	Optional storage for an OEM 	(defined by OEM)
+        8 	(unused) 	This partition is reserved for future use 	(none)
+        9 	ROOT 	Stateful partition for storing persistent data 	EXT4, BTRFS, or XFS
+---
+
+    <NB: Not sure how this squares up with any partition scheme you might inject at boot time, however...>
+
+
+**The Update Engine
+
+  The <update-engine> service is responsible for controlling, monitoring and auto updating the systems operating system. In normal circumstances, the engine will check for updates every hour or so. The channel that it monitors is defined within:
+
+    * /usr/share/coreos/update.conf
+
+    * /etc/coreos/update.conf
+
+    []
+
+    So to switch the machine to a different channel, change  /etc/coreos/update.conf and specify, say, GROUP=alpha
+
+    NOTE: the system will not perform downgrades. If you switch to a channel with a lower release, it will remain on the current release until the current channel moves ahead of it.>>>
+
+    In order for the change to take effect, the <update-engine> service needs to be restarted.
+
+---
+     sudo systemctl restart <update-engine>
+---
+
+    The status of the engine itself can be checked with the engines client tool:
+
+---
+    update_engine_client --status
+---
+
+    Its working can also be tracked, by monitoring the journal log, e.g
+
+---
+    journalctl -f -u update-engine
+
+    Nov 25 08:31:44 localhost update_engine[578]: I1125 08:31:44.936080   578 update_check_scheduler.cc:74] Next update check in 40m49s
+    Nov 25 08:38:08 localhost systemd[1]: Stopping Update Engine...
+    Nov 25 08:38:09 localhost systemd[1]: update-engine.service: Main process exited, code=exited, status=1/FAILURE
+    Nov 25 08:38:09 localhost systemd[1]: update-engine.service: Failed with result 'exit-code'.
+    Nov 25 08:38:09 localhost systemd[1]: Stopped Update Engine.
+    Nov 25 08:38:09 localhost systemd[1]: Starting Update Engine...
+    Nov 25 08:38:09 localhost update_engine[979]: I1125 08:38:09.077879   979 main.cc:89] CoreOS Update Engine starting
+    Nov 25 08:38:09 localhost systemd[1]: Started Update Engine.
+    Nov 25 08:38:09 localhost update_engine[979]: I1125 08:38:09.094213   979 update_check_scheduler.cc:74] Next update check in 7m37s
+    Nov 25 08:38:54 localhost update_engine[979]: I1125 08:38:54.212074   979 update_attempter.cc:493] Updating boot flags...
+
+    Nov 25 08:45:46 localhost update_engine[979]: I1125 08:45:46.302613   979 prefs.cc:51] certificate-report-to-send-update not present in /var/lib/update_engine/prefs
+    Nov 25 08:45:46 localhost update_engine[979]: I1125 08:45:46.302839   979 prefs.cc:51] certificate-report-to-send-download not present in /var/lib/update_engine/prefs
+    Nov 25 08:45:46 localhost update_engine[979]: I1125 08:45:46.303725   979 omaha_request_params.cc:59] Current group set to beta
+    Nov 25 08:45:46 localhost update_engine[979]: I1125 08:45:46.307296   979 update_attempter.cc:483] Already updated boot flags. Skipping.
+    Nov 25 08:45:46 localhost update_engine[979]: I1125 08:45:46.308347   979 update_attempter.cc:626] Scheduling an action processor start.
+
+    ....
+
+    Nov 25 08:49:34 localhost update_engine[979]: I1125 08:49:34.964851   979 update_attempter.cc:290] Processing Done.
+    Nov 25 08:49:34 localhost update_engine[979]: I1125 08:49:34.969820   979 update_attempter.cc:316] Update successfully applied, waiting to reboot.
+    Nov 25 08:49:34 localhost update_engine[979]: I1125 08:49:34.969916   979 update_check_scheduler.cc:74] Next update check in 46m15s
+
+---
+
+  It is also possible to force an update check:
+
+---
+  update_engine_client -check_for_update
+---
+
+
+**Reboot Strategy
+
+  These changes do no not take effect until the system is rebooted, and the system supports several strategies for controlling how this happens.
+
+    * reboot : The system will reboot automatically after an update has been applied.
+
+    * off : Do not reboot. The new kernel/root will come into operation at the next manual reboot.
+
+    * etcd-lock : Reboot ONLY after securing a distributed lock from etcd
+
+    []
+
+  The etcd-lock strategy is aimed at clustered configurations, and ensures that machines in the cluster do not all reboot at the same time. They will communicate to ensure that there is always a minimum no of nodes up at one time.
+
+  Within coreos, this is controlled by the locksmith service, which can be manipulate by its client tool, e.g.:
+
+---
+    locksmithctl set-max 4
+
+    locksmithctl status
+---
+
+  Locksmith can also enforce maintenance windows, so that re-boots do not occur within the production day, for example.
+
+
+**Partition Switching
+
+  In order to determine which of the candidate <<<usr>>> partitions to boot, coreos maintains a couple of attributes attached to the filesystem:
+
+    * priority: each candidate usr partition will have a different priority number. The one with the highest priority will get booted first. If unsuccessful, lower priority disks will be attempted.
+
+    * tries: This indicates how many attempts to boot this filesystem are outstanding. Typically, this will be 1 for a newly updated partition that have yet to be booted.
+
+    * successful: This is set to 1 on the first occasion that the partition successfully boots. This may not happen immediately : it is maintained by the update-engine, so won't get updated till the update-engine runs for the first time.
+
+  The system will attempt to boot the partition with the highest priority (Note: 2 is a higher priority than 1)
+
+  The passive and active partitions can be listed:
+
+---
+  cgpt find -t coreos-usr
+---
+
+  You can see the attributes on the various partitions on a coreos disk using:
+
+---
+  cgpt show /dev/sda
+---
+  or, for instance
+
+---
+  cgpt show /dev/sda3
+---
+
+  ...and the active partition
+
+---
+  rootdev -s /usr
+---
+
+
+**Rolling Back
+
+  If application of a system update leads to intability or failure, then you may wish to rollback to the previous operating system. Somewhat worryingly, Coreos suggest that manually rolling back is not a recommended practice, but then go on to tell you how to do it.
+
+---
+  sudo cgpt prioritize /dev/sda4
+
+  sudo shutdown -r now
+---
+
+  Note: that this does not stop the update-engine once again recognising that the system is once again out of date, and will re-update and reboot, taking you back to the non-rolled back situation.
+
+  NB. If necessary, it is possible to force a downgrade to a differnt channel, or lower revision. However, once again, this is NOT a practise recommended by coreos. It is documented in the manuals however.
+
+
+====
+
+*Provisioning with Ignition
+
+
+**Introduction
+
+  Ignition is a provisioning utility designed specifically for Container Linux that allow the manipulation of disks, files and other resources  during the early boot process. It support one of Coreos's central tenets, that boxes are built and completely configured at build time <<WITHOUT>> significant administrator intervention. It involves:
+
+    * partitioning disks;
+
+    * formatting partitions;
+
+    * writing files ( regular files, systemd units, networks units etc);
+
+    * configuring users;
+
+    * configuring services (such as Docker, etcd, flannel, locksmith);
+
+    []
+
+  It only runs <<once>>, during the first boot of the system.  It forms part of the temporary initial root filesystem initramfs.  When it runs, it finds configuration data in a named location (file, or URL) and applies it to the machine.
+
+  On boot, GRUB checks the EFI system partition for a file <<<coreos/first_boot>>>. If found, it passes the coreos.first_boot=detected parameter into <<<initramfs>>> and Ignition will be triggered to process its scripts. The coreos/first_boot file will be deleted when Ignition has finished its processing.
+
+  Note PXE installations fo not use GRUB, so the <<<coreos.first_boot>>> must be passed explicitly.
+
+
+**Ignition Scripts
+
+  The script that Ignition process are JSON based and have a very particular syntax, whose reference can be found {{{https://github.com/coreos/fcct/blob/master/docs/configuration-v1_0.md}here}}. Note: the coreOs and Fedora-CoreOS versions of the syntax are slightly different.
+
+  Because Ignition is very particular with regard to syntax and because the boot process does not make uncovering errors especially easy, it is recommended that the json scripts should <<not>> be written by hand.
+
+  Instead, tools like <<<ct>>>, its <<<fedora-coreos>>> brother <<<fcct>>>, or <<<matchbox>>> should be used to generate json. The <<<ct>>> tool is described below.
+
+**The Coreos-Installer
+
+  The <<<coreos-installer>>> is actually just a shell script that forms part of the initram kernel image that is loaded by the bootloader at installation time.  It processes 3 main parameters:
+
+    * the destination device for the install
+
+    * the raw image file to be installed
+
+    * An Ignition script to perform any pre/post installation steps
+
+    []
+
+  Note that the Ignition scripts are not run at this point. instead, the scripts are over-layed over the install image, so that they effectively appear in the filesystem in places that Ignition expects to find them. They will then get processed by ignition during the first boot of the system.
+
+  In practice, injecting a Ignite file is a tricky thing to get right. The syntax of the <Ignition> script is quite complicated, and difficult to write accurately.
+
+  If there is anything untoward with it, the build won't succeed. It can be quite tricky to get any diagnostic information back from the machine at this point. This is in large part because in failing it doesn't leave behind a running ssh daemon that will allow you to get onto the system to investigate.
+
+  When the first boot is in progress, it seems to drop back through to the emergency console...but since this seems to be no longer connected to a terminal this is not at all evident that that is what has happened. And even when you so realise, there doesn't seem to be a console that is attached and allows you to take advantage of that.
+
+  Partly for this reason, Ignition json scripts should not be written by hand, but generated by tools capable of syntax checking. Some of these are described in the following sections.
+
+
+**Config Transpiler (ct)
+
+  To simplify the process of generating syntactically correct Ignition scripts, <Container Linux> provides what is called a <Config Transpiler>. This utility, called <ct>, takes a simpler <YAML> formatted script and turns it into JSON for <Ignition> to consume.
+
+  Note that fedora-coreOs has a similar tool (fcct), but it generates the slightly different output required by <<<fedora-coreos>>>.
+
+  In both cases, the output is platform specific; consequently, you have to tell it which platform you are intending to host on. The following targets are explicitly supported.
+
+    * Amazon EC2;
+
+    * Google;
+
+    * Bare Metal server.
+
+    []
+
+  There are other provisioning tools such as <matchbox>, or plugins for tools like vagrant which can also read the YAML.
+
+
+***Installing ct on OSX
+
+---
+   brew install coreos-ct
+---
+
+
+***Using the ct tool.
+
+---
+      ct -platform vagrant-virtualbox \< in.yaml \> out.json
+---
+
+ <<NB: ct can't handle <TAB> characters. Indent using spaces only.>>
+
+
+**Troubleshooting problems with Ignition installs
+
+  If you can get to it, the best source of information is the usual journalling system.
+
+---
+    journalctl --identifier=ignition -all
+---
+
+  If the box is still in the early stages of booting and you do not yet have access to a login session, capturing the console output and looking at that is your best option. For VirtualBox installs, this is described {{{./onVirtualBox.html}here}}.
+
+
+====
+
+*Installing Container Linux (CoreOS) Linux on Vagrant/VirtualBox
+
+
+**Additional considerations for Vagrant installs of CoreOs
+
+  {{{./onVagrant.html}Vagrant}} is a tool to help build and manage virtual machine environments;
+  basically, it aids the creation and management of {{{./onVirtualBox.html}Virtual Box}} (or VMware environments).
+
+  Coreos provide a packaged set of files on {{{https://github.com/coreos/coreos-vagrant.git}GitHub}} that can be used to set up CoreOs on Vagrant/Virtual Box.
+
+  It is possible to use this package to set up and run CoreOS both as:
+
+  * single Node;
+
+  * in a multi-node configurations.
+
+  []
+
+  Multi-node configurations will more closely reflect what real world production deployments will look like. coreOs installations will almost certainly be running containerized applications, which are typically deployed in clusters with multiple copies of the application operation.
+
+  Because the setup of Coreos involves full build-time provisioning rather than just installation, the setup is somewhat more involved than that of many vagrant installations. It requires <<MORE>> than just the usual <<<Vagrantfile>>> configuration file and a Vagrant boxfile from a repository somewhere. The additional files are required to:
+
+    * install an ignition plugin for CoreOS
+
+    * inject Ignition scripts into the o/s as its being provision (described more fully below).
+
+    []
+
+
+**Creating a basic coreOs installation
+
+  Coreos provide a packaged set of files on {{{https://github.com/coreos/coreos-vagrant.git}GitHub}} that can be used to set up both a Single Node and a Multi-Node Cluster.
+
+  Its use is pretty well described {{{https://coreos.com/os/docs/latest/booting-on-vagrant.html}here}}.
+
+  [[1]] git clone {{https://github.com/coreos/coreos-vagrant.git}}
+
+  [[1]] cd coreos-vagrant
+
+  [[1]] Set the number of nodes you'd like to create in config.rb
+
+  [[1]] Set the update channel you'd like to use as the source of the installation in config.rb e.g.
+
+    {{https://coreos-stable.release.core-os.net/amd64-usr/current/coreos_production_vagrant_virtualbox.json}}
+
+  [[1]] vagrant up
+
+  [[1]] vagrant status
+
+---
+    vagrant status core-01
+---
+
+
+**Automated provision via Ignition on Vagrant boxes.
+
+  When using the VirtualBox provider for Vagrant, Ignition is used to provision the machine via a special plugin to vagrant (vagrant-ignition). This is available in the default vagrant repository, so can be manually installed as
+  follows:
+
+  ---
+  vagrant plugin install vagrant-ignition
+  ---
+
+  Quite often, this will be coded in the <<<Vagrantfile>>> so that the plugin will be installed as a vagrant virtual server is built. This is what happens with the <<<coreos-vagrant>>> package described above.
+
+  The supplied provision works pretty well out of the box. Should further configuration be required, the ct utility should be used
+
+  ---
+  ct --platform=vagrant-virtualbox < cl.conf > config.ign
+  ---
+
+
+***Some ct Examples
+
+  Some examples of ct scripts are given below, and more extensive example are given {{{https://coreos.com/os/docs/latest/clc-examples.html}here}}
+
+---
+  passwd:
+  users:
+    - name: core
+      password_hash: "$6$43y3tkl..."
+      ssh_authorized_keys:
+        - key1
+    - name: user2
+      ssh_authorized_keys:
+        - key3
+---
+
+  or
+
+---
+  passwd:
+  users:
+    - name: user1
+      password_hash: "$6$43y3tkl..."
+      ssh_authorized_keys:
+        - key1
+      home_dir: /home/user1
+      no_create_home: true
+      groups:
+        - wheel
+        - plugdev
+      shell: /bin/bash
+---
+
+
+***Ways of generating a password for Ignition
+
+---
+  openssl passwd -1
+---
+
+
+**Networking
+
+  Container Linux comes preconfigured with networking customised for each platform. Additional networking can be configured via Ignition if so desired.

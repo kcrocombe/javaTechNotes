@@ -1,0 +1,288 @@
+
+On Google Web Toolkit
+
+
+	will need a lot of tidying up
+
+
+
+Bits and Pieces re eclipse
+
+	[[1]] vrapper - a wrapper for vi
+
+	Have installed this : seems to work ok. Gives the default edit vi-like propoerties.
+
+=================================
+
+
+	[[1]] Getting the implementation of a class to additionally implement an Interface not specifically modelled on the diagram
+
+		add an @implement annotaion into the user-doc section of the generated java code:
+
+---
+	 /**
+ 	 	* <!-- begin-user-doc -->
+		* An implementation of the model object '<em><b>My User Profile Mesg</b></em>'.
+		*
+		* @implements com.garmin.fit.UserProfileMesg NOT
+		*
+		* <!-- end-user-doc -->
+		*/
+---
+
+		You can do likewise with @extends, ( although since the generated class always will extend the and a class can only extend a single Class) then this seems to be of limited value.
+
+		I DO NOT THINK this ends up in the model files anywhere: I think it must be read from the java source files following regeneration - not absolutely sure on theis however.
+
+
+		[[1]] Classes drawn upon the diagram are normally:
+
+		a. implemented as an Interface
+		b. supplied with a template \*.Impl Class that implements that interface
+
+	This is a highly recommended Design Pattern.(See Effective Java).
+
+	[[1]] It is possible to change the way that code is generated such that each Diagrammed Class is implemented as a class.
+
+		open the \*.genmod file with the GenModel Editor
+
+			Model --> Suppress Interfaces --> TRUE
+
+	It seems that this will cause ALL modelled classes to be implemented as CLASSES. I have not found a way to allow just individual classes to be modelled as CLASSES: although I suspect is ought to be possible with some further clever annotations.
+
+
+	[[1]] IF you put code snippets in your model they HAVE to be syntactically correct code ; otherwise the generation will bomb out!.
+
+
+	[[1]] It is possible to sensibly represent External Interfaces ( i.e. interfaces supplied as part of the standard libraries, or third party libraries) on the diagrams. As long as these are marked as 'Interfaces', then the generator will not attempt any code generation for them, just the implementing/extending class.
+
+	IF you DO put a external class on the diagram, the generated code:
+
+		DOES NOT generate an INTERFACE for it.
+
+		DOES create an Implementation class for it (BUT ITS BROKEN)
+			The implementation
+				extends the standard <MinimalEObjectImpl.Container> Class, and implements the ExternalClass. However classes can't implement OTHER classes ( so this fails). Nor can they extend more than 1 class, and since we are already extending the standard <MinimalEObjectImpl.Container> Class this isn't an option.
+
+				( The <MinimalEObjectImpl.Container> Class is needed for other internal workings of the model).
+
+				In other words, the construct can't work.
+
+	IF you put an Internal Class on the Diagram, the generated code:
+
+		* DOES create an INTERFACE for it. ( That extends the standard internal root object EObject)
+
+		* DOES create a CLASS that implements the INTERFACE created. (It also extends the standard MinimalEObjectImpl.Container)
+
+	IF you put an External Interface on the Diagram, the generated code:
+
+		* DOES NOT create an INTERFACE for it  ( because it already exists somewhere)
+
+		* DOES NOT create a CLASS for it.
+
+	IF you put an Internal Interface on a Diagram, the generated code:
+
+		* DOES create an INTERFACE for it. (That extends the standard internal root object EObject)
+
+		* DOES NOT create a CLASS for it.
+
+
+		[[1]] IF you DO want to use an external CLASS as part of the model, then you need to represent it:
+
+		* as a Datatype. The advice seems to be that it is best to do this for only Simple types.
+
+		* They can be indirectly represented by effectively creating a Wrapper Interface. At first sight, this
+		approach seems to be fairly cumbersome. However it DOES represent a pretty solidly supported Design Pattern,
+		namely: <Favouring Composition over Inheritance>
+
+			Inheritance is a powerful way to archive code re-use, but it can lead to fragile software.
+
+			Inheriting from ordinary classes across package boundaries is considered dangerous.
+
+			(It is ok to use inheritance WITHIN a package though)
+
+			It is OK to inherit from Abstract Classes : these should have been designed specifically for that purpose.
+
+	It DOES require that a set of forwarding methods be written ( ie a method that basically just calls the method of the same name in the subOrdinate class).
+
+	Can be used to LIMIT the functionality of the sub-ordinate class, by choosing to forward only certain methods.
+
+	Can also use a Forwarding Class. This is useful if you have different object "inheriting" from your subOrdinate object.
+	THe forwarding class is essentially re-useable.
+
+	There is a choice to be made about whether the intance variable holdiung the subordinate Object should be private
+	or public.
+
+	If the subordinate Object is included in the Interface Definition, then essentailly all the methods on that
+	subordinate object become visible
+
+	If it is NOT then only the forwarding methods may be used to manipulate it, so you are effectively only exposing
+	a subset of its properties.
+
+		- Again this is a good thing. The more limited an objects properties are, the easier it is to test.
+
+
+Delegating and Forwarding
+
+
+		I have yet to find a way of sensibly using an actual concrete CLASS on the diagram that can be sensibly handled by the Code generator.
+
+	[[1]] The graphical editor has a few Annoying Foibles:
+
+		[[a]] If you amend stuff on the various Dialog boxes that pop up if you double click on an Item, then the changes do not take if you press 'OK' without moving out of the field you have just edited. You basically need to move the focus out of the edited field before pressing RETURN. Very Annoying.
+
+		[[b]] If you give Instance Class Name to a Class/Interface (thereby turning it into a proxy for an external class), then if you change your mind, and try and delete it then it doesn't work too well. Even thouh the field is empty it treats it as being modelled by an external Null Class []. You need to use a different editor to correct this (edit the .ecore model file with the Ecore Editor).
+
+
+	It is generally easier to refine items in the Ecore Editor once the basic Classes and Relationships have been
+	modelled graphically.
+
+
+
+	[[1]] Generating Failing with Unhandled Exceptions.
+
+		Occasionally these occur during generation. I THINK it happens when you change the name of an entity and regenerate.
+
+		It generally can be fixed by deleting the previously generated java files, HOWEVER be careful to save any custom code in these FIRST!
+
+
+
+		[[1]] Some Documentation Stuff
+
+	To see Documentation Boxes on the diagram editor, you need to have the documentation layer enabled.
+
+	Documentation can be unattached ( ie. not associated with any particular element)
+
+		- This makes its way into the .ecore Model file as a GenModel annotation of the Package with KEY = docuemntation and VALUES "Whatever documentation is".
+
+		 NB - It seems you can only have ONE piece of unattached Documentation. However, it does not stop you creating another, in which case it OVERWRITES the previous one WITHOUT WARNING!.
+
+
+	Documentation elements can be attached to the high level objects:
+			Classes
+			DataTypes
+			Enumerations
+
+	but not the lower level constructs ( operatios, attributes etc.)
+
+		- These make their way into the .ecore Model file as a GenModel annotation of the Class/Enum/DataType, again with the KEY=documentation
+		and VALUES "Whatever documentation is"
+
+	Again if you attempt to create a SECOND note attached to a CLASS it will OVERWRITE the first WITHOUT warning!
+
+	These get translated into the <!-- begin-model-doc-->   <!--end-model-doc --> section of the generated code
+
+	( Note you can stick some annotations in here ( @extends, @inherits etc, so this is a potentially useful thing
+	 to know about.)
+
+
+	Documentation for attributes/operations can be specified as
+		properties on the GUI modelling tool
+			- THese get reflected as 'GenModel' Annotations in the .ecore model in the same way as Entities above..
+
+
+	Note where snippets of code are entered: these do not form part of the .ecore file but as part of the .genModel file. Documentation
+	of code snippets also ends up here.
+
+
+
+	[[1]] The GenModel map is described by a URL
+		http://www.eclipse.org/emf/2002/GenModel   ( which doesn't seem to exist as a browsable thing?)
+
+		However it specifies what Key --> Value Mappings are valid for that GenModel Map.
+
+		The key 'Documentation' is valid within the scheme ( with its value being whatever the documentation is).
+
+		I don't know what other keys are legitimate.
+
+		NB KEY is unique you can't have two element with the same key attached to the element.
+
+		Nor can you make up arbitrary KEYS, they must be drawn from the domain specified by http://www.eclipse.org/emf/2002/GenModel.
+
+
+
+
+
+		[[1]] Constructors and Factory Methods
+
+	If you are running in the default configuration (Generating Interfaces and Implementing Classes), do not attempt to create explicit constructors on the diagram : in the context of a interface, they don't work.
+
+
+	I feel there ought to be a way of getting the thing to generate more than just the default constructor...but if there is I haven't worked it out yet!
+
+Backing out changes to Java Source.
+
+	[[1]] The editor automatically keeps a history of all incarnations of source code files it generates. There is also a really good tool for comparing files in the History to the current file. It also supplies really good support for back porting any text changes that you might want to back out.
+
+
+
+	[[1]] Representing Specific Generics, especially Collections, Lists etc
+
+	The modelling tool seems to provide a limited range of generic collections:
+		EEList<T>      --> org.eclipse.emf.common.util.Elist
+		EMap <K,V>		--> java.util.Map
+		ETreeIterator<T> --> org.eclipse.emf.common.util.TreeIterator
+
+		If you want use a specific external class in your mode, the obvious way would seem to define an Datatype much as you would for other external Classes. However this does not seem to work too well.
+
+		e.g.
+
+		Name:						 IterableOfSomeClass
+		Instance Class Name:  java.lang.Iterable
+		Instance Type Name:   java.lang.Iterable<SomeOtherclass>
+
+		This looks like it SHOULD work. However, in practise, this seems to get translated in the code to:
+		Iterable<Object>
+		and not
+		Iterable<SomeOtherClass>
+
+
+		However, it does seem to posssible to represent the required Collection as an Interface instead
+
+		Name:						 IterableOfSomeClass
+		Instance Class Name:  java.lang.Iterable
+		Instance Type Name:   java.lang.Iterable<SomeOtherclass>
+
+		Abstract: True
+		Interface: True
+
+		This DOES seem to get translated in the code as
+		Iterable<SomeOtherClass>
+
+=====
+
+
+
+
+Eclipse Model Generator and JavaDoc.
+
+	The generator will generate default javadoc for each class/attribute/operation in the interfaces (
+	not much docuemntation seems to get auto-generted for the implemetation classes.
+
+	Documentation stored in the .genModel file ( NOT the .ecore file) is what get populated the
+	java doc. Although documentation in the .ecore file is not included directly, the tool does
+	copy the .core documentation --> .genModel file by default ( if the equivalent .GenModel documentation
+	does not already exist).
+
+---
+	<!---begin-model-doc -->
+			Contains Documentation entered under:
+					Properties --> Generation --> Documentation
+
+	<!--end-model-doc -->
+---
+
+	Documentation within <!---begin-user-doc --> <!--end-user-doc --> Constructs does not get overwritten
+	when the models are regenerated.
+
+
+Generating the HTML
+
+	* From eclipse
+			Projects --> Generate Javadoc
+
+	* From the command line
+			$JDK_HOME/bin/javadoc
+
+
+===

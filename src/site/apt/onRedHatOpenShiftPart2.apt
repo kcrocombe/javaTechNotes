@@ -1,0 +1,767 @@
+Redhat OpenShift
+
+	Created a new account kevin.crocombe@blueyonder.co.uk in order to play around.
+
+		{{https://console.starter-us-east-1.openshift.com/console}}
+
+	This, I think, uses an OpenConnect ID in order to logon. If no active session is in progress, the user will be re-directed to a login page.
+
+	It is possible to login either:
+			via login id ( kcrocombe)
+			via email address ( kevin.crocombe@blueyonder.co.uk)
+
+	Once logged in a OpenConnect ID toke will be issued, which can be used to give access to a command line session via oc (sess below).
+
+
+	Communicate with the platform via either:
+
+		A command line interface : the <oc tool>
+
+		The web console - available of te redhat platform itself.
+
+	Both methods comminicate with RH via the same REST API
+
+ 		{{https://docs.openshift.org/latest/rest_api/index.html}}
+
+	There are alsop plugins for various IDE's including eclipse:
+
+		{{https://tools.jboss.org/features/openshift.html}}
+
+
+	 The underlying orchestration system is <Kubernetes>, which RedHat have enhanced in a few areas.
+
+	 Is a <container> application platform.
+
+	 		oc login
+
+
+	 Easiest way to deploy an application is to use a Docker-Formated Image
+
+* Some Terminology
+
+	 <Container Image> : a container image is a standard unit of software, that packages up all its code, libraries and dependencies so that the application can run quickly and reliably from one computer environment to another. Container Images, in essence, are just files, so may be held in <Repositories> for deployment, much like any other file.
+
+	 <Docker Container Image> : is such a particular type of container image : namely one intended to run on the <Docker> platform. Docker images are lightweight, standalone, executable packages. They include code, libraries, system tools, setting. They are in essence virtual software environments.
+
+	 <Container> : Container images become containers at runtime i.e. when they become assosiated with a platform to support them. Docker Container Images become Docker Containers when they run on a Docker Platform. Different  Containers may communicate between themselves via well-defined channels.
+
+	 <Docker Engine> : is a software product, produced by Docker, that provides OS-level virtualisation : i.e. in whcih the kernel allows the existence of multiple isolated user-space instances. These instances called Containers by Docker, but variously refered to as Zones, Partitions, Virtual Environements in other implementations, look like real computers from the point of view of the software running inside them.
+
+	 Docker runs all containers on a single operating system. This makes them more lightweight than full virtual servers (which also have a virtualised os running in the image.)
+
+	 <Kubernetes> (Greek for "governor") is an open source container <orchestration system> : it automates application deployment, configuration. scaling and management. It was originally designed by Google. It works with a wide range of container tools, including Docker. Many cloud services now offer Kubernetes-based platforms, and many vendors now provide their own branded Kubernetes Solutions (e.g. OpenShift).
+
+	 Kubernetes exerts control over compute and storage resources by defining such resources as Objects, which can then be managed as such. The key objects are:
+
+	 	<Pods> : the basic Kubernetes scheduling unit. A pod consists of one or more containers that are co-located on a single host machine and that can share resources. A pod can define a <volume> e.g. a local disk and expose it to the containers within the pod.  Each pod has a unique IP-address within the cluster by which other pods can address it. Containers within a pod can reference each other via 'localhost'.
+
+		<Services> - A Kubernetes service is a set of pods that work together : e.g. as one tier in a multi-tier application. The set of pods that constitute a service are defined via a label-selector. A Service has assigned a stable IP address ( it persists across restarts, unlike pod iP-addresses which make get re-assigned on restart.) A service, by default, is not exposed outside of the cluster. To make it visible from outside, and so usable by clients, it needs to be explicitly exposed. Pods may be replicated underneath a service, and the Service will load balance between the pods.
+
+		<Volumes> - Filesystems in a Container are volatile by default: if the container is restarted, the contents will be lost. A Kubernetes Volume provides persistent storage. These are mounted a specific mount points within the container and available to all containers within a pod.
+
+
+
+* Documentation
+
+		Documentation for OKD is available {{https://docs.okd.io/index.html}}
+
+
+
+
+* Interactive Learning Portal
+
+	There are a number of demonstration scenarios on the learn.openshift website. These provide a simulated environemnt that can be used to step through a number of scenarios throiugh which the OpenShift Platform can be used. I have stepped through some of those scenarios below, making notes as I have done so.
+
+	The scenarios are available at {{https://learn.openshift.com/introduction}}.
+
+
+** Getting Started with OpenShift for Developers
+
+	 		Create a Project
+
+			Add to Project
+					Deploy Image
+						openshiftroadshow/parksmap-katacoda:1.0.0
+							Create
+
+		Need to <create a route> in order for the deployed application to be accessible.
+
+		Often applications will have backend services to support them.
+
+		It is possible to deploy to RedHat direct from GitHub. This is done via the Source-to-Image tool (S2I).
+
+		S2I is a tool for building reproducible Docker images. It takes an existing Docker image, injects 'Builder' sources code and assembles a new Docker image which incorporates both.
+
+		Open-shift is S2I enbaled.
+
+
+		If the backend is written in say Python, add python to the project from the systems catalog.
+
+		Specify the name of the application and git-hub loctaion.
+
+
+		Minishift
+
+			Minishift is a completer OpenShift environemnt that can be run locally.
+
+				{{http://www.openshift.org/vm}}
+
+
+** Logging in to an OpenShift Cluster
+
+	To logon via a specific user:
+
+			oc login --username collaborator --password collaborator
+
+			oc get projects
+
+			oc whoami
+
+	In order to make life easier in the early stages, the password to my kcrocombe RedHat account has been set as an environment variable. Consequentyl I should be able to logon as:
+
+		oc login -u kcrocombe -p $OSPWD
+
+
+
+* Deploying Application Components using the ODO tool
+
+	<NB - The commands used in the demo version of odo do not seem to work with the latest version of the tool. In particular the syntax of the command used to create the application:>
+
+		<<<$ odo app create wildwest>>>
+
+	<does not seem to work any more. This is noted in the text below, and the new version of the command indicated (at least as best as I have been able to find out.)>
+
+	<THIS NEEDS ATTENTION!>
+
+	Documentation is available at {{https://openshiftdo.org/}}
+
+
+** Introduction
+
+	Odo (OpenShift Do) is a CLI tool to help build and deploy applications to OpneShift.
+
+	I suspect it is a front-end to the sourceToImage tool (and possibly oc) : basically just providing a convenient way to perform the more typical packaging and deployment activities ( although I donlt know this for sure).
+
+	Consider the following Scenario: an application consisting of:
+		a back-end web service (developed say in spring)
+		a front-end (developed say in node.js)
+
+	We could deploy the application as 2 seperate components as described in what follows.
+
+** Deploying the backend
+
+	Logon to openshift
+
+---
+		odo login -u developer -p developer
+			Login successful.
+
+			You have one project on this server: "default"
+
+			Using project "default".
+---
+	Create your project
+
+---
+		odo project create myproject
+			OK  New project created and now using project : myproject
+---
+	Create an application:
+
+	From the tutorial material, it seems that an application used to be created explicitly and then various components added to it, as in:
+
+---
+
+		$ odo app create wildwest
+ 				Creating application: wildwest in project: myproject
+				Switched to application: wildwest in project: myproject
+---
+	<However, this does not seem to work with the version of odo that I have: <<odo app create>> no longer seems to be a valid commands. Instead the 'application', such that it is, is created as a bi-product of building a configuration. (see later on)>
+
+
+	Create the Java Backend
+
+	This is a java backend, so the necessary components will need to be available to it. This can be checked:
+
+---
+		$ odo catalog list components
+
+				NAME        PROJECT       TAGS
+				dotnet      openshift     2.0,latest
+				httpd       openshift     2.4,latest
+				java        openshift     8,8-1.5,8-1.6,latest
+				nginx       openshift     1.10,1.12,1.8,latest
+				nodejs      openshift     0.10,10,4,6,8,8-RHOAR,latest
+				perl        openshift     5.16,5.20,5.24,5.26,latest
+				php         openshift     5.5,5.6,7.0,7.1,latest
+				python      openshift     2.7,3.3,3.4,3.5,3.6,latest
+				ruby        openshift     2.0,2.2,2.3,2.4,2.5,latest
+				wildfly     openshift     10.0,10.1,11.0,12.0,13.0,8.1,9.0,latest
+---
+
+	As you can see java is one of the services available within OpenShift.
+
+
+	Build your application jar files in the usual way:
+
+---
+		mvn package
+---
+
+	Configure a container ready for deployment atop the Java Application Server. This will create a <component> named "Backend" of <component-type> java.  The process scans the source and target parts of the infrastructure and if all seems ok, creates a configureation (.yaml file) in a .odo subdirectory.
+
+---
+		odo create java backend --binary target/wildwest-1.0.jar --app wildwest
+			Checking component
+			Checking component version
+			Creating component backend
+---
+
+	The Component container can then be deployed to the server. This seems to read the .yaml file previously created, and uploads it to the server:
+
+---
+		odo push
+
+			Pushing changes to component: backend
+			 ✓   Waiting for pod to start
+			 ✓   Copying files to pod
+			 ✓   Building component
+			 OK  Changes successfully pushed to component: backend
+---
+
+		The 'application' can then be viewed. It think application is a bit of a false construct. I think an applicaiton is just a collection of objects carrying the same 'app=' tag.
+
+---
+	 	$ odo app list
+			The project 'myproject' has the following applications:
+			ACTIVE     NAME
+			*          wildwest
+---
+
+
+
+** The Front-End component
+
+	Likewise, create a application component for the frontend. Remember, Node.js is an interpreted language, so there is no compilation. Again a configuration file is written to .odo :
+
+---
+		odo create nodejs frontend
+ 			✓   Checking component
+ 			✓   Checking component version
+ 			✓   Creating component frontend
+ 			OK  Component 'frontend' was created and port 8080/TCP was opened
+ 			OK  Component 'frontend' is now set as active component
+			To push source code to the component run 'odo push'
+---
+	..and deploy it
+
+---
+		odo push
+			Pushing changes to component: frontend
+		 	✓   Waiting for pod to start
+		 	✓   Copying files to pod
+		 	✓   Building component
+		 	OK  Changes successfully pushed to component: frontend
+---
+
+	Create a Service Account for the backend to use.
+
+---
+		Console --> Dashboard
+---
+
+
+	Create a link between the front and the backend...
+
+---
+		odo link backend --component frontend --port 8080
+ 			OK  Component backend has been successfully linked to component frontend
+---
+
+ 	Create a url in order to access the front end. This updates the .odo configuration file
+
+---
+		odo url create frontend
+			Adding URL to component: frontend
+ 			OK  URL created for component: frontend
+
+			frontend - http://frontend-wildwest-myproject.2886795334-80-cykoria05.environments.katacoda.com
+---
+		... and then push the configuration to the server
+---
+		odo push
+---
+	It is also possible to set up a background process that will monitor for changes to any of the source files, and redeploy them automatically should any one of them change. Its unclear whether this just works with interpreted files, or whether it will trigger maven type builds too...
+
+---
+		odo watch &
+			[1] 32707
+			$ Waiting for something to change in /root/frontend
+---
+
+	 Should you need to be reminded of what the URL is for your application:
+
+---
+	 	odo url list
+			Found the following URLs for component frontend in application wildwest:
+			NAME         URL                                                                                      PORT
+			frontend     http://frontend-wildwest-myproject.2886795277-80-rhsummit1.environments.katacoda.com     8080
+---
+
+		Note that odo needs to be able to read its .odo configuration files for this, so you need to be in the correct directory.
+
+
+* Deploying my own example
+
+** A java Example
+
+---
+		odo create java app1 --binary target/gs-spring-boot-0.1.0.jar --app hello
+		✓  Checking component
+		✓  Checking component version
+		✓  Creating java component with name app1
+		✓  Initializing 'app1' component
+		✓  Creating component app1
+		✓  Successfully created component app1
+		✓  Applying component settings to component: app1
+		✓  The component app1 was updated successfully
+		✓  Successfully updated component with name: app1
+		✓  Pushing changes to component: app1 of type binary
+		✓  Waiting for component to start
+		✓  Copying files to component
+		✓  Building component
+		✓  Changes successfully pushed to component: app1
+
+		odo push
+		 ✓  Checking component
+		 ✓  Checking component version
+		 ✓  Creating java component with name app1
+		 ✓  Initializing 'app1' component
+		 ✓  Creating component component1
+		 ✓  Successfully created component app1
+		 ✓  Applying component settings to component: app1
+		 ✓  The component app1 was updated successfully
+		 ✓  Successfully updated component with name: app1
+		 ✓  Pushing changes to component: app1 of type binary
+		 ✓  Waiting for component to start
+		 ✓  Copying files to component
+		 ✓  Building component
+		 ✓  Changes successfully pushed to component: app1
+
+odo url create --component app1 --port 8080 --app kjc-application
+
+odo push
+
+odo url list --app kjc-application --component app1
+Found the following URLs for component app1 in application kjc-application:
+NAME                URL                                                                                          PORT
+app1-8080     http://component1-8080-kjc-application-project2.1d35.starter-us-east-1.openshiftapps.com     8080
+
+curl http://app1-8080-kjc-application-project2.1d35.starter-us-east-1.openshiftapps.com
+
+	Greetings from Spring Boot!
+---
+
+
+** Deploying a Wildfly app1
+
+		Created a wildfly project from the supplied demo (see wildfly stuff above)
+
+---
+		odo project create kjc-wildflyDemo2
+		✓  New project created and now using project : kjc-wildfly
+
+		odo create wildfly wildfly-component --binary ./wildfly-javaee7-webapp-archetype.war --app wildfly-app
+		I0512 20:42:17.135144    2764 create.go:138] wildfly-javaee7-webapp-archetype.war
+		 ✓  Checking component
+		 ✓  Checking component version
+
+		odo url create --port 8080 --app wildfly-app
+ ✓  URL created for component: wildfly-component
+
+		odo push
+		✓  Checking component
+	  ✓  Checking component version
+	  ✓  Creating wildfly component with name wildfly-component
+	  ✓  Initializing 'wildfly-component' component
+	  ✓  Creating component wildfly-component
+	  ✓  Successfully created component wildfly-component
+	  ✓  Applying component settings to component: wildfly-component
+	  ✓  Checking URL wildfly-component-8080
+	  ✓  Successfully created URL for component: wildfly-component
+	  ✓  http://wildfly-component-8080-wildfly-app-kjc-wildfly.1d35.starter-us-east-1.openshiftapps.com
+	  ✓  The component wildfly-component was updated successfully
+	  ✓  Successfully updated component with name: wildfly-component
+	  ✓  Pushing changes to component: wildfly-component of type binary
+	  ✓  Waiting for component to start
+	  ✓  Copying files to component
+	  ✓  Building component
+	  ✓  Changes successfully pushed to component: wildfly-component
+
+		odo url --list --app wildfly-app
+		Found the following URLs for component wildfly-component in application wildfly-app:
+		NAME                       URL                                                                                                PORT
+		wildfly-component-8080     http://wildfly-component-8080-wildfly-app-kjc-wildfly.1d35.starter-us-east-1.openshiftapps.com     8080
+
+		Content was available along:
+			http://wildfly-component-8080-wildfly-app-kjc-wildfly.1d35.starter-us-east-1.openshiftapps.com/wildfly-javaee7-webapp-archetype
+
+---
+
+** Deployment of the standard GWT starter example.
+
+	This is the starter poject that comes as part of the <modular-webapp> archetype (groupId: net.ltgt.gwt.Archetypes) which are recomended for use alongside the newer gwt-maven-plugin (groupID: net.ltgt.gwt.maven) referenced above.
+
+	In theory, it structures the project into 3 sub-projects (client, shared, server).  At the moment, what is not clear to me is what parts of this need to be deployed where in a working system.
+
+	So for a project test2 generated as follows:
+
+---
+	mvn archetype:generate \
+		-DarchetypeGroupId=net.ltgt.gwt.archetypes \
+		-DarchetypeVersion=LATEST \
+		-DarchetypeArtifactId=modular-webapp \
+		-DgroupId=uk.co.pegortech \
+		-DartifactId=test2 \
+		-Dversion=1.0-SNAPSHOT \
+		-Dpackage=uk.co.pegortech.apps.newGWTplugin \
+		-Dmodule=Module1 \
+  	-Dmodule-short-name=mod1 \
+		-DinteractiveMode=N
+---
+
+	...the system was built up in the usual maven way:
+
+---
+		mvn package
+---
+
+	This resulted in 2 .war packages and a jar package:
+
+		* server - test2-server/target/test2-server-1.0-SNAPSHOT.war
+
+		* client - test2-client/target/test2-client-1.0-SNAPSHOT.war
+
+		* shared - test2-shared/target/test2-shared-1.0-SNAPSHOT.jar
+
+	What was unclear to me was what and how each of these was to be deployed to wildfly. Just looking at the .war files it appeared that all the obviously required components where in there. So started by deploying this as follows:
+
+---
+	odo login -u kcrocombe -p $OSPWD
+
+	odo project create gwt-project
+
+	odo create wildfly backend --binary ./test1-server-1.0-SNAPSHOT.war --app gwt-test
+
+	odo push
+
+	odo url create --component backend --port 8080 --app gwt-test
+
+	odo push
+
+	odo url list
+		NAME             URL                                                                                   PORT
+		backend-8080     http://backend-8080-gwt-test-gwt-project.1d35.starter-us-east-1.openshiftapps.com     8080
+---
+
+	Browsing to this URL revealed a fully functioning app: in other words nothing needed to be done with the client or shared parts of the app. (...so, what's their purpose??).
+
+
+
+
+
+
+* Downloading and Installing the Command Line Tools
+
+	These are available from the Help Menu of the Application Console (they do not seem to be available from any more traditional Download page or Support Page).   This was downloaded as a tar bundle, and untarred to /apps/OpenShift/bin
+
+	The contents is a single executable:
+
+			oc
+
+** Logging in
+
+	I suspect that authentication to Redhat is via a OpenConnect ID. In order to login via the command line, we need to present a token that authenticates us as a valid user.
+
+	In order to get hold of that token, plus the correct URL for your RedHat area you must logon to the console. At the top-right of the Application Console, under your username, there will be an option to capture the required details, inlcluding:
+
+		The URL : https://api.starter-us-east-1.openshift.com
+		The authentication token 2aT2XT-2mlvMU4xrxifRkVVIiRynbDuhR9_5marwNQU
+
+	You can then login via the command line:
+
+		oc login https://api.starter-us-east-1.openshift.com --token=2aT2XT-2mlvMU4xrxifRkVVIiRynbDuhR9_5marwNQU
+
+	The token will typically last for 24 hrs or so, and then needs to be refereshed.
+
+		You can view the token for your session
+
+			oc whoami -t
+
+	If you don't have a token and don't want to logon to the console for some reason, then a valid token can be dispensed here:
+
+			{{https://api.starter-us-east-1.openshift.com/oauth/token/request]}}
+
+	(I don't quiote understand why this doesn't prompt you for a username password: there must be some cookie somwhere?)
+
+
+** Downloading and Installing the odo tools
+
+	Not too sure about the status of this. According to its comments on GitHub, it may still be Beta tested only. However downloaded it anyway:
+
+		{{https://github.com/openshift/odo}}
+
+	This downloaded the source code as as a zip file.
+
+	Unzipped it and ran the install.sh script.
+
+	This installed odo to /usr/local/bin
+
+
+====
+* Deploying Applications from Images using the CLI (oc).
+
+	When using OpenShift there are a number of different ways you can add an application. The main methods are:
+
+		- Deploy an application from an existing Docker-formatted image.
+		- Build and deploy from source code contained in a Git repository using a Source-to-Image builder.
+		- Build and deploy from source code contained in a Git repository from a Dockerfile.
+
+	What is described below is the first of these: deployment from an existing <Docker-formatted image>.
+
+
+** Create a Project
+
+	Within OpenShift, all resources ( except nodes) exist within the concept of a project. Projects have members, and roles and authorities over resources within that project. The names of resoources are unque within that project.
+
+---
+$ oc login -u developer -p developer
+Login successful.
+
+$ oc new-project myproject
+Now using project "myproject" on server "https://172.17.0.45:8443".
+---
+
+** Create an application within the project.
+
+	First, confirm that the name of the image to be deployed is valid. Images may exist in a number of places. The below assumes that the image is already located in a public repository (I believe these can be of three types:
+			- docker images
+			- stored Templates
+			- Image streams
+			)
+
+---
+oc new-app --search openshiftkatacoda/blog-django-py
+Docker images (oc new-app --docker-image=<docker-image> [--code=<source>])
+
+openshiftkatacoda/blog-django-py
+ Registry: Docker Hub
+ Tags:     latest
+---
+
+	Then create the application for real. The application exists really as a set of resource objects:
+	 -An Imagestream (is)
+	 -A Deployment Configurations (dc)
+	 -A Replication Controller (rc)
+	 -A Service (svc)
+	 -A Pod (po)
+
+	In creating the application, one each of these objects is created.
+
+---
+$ oc new-app openshiftkatacoda/blog-django-py
+--> Found Docker image 14077cf (5 weeks old) from Docker Hub for "openshiftkatacoda/blog-django-py"
+
+--> Creating resources ...
+	 imagestream "blog-django-py" created
+	 deploymentconfig "blog-django-py" created
+	 service "blog-django-py" created
+--> Success
+	 Run 'oc status' to view your app.
+---
+
+	These objects can be viewed...
+
+---
+$ oc get all
+
+NAME                DOCKER REPO                                  TAGS      UPDATED
+is/blog-django-py   172.30.22.11:5000/myproject/blog-django-py   latest    22 minutes ago
+
+NAME                REVISION   DESIRED   CURRENT   TRIGGERED BY
+dc/blog-django-py   1          1         1         config,image(blog-django-py:latest)
+
+NAME                  DESIRED   CURRENT   READY     AGE
+rc/blog-django-py-1   1         1         1         22m
+
+NAME                 CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+svc/blog-django-py   172.30.133.184   <none>        8080/TCP   22m
+
+NAME                        READY     STATUS    RESTARTS   AGE
+po/blog-django-py-1-6lczq   1/1       Running   0          22m
+---
+
+	To make the applcation accessible to external clients,we need to expose the service...
+
+---
+$ oc expose service/blog-django-py
+
+route "blog-django-py" exposed
+---
+
+	...and the URL that can be used can be revealed
+
+---
+$ oc get route/blog-django-py
+
+NAME             HOST/PORT                                                                  PATH      SERVICES         PORT  TERMINATION   WILDCARD
+blog-django-py   blog-django-py-myproject.2886795315-80-simba02.environments.katacoda.com             blog-django-py   8080-tcp                None
+---
+
+
+** Openshift Routing
+
+	An OpenShift URL exposes a service at a host name, e.g. www.example.com, so that external clients can reach it by name.  <<NEED TO FINISH THIS BIT OFF>>
+
+** Importing Application Images
+
+	Where an application image is to be deployed to multiple containers, possibly to provide the service over multiple nodes, then we need to deploy the same image stream several times.
+
+	In these circumstances it makes sense to import the image first.
+
+---
+$ oc import-image openshiftkatacoda/blog-django-py --confirm
+The import completed successfully.
+
+Name:                   blog-django-py
+Namespace:              default
+Created:                Less than a second ago
+Labels:                 <none>
+Annotations:            openshift.io/image.dockerRepositoryCheck=2019-05-09T11:57:18Z
+Docker Pull Spec:       172.30.203.78:5000/default/blog-django-py
+Image Lookup:           local=false
+Unique Images:          1
+Tags:                   1
+---
+
+	This creates just the image stream Object
+
+---
+$ oc get all -o name
+imagestreams/blog-django-py
+---
+
+	The application can then be deployed (as blog1) from the existing imagestream as follows:
+
+---
+$ oc new-app blog-django-py --name blog-1
+
+--> Found image 14077cf (5 weeks old) in image stream "default/blog-django-py" under tag "latest" for "blog-django-py"
+
+--> Creating resources ...
+    deploymentconfig "blog-1" created
+    service "blog-1" created
+--> Success
+---
+
+	..and a second container deployed ( as blog-2)
+
+---
+$ oc new-app blog-django-py --name blog-2
+
+--> Found image 14077cf (5 weeks old) in image stream "default/blog-django-py" under tag "latest" for "blog-django-py"
+
+--> Creating resources ...
+    deploymentconfig "blog-2" created
+    service "blog-1" created
+--> Success
+---
+
+** Deleting an Application
+
+	As alluded to above, an application exists only really as a collection of resource. However, we can make use of labels in order to identify all objects that belong to an application. We can make use of that label in the delete
+	command in order to remove all resource carrying that label.
+
+---
+$ oc delete all --selector app=blog-django-py
+imagestream "blog-django-py" deleted
+deploymentconfig "blog-django-py" deleted
+route "blog-django-py" deleted
+service "blog-django-py" deleted
+pod "blog-django-py-1-vrq5t" deleted
+
+$ oc get all -o name
+---
+=====
+
+* Deploying Applications from Source.
+
+	This is the second of out three ways of deploying an application to openshift. Here we shall deploy from source code held in a Git Repository using Source-to-Image Builder. This relies on a Build Configuration : i.e. an object that informs the infrastrucure as to how executable objects should be constructed.
+
+	There are several options for this, but most will either be:
+		a Docker build
+		a Source-To-Image build (S2I)
+
+	This demo illustrates the S2I option.
+
+
+	The following will deploy an application from the github repository {{https://github.com/openshift-katacoda/blog-django-py}}. It will be deployed using the S2I builder for the latest version opf Pythn available on the platform.
+
+	The application will use the name "blog" rather then the defualt.
+
+---
+	$ oc new-app python:latest~https://github.com/openshift-katacoda/blog-django-py --name blog
+--> Found image 2db34dd (5 weeks old) in image stream "openshift/python" under tag "latest" for "python:latest"
+
+--> Creating resources ...
+    imagestream "blog" created
+    buildconfig "blog" created
+    deploymentconfig "blog" created
+    service "blog" created
+--> Success
+    Build scheduled, use 'oc logs -f bc/blog' to track its progress.
+    Run 'oc status' to view your app.
+---
+
+	The build of the application will proceed in the background. The progress can be monitored via
+
+---
+	oc logs -f bc/blog
+---
+	As usual, the end-point then has to be exposed to the external world
+
+---
+$ oc expose service/blog
+route "blog" exposed
+
+$ oc get route/blog
+NAME      HOST/PORT                                                      PATH      SERVICES   PORT       TERMINATION   WILDCARD
+blog      blog-default.2886795448-80-simba02.environments.katacoda.com             blog       8080-tcp                 None
+---
+
+	Note that once the infrastructure knows how to build an application, rebuilds can be triggered as follows
+
+---
+$ oc start-build blog
+build "blog-2" started
+
+---
+
+* Installing Minishift
+
+	Minishift is a tool that help you run OpenShift on your local machine inside a Virtual Machine.
+
+	Minishift documentation is {{{https://docs.okd.io/latest/minishift/index.html} here}}.
+
+---
+brew install docker-machine-driver-xhyve
+
+sudo chown root:wheel /usr/local/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
+
+sudo chmod u+s /usr/local/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
+
+brew cask install minishift
+---
+
+
+MORE STUFF TO GO IN HERE...

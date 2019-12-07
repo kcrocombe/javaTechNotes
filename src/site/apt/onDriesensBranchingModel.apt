@@ -1,0 +1,262 @@
+Vincent Driesen's popular git branching model.
+
+*Contents
+
+	{{Introduction}}
+
+	{{Graphical Summary of the Model}}
+
+	{{Topology}}
+
+	{{Main branches}}
+
+	{{Supporting Branches}}
+
+		* {{Feature Branches}}
+
+		* {{Release Branches}}
+
+		* {{Hotfix Branches}}
+
+		[]
+
+
+*Introduction
+
+	This page summarises Vincent Driesen's description of his branching model, which has been widely adopted as a effective way of using git in practice. It is fully described {{{https://nvie.com/posts/a-successful-git-branching-model/}here}}.
+
+*Graphical Summary of the Model
+
+[.\branchModel.png]
+
+*Topology
+
+	git does not specify any hard rules about how you use branching/merging etc to support your development process. However, a number of approaches have evolved over the years, and one of the more popular ones is summarised in this section.
+
+	There is one central depot repository that everyone shares.
+
+	Other developers may share their repositories with other members of the team if they wish.
+
+[.\images\depot.png]
+
+*Main branches
+
+	There are two main branches each with an infinite life time:
+
+	* depot/master - The source at HEAD on this branch should ALWAYS be production ready
+
+	* depot/dvl - The source at the HEAD on this branch reflect the latest delivered development changes for the next release. It represents the <integration branch>, any nightly builds/test releases etc. should come from this branch. When code on this branch reaches a state of readiness for release, it is merged back into the master branch.
+
+[./images/mainBranches.png]
+
+*Supporting Branches
+
+	There are a number of supporting branches, and it is on these that all the actual work is done.:
+
+	* Feature branches
+
+	* Feature branches
+
+	* Release Branches
+
+	These are described in more detail below.
+
+**Feature Branches
+
+	* Are used to develop new features, or maintain existing features
+
+	* It exists as long as the feature is in development.
+
+	* typically only exist in the developers repository (not a hard and fast rule : if the developer branch is protected it may be necessary to have Feature branches pushed to the depot repository so that merging can be performed by an administrator, usually following some QA process. Note the the branch does not need to be pushed to the repository until just before it is merged back. Consequently, it will be local for 99% of its lifetime).
+
+	* branch off from dvl
+
+	* merge back into dvl ( using -no-ff in order to retain history about the existence of the development branch)
+
+	* may be called anything except master dvl, release-* or hot-fix-*
+
+	[]
+
+	The general flow through the repository will be:
+
+	[[1]] Checkout a new local branch for your work, and develop your feature, committing to your local branch as necessary...
+
+---
+	git checkout develop
+	  Switched to branch 'develop'
+
+	...Now develop your feature
+---
+
+	[[1]] When the feature is complete in some sense, merge it back into the development branch. Use <<<--no-ff>>> to retain the branch history. This would be done in one of two ways depending on whether there is protection on the development branch you originally branched from:
+
+		[[a]] Unprotected development branch. Simply merge back, and push the merged branch back to the depot repository:
+
+---
+		git checkout develop
+
+		git merge --no-ff myfeature
+  		Updating ea1b82a..05e9557
+	  	(Summary of changes)
+
+		git push origin develop
+---
+
+		[[a]] A protected development branch.  Since you don't have authority to merge your branch yourself, you have to make your branch available to someone who can. So, push your branch up to the repository, creating it there if necessary). Then create a <<<pull request>>> for someone to check your branch and merge it back into development branch. (Note that a <<<pull request>>> is a GitHub thing.)
+
+---
+		git push --set-upstream myfeature origin
+
+		hub pull-request --base develop --head myfeature
+
+---
+		then, once your changes have been merged, pull them back to your development branch to continue with if you so which.
+
+---
+		git pull
+
+---
+
+	[[1]] If you do not wish to continue work on the branch, it may be deleted .
+
+---
+		git branch -d myfeature
+		  Deleted branch myfeature (was 05e9557).
+
+		...and if the branch is not strictly local...
+
+		git push origin -d myfeature
+
+---
+
+[images\mergeNoFF.png]
+
+**Release Branches
+
+	Release Branches
+
+	* are used to support preparation of Production Releases Only. They will be used to incorporate metadata about the release itself, Release No's and that sort of thing. Only very minor fixes would be allowed on this branch.
+
+	* are created from the dvl branch;
+
+	* merge back into both dvl and master;
+
+	* will be called release-*;
+
+	[]
+
+	The general flow through the repository will be:
+
+	[[1]] Check out the files to new release branch and set release numbers etc.
+
+---
+	git checkout -b release-1.2 develop
+		Switched to a new branch "release-1.2"
+
+	./bump-version.sh 1.2
+		Files modified successfully, version bumped to 1.2.
+
+	git commit -a -m "Bumped version number to 1.2"
+		[release-1.2 74d9424] Bumped version number to 1.2
+		1 files changed, 1 insertions(+), 1 deletions(-)
+---
+
+	[[1]] The release is now incorporated to master and cryptographically tagged for posterity.
+
+---
+	git checkout master
+		Switched to branch 'master'
+
+	git merge --no-ff release-1.2
+		Merge made by recursive.
+		(Summary of changes)
+
+	git tag -a 1.2 -s
+---
+
+	[[1]] simultaneously merge it back to dvl
+
+---
+	git checkout develop
+		Switched to branch 'develop'
+
+	$ git merge --no-ff release-1.2
+		Merge made by recursive.
+		(Summary of changes)
+---
+
+	[[1]] Now we are done with the release branch we can delete it.
+
+---
+	$ git branch -d release-1.2
+		Deleted branch release-1.2 (was ff452fe).
+---
+
+**Hotfix Branches
+
+	Hotfix Branches
+
+	* Are designed for the rapid resolution of <<production>> issues only. Similar to release branches, in that they are effectively preparing a production release, albeit a emergency one.
+
+	* branch from master. ( However, if there is an active Release branch, we would merge back into that rather than dvl. In time, of course the release branch will get merged to dvl itself)
+
+	* named hotfix-*
+
+
+	The general flow through the repository will be:
+
+  [[1]] Create the Hotfix branch and checkout the production release, remembering to increment the Release Number as we do so.
+
+---
+	git checkout -b hotfix-1.2.1 master
+		Switched to a new branch "hotfix-1.2.1"
+		./bump-version.sh 1.2.1
+		Files modified successfully, version bumped to 1.2.1.
+
+	git commit -a -m "Bumped version number to 1.2.1"
+		[hotfix-1.2.1 41e61bb] Bumped version number to 1.2.1
+		1 files changed, 1 insertions(+), 1 deletions(-)
+
+		...now fix the issue!
+---
+
+	[[1]] When the problem is fixed, commit to the Release Branch...
+
+---
+	git commit -m "Fixed severe production problem"
+		[hotfix-1.2.1 abbe5d6] Fixed severe production problem
+		5 files changed, 32 insertions(+), 17 deletions(-)
+---
+
+	[[1]] Merge into master, and tag for subsequent release...
+
+---
+	git checkout master
+		Switched to branch 'master'
+
+	git merge --no-ff hotfix-1.2.1
+		Merge made by recursive.
+		(Summary of changes)
+
+	git tag -a 1.2.1
+---
+
+	[[1]] Merge into Development...
+
+---
+	git checkout develop
+		Switched to branch 'develop'
+
+	git merge --no-ff hotfix-1.2.1
+		Merge made by recursive.
+		(Summary of changes)
+---
+
+	[[1]] Job Done. Delete the redundant branch.
+
+---
+	git branch -d hotfix-1.2.1
+		Deleted branch hotfix-1.2.1 (was abbe5d6).
+---
+
+[.\hotFix.png]
