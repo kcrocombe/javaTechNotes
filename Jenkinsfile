@@ -9,4 +9,7 @@ pipeline {
     }
 
   }
+  environment {
+    MAVEN_HOME = '/usr/local/Cellar/maven/3.6.2'
+  }
 }
