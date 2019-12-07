@@ -191,71 +191,129 @@ Attempt 4
 
  However, there does not seem to be anything the Vagrant file that makes use of any of the Ignition features that the plugin provides. All the provisioning seems to be way of inline provisioning scripts, which it can't run because it can't logon to the server.
 
+OK... for now lets just crack on with the remaining steps of the guide paper....
+
+---
 
 
- kubectl config set-cluster vagrant-multi-cluster \
-      --server=https://172.17.4.101:443 \
-      --certificate-authority=${PWD}/ssl/ca.pem
 
- Cluster "vagrant-multi-cluster" set.
+   kubectl config set-credentials vagrant-multi-admin \
+        --certificate-authority=${PWD}/ssl/ca.pem \
+        --client-key=${PWD}/ssl/admin-key.pem \
+        --client-certificate=${PWD}/ssl/admin.pem
 
-
- kubectl config set-credentials vagrant-multi-admin \
-      --certificate-authority=${PWD}/ssl/ca.pem \
-      --client-key=${PWD}/ssl/admin-key.pem \
-      --client-certificate=${PWD}/ssl/admin.pem
-
- User "vagrant-multi-admin" set.
+   User "vagrant-multi-admin" set.
 
 
- kubectl config set-context vagrant-multi  \
-      --cluster=vagrant-multi-cluster \
-      --user=vagrant-multi-admin
+   kubectl config set-context vagrant-multi  \
+        --cluster=vagrant-multi-cluster \
+        --user=vagrant-multi-admin
 
- Context "vagrant-multi" created.
-
-
- kubectl config use-context vagrant-multi
-
- Switched to context "vagrant-multi".
+   Context "vagrant-multi" created.
 
 
- kubectl get nodes
- The connection to the server 172.17.4.101:443 was refused - did you specify the right host or port?
+   kubectl config use-context vagrant-multi
 
+   Switched to context "vagrant-multi".
+
+
+   kubectl get nodes
+   The connection to the server 172.17.4.101:443 was refused - did you specify the right host or port?
+---
+
+  Logged onto the machines in order to try and work out wahta was going on...
+
+    The conttoller server (c1), seems to have started all of its services ok, but seems to be struggling to talk to the etc server e1
+
+---
+    journalctl -r | more
+
+  -- Logs begin at Wed 2019-12-04 09:59:38 UTC, end at Wed 2019-12-04 10:06:17 UTC. --
+  Dec 04 10:06:17 c1 bash[1395]: Trying: http://172.17.4.51:2379
+  Dec 04 10:06:16 c1 bash[1395]: Trying: http://172.17.4.51:2379
+  Dec 04 10:06:15 c1 bash[1395]: Trying: http://172.17.4.51:2379
+  Dec 04 10:06:14 c1 bash[1395]: Trying: http://172.17.4.51:2379
+  Dec 04 10:06:13 c1 bash[1395]: Trying: http://172.17.4.51:2379
+  Dec 04 10:06:12 c1 bash[1395]: Trying: http://172.17.4.51:2379
+---
+
+  The etc server (e1) (172.17.4.51) failed to start its service:
+
+    user-cloudinit@var-lib-coreos\x2dvagrant-vagrantfile\x2duser\x2ddata.service
+
+  This seems to be because the server does not have the etcd software installed anymore.
 
  Dec 03 23:19:09 e1 coreos-cloudinit[1279]: 2019/12/03 23:19:09 line 6: warning: deprecated key "etcd2" (etcd2 is no longer shipped in Container Linux)
 
  Seems to be because etcd is no longer shipped with coreos - should be run in container instead.
 
 
+ The worker server (w1) also fails to start the one of its services
+
+---
+Container Linux by CoreOS beta (2303.2.0)
+Failed Units: 2
+coreos-cloudinit-255695975.service
+update-engine.service
+---
+
+  This seems to fail on the
+
+  Dec 04 10:07:53 w1 systemd[1]: coreos-cloudinit-255695975.service: Main process exited, code=exited, status=1/FAILURE
+
+  This looks to be a service that set up the  flanneld.service and kubelet services.
+
+  I suspect the flanned.d service is not starting
+
+---
+Dec 04 10:39:27 w1 flannel-wrapper[2029]: timed out
+Dec 04 10:39:26 w1 flannel-wrapper[2029]: E1204 10:39:26.778232    2029 main.go:382] Couldn't fetch network config: client: etcd cluster is unavailable or misconfigured; error #0: dial tcp 172.17.4.51:237
+9: connect: connection refused
+---
+
+  So everything seems to be coming back to the etc.d service not running on the e1 server.
 
 
- docker pull quay.io/coreos/etcd
 
 
 
- $ systemctl enable /usr/lib/systemd/system/etcd-member.service
- $ systemctl start etcd-member
- $ rkt list
- UUID APP IMAGE NAME STATE CREATED STARTED NETWORKS
- 4d566696 etcd quay.io/coreos/etcd:v3.0.10 running 6 minutes ago 6 minutes ago
 
- etcdctl member list
+Invstigating trying to get a containerized version of it running.
 
- sudo rkt stop 341864cb-f7f6-4392-845b-42c2a5e08583
+  This does seem to get things moveing a little. The processes on c1 and w1 seem to managet to talk to it at least...
+
+---
+  docker run -d -v /usr/share/ca-certificates/:/etc/ssl/certs -p 4001:4001 -p 2380:2380 -p 2379:2379 \
+    --name etcd quay.io/coreos/etcd:v2.3.8 \
+    -name etcd0 \
+    -advertise-client-urls http://172.17.4.51:2379,http://172.17.4.51:4001 \
+    -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 \
+    -initial-advertise-peer-urls http://172.17.4.51:2380 \
+    -listen-peer-urls http://0.0.0.0:2380 \
+    -initial-cluster-token etcd-cluster-1 \
+    -initial-cluster etcd0=http://172.17.4.51:2380 \
+    -initial-cluster-state new
+---
+
+  ..bits of it seem to start working
+
+---
+  etcdctl member list
+
+  ea651507af29316f: name=etcd0 peerURLs=http://172.17.4.51:2380 clientURLs=http://172.17.4.51:2379,http://172.17.4.51:4001 isLeader=true
+---
+    ...but not everthing
+
+---
+  kubectl get nodes
+
+  Error from server (NotAcceptable): the server was unable to respond with a content type that the client supports (get nodes)
+---
+
+  Some suggestion that this might just be a version compatability thing...
 
 
- docker run -d -v /usr/share/ca-certificates/:/etc/ssl/certs -p 4001:4001 -p 2380:2380 -p 2379:2379 \
-  --name etcd quay.io/coreos/etcd:v2.3.8 \
-  -name etcd0 \
-  -advertise-client-urls http://192.168.12.50:2379,http://192.168.12.50:4001 \
-  -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 \
-  -initial-advertise-peer-urls http://192.168.12.50:2380 \
-  -listen-peer-urls http://0.0.0.0:2380 \
-  -initial-cluster-token etcd-cluster-1 \
-  -initial-cluster etcd0=http://192.168.12.50:2380,etcd1=http://192.168.12.51:2380,etcd2=http://192.168.12.52:2380 \
-  -initial-cluster-state new
+  Goint to leave this for now and maybe pick it up later.
 
 
 Fixing the supplied Vagrant File
@@ -293,4 +351,4 @@ Fixing the supplied Vagrant File
  ---
 
 
-    Bit tricky but eventually manged it.
+    Bit tricky but eventually managed it.

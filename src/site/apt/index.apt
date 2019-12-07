@@ -71,6 +71,8 @@ Java Technologies : Documentation
 
     * {{{./onKubernetesVagrantAndCoreOs.html}On Kubernetes built using Vagrant on CoreOs}}
 
+    * {{{./onDocker.html}On Docker}}
+
     []
 
   Spring Stuff:
@@ -84,6 +86,9 @@ Java Technologies : Documentation
     * {{{./onCreatingRestServiceWithSpringBoot.html}On creating a simple REST web service with Spring Boot}}
 
     []
+
+  {{{./onJenkins.html}On Jenkins}}
+
 
   Wildfly Application Server:
 

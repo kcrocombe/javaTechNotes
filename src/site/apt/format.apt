@@ -232,7 +232,7 @@ Verbatim text contained in list item 2, but not in sub-list item 2
       [[2]] Numbered item 2.
 +-----------------------------------------+
 
-  A numbered list item begins with a label beetween two square brackets. The
+  A numbered list item begins with a label between two square brackets. The
   label of the first item establishes the numbering scheme for the whole list:
 
       [<<<[[1\]\]>>>] Decimal numbering: 1, 2, 3, 4, etc.
@@ -599,4 +599,3 @@ Table caption
 ~~Commented out.
 
 ------------------------------------------------------------------------------
-

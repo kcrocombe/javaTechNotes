@@ -1,0 +1,595 @@
+
+
+Docker
+
+  Docker is an open platform for developing, shipping, and running applications as Containers. A container is a packaged, self-contained, runnable instance of an image that is largely isolated from other other such containers that might be running.  Because they are packaged and self-contained, they can be lifted and dropped inot another environment as a sinlge unit: and they can be guaranteed to run exactly as they did in the original envionment.
+
+  The isolationi,  and the security that that brings, allows many containers to be run simoultaneously on a given host.
+
+  This isolation means that,  from the perspective of the application running in the container, it appears to have the machine entirely to itself: it has its own operating system, libraries, script, jars, ports etc, process space, network i/f. The contents of the container can vary from the extremely simple (just a single staticly linked executable), to very complex ( a full operating system, hosting applicaion server, database server (ie a full virtual machine))
+
+  This has many similarities to that of a Virtual Machine, however it is much more lightweight : there is none of the extra load that running an operating system on a hypervisor imposes. Instead, they run directly on the hosts machine kernel as a single process, and also can run with the native speed of the underlying host. This also means that they be started and shutdown extremely quickly (in contrast to a virual machine).
+
+  a newly created container
+from an existing image takes a whopping 12 kilobytes of disk space. That’s pretty
+lightweight. One the other hand, a new virtual machine created from a golden image
+might require hundreds or thousands of megabytes.
+
+  They will run on any x64 Linux Kernel that supports, Namespace, Contol groups and overlaying filesystems (such as AUFS).
+
+  (There are also workarounds that will allow Docker to run on Windows, Mac etc)
+
+
+  It is NOT
+
+    - a vitual platform
+
+    - a worload management too
+
+    - a deployment framwork
+
+
+
+
+  Best used for applicaitons that are
+    stateless, or where the state has been externalised to a database, or othe datastore
+    web front ends, back-end api s, short running tasks like maintenance scripts.
+
+  Harder to do things like database server, but still possible.
+
+
+
+
+[./images/dockerWorkflow1.png]                                    Docker Workflow
+
+
+[./images/containerAndImageLifecycle.png]     fsdfs d sdf sdf sd fsd fsd fdsf
+
+
+
+
+
+Container
+
+  Containers are a fundamentally different approach where all containers share a single
+  kernel and isolation is implemented entirely within that single kernel
+
+
+  “A container is a self-contained execution environment that shares the kernel of the host system and which is (optionally) isolated from other containers in the system.”
+
+  you don’t need a whole operating system for each isolated function
+
+  Since youare sharing a kernel, there is one less layer of indirection between the isolated task and the real hardware underneath.
+
+  When a process is running inside a container, there is only a very little shim that sits inside the kernel rather than potentially calling up into a whole second kernel while bouncing in and out of privileged mode on the processor.
+
+  you can only run processes that are compatible with the underlying kernel
+
+
+  the seeds for today’s containers were planted in 1979 with the addition of the chroot system call to Version 7 Unix. chroot restricts a proc ess’s view of the underlying filesystem. The chroot system call is commonly used to protect the operating system from untrusted server processes like FTP
+
+
+Image
+
+  Every Docker container is based on an image
+
+  Every Docker image consists of one or more filesystem layers that generally have a direct one-to-one mapping to each indi vidual build step used to create that image
+
+  For image management, Docker relies heavily on its storage backend, which communicates with the underlying Linux filesystem to build and manage the multiple layers that combine into a single usable image
+
+
+
+ Building New Images
+
+ Any changes that you make to the file system inside a container will be written as new layers that are owned by the container that created them.
+
+ [[1]] Create a container from an existing image
+
+ [[1]] Modify the filesystem of the container. These changes get written to a new layer in the union-filesystem for the contianer.
+
+ [[1]] Commit the changes that you have made. Once commited new containers can be createdfrom the reulting image.
+
+ e.g
+
+---
+ docker run --name tester1 ubuntu:latest -ti /bin/sh
+
+ > touch helloWorld!
+ > exit
+
+
+ docker  start -ai tester1
+
+ docker commit -a -m"Signed and delivered" tester1 testimage
+ sha256:22d8cb633714561ec3dc48b085e36346efa62c9262524ca0926b76c4deaa31f8
+
+ docker diff tester1
+ A /helloWorld!
+
+
+ docker run --rm -it testimage  /bin/sh
+
+  > ls hel*
+  'helloWorld!'
+---
+
+  An entrypoint is the program that will be executed when the container
+  starts.
+
+---
+  docker run --name tester2 --entrypoint /bin/bash testimage
+
+  docker commit -m "Entrypoint Added" -a "KJC" tester2 testimage2
+
+  docker run -it --name tester4 testimage2
+
+  root@5434b1c5d463:/# ps
+  PID TTY          TIME CMD
+    1 pts/0    00:00:00 bash
+   10 pts/0    00:00:00 ps
+
+
+
+   docker history testimage2
+
+ IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+ 49a26c372390        41 minutes ago                                                      0B                  Entrypoint Added
+ 22d8cb633714        About an hour ago   /bin/sh                                         0B
+ 775349758637        5 weeks ago         /bin/sh -c #(nop)  CMD ["/bin/bash"]            0B
+ <missing>           5 weeks ago         /bin/sh -c mkdir -p /run/systemd && echo 'do…   7B
+ <missing>           5 weeks ago         /bin/sh -c set -xe   && echo '#!/bin/sh' > /…   745B
+ <missing>           5 weeks ago         /bin/sh -c [ -z "$(apt-get indextargets)" ]     987kB
+ <missing>           5 weeks ago         /bin/sh -c #(nop) ADD file:a48a5dc1b9dbfc632…   63.2MB
+
+---
+
+   When you use commit, you commit a new layer to an image docker. As well as the filesystem, the commit also includes:
+
+  * All environment variables
+
+  * The working directory
+
+  * The set of exposed ports
+
+  * All volume definitions
+
+  * The container entrypoint
+
+  * Command and arguments
+
+  If these values weren’t specifically set for the container, the values will be inherited
+  from the original image.
+
+
+Union File Systems
+
+  A union file system is made up of layers. Each time a change is made to a union file system, that change is recorded on a new layer on top of all of the others. The “union” of all of those layers, or top-down view, is what the container (and user) sees when accessing the file system
+
+  If a file was not created or changed on the top layer, the read will fall through the layers until it reaches a layer where that file does exist
+
+  The changes made to the file system of a container are listed with the docker diff
+  Most union file systems use something called copy-on-write, which is easier to
+  understand if you think of it as copy-on-change
+
+  This has a negative impact on runtime performance and image size.
+
+  All layers below the writable layer created for a container are immutable
+
+  This property makes it possible to share access to images
+instead of creating independent copies for every container. It also makes individual
+layers highly reusable
+
+
+
+
+The Commit
+
+  you’re saving a copy of that top layer on an identifiable way, plus metadata. The metadata for a layer includes that generated identifier, the identifier of the layer below it (parent), and the execution context.
+
+  Layer identities and meta data form the graph that Docker and the use to construct images. UFS Images are stacks of
+  layers constructed by traversing the layer dependency graph from some starting layer
+
+
+Repositories
+
+  This is not what you would intuititavelyt think. It is NOT e.g. dockerHub or Quay.io where collections of reusable images are stored (these are <<registries>>). It is more thatn the reusable images ARE the repositories.
+
+  a repository is roughly defined as a named bucket of images. More specifically, repositories are location/name pairs that point to a set of specific layer identifiers. Each repository contains at least one tag that points to a specific layer iden tifier and thus the image definition
+
+  So a repository identifer could be:
+
+    quay.io/dockerinaction/ch3_hello_registry : version1
+
+    RegistryHost/Username/ShortName:tag
+
+          ---> 07c0f84777ef....
+
+
+  Repositories and tags are created with either the:
+
+    * docker tag;
+
+    * docker commit;
+
+    * docker build
+
+    []
+
+  You can do that with the
+command.
+docker tag
+Every repository contains a “latest” tag by default
+
+
+
+
+Image Size
+
+    If images evolved in the same way that most people manage their file systems, Docker
+images would quickly become unusable. Remember that actions like de-installing or reemoveingm files will still lead to the image size increasing: you are still just adding an extra layer.
+
+  The union file system on your computer may have a layer count limit ( 42 a common max)
+
+  You can examine all the layers in an
+image using the
+comman
+docker history
+docker history testimage2
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+49a26c372390        41 minutes ago                                                      0B                  Entrypoint Added
+22d8cb633714        About an hour ago   /bin/sh                                         0B
+775349758637        5 weeks ago         /bin/sh -c #(nop)  CMD ["/bin/bash"]            0B
+<missing>           5 weeks ago         /bin/sh -c mkdir -p /run/systemd && echo 'do…   7B
+<missing>           5 weeks ago         /bin/sh -c set -xe   && echo '#!/bin/sh' > /…   745B
+<missing>           5 weeks ago         /bin/sh -c [ -z "$(apt-get indextargets)" ]     987kB
+<missing>           5 weeks ago         /bin/sh -c #(nop) ADD file:a48a5dc1b9dbfc632…   63.2MB
+
+  You can flatten images if you export them and then reimport them with Docker. But
+  that’s a bad idea because you lose the change history as well as any savings customers
+  might get when they download images with the same lower levels
+
+
+  The smarter thing to do in this case is to create a branch.
+
+  The layer system makes it trivial
+  to go back in the history of an image and make a new branch. So rather then taking the Application image and upgrading the Java installation from 6 to 7, it better to take th image PREDATING Java6 in the branch history and
+  applying Java7 to create a new image, and THEN applying the Application Image to that.
+
+  This is best achieved by using a Dockerfile to perform the build, rather than doing it manaually.
+
+
+
+[./images/dockerBranch.png]
+
+Building images from scratch
+
+  This is somtimes necessary
+
+    - if you want an image that it stripped down to the basrter necessary to support your appliucaiont
+
+    - if your layered filesystem has become too bloated, and it is necessary to flatten the stack of images down.
+
+
+Building an stripped image
+
+  Consider a statically linked executable  helloStatic
+
+  tar -cvf helloStatic.tar helloStatic
+
+  docker import -c "ENTRYPOINT[\"helloStatic\"]" someOwner/helloStatic -i helloStatic.tar
+
+
+Flattening
+
+  The docker export command will stream the full contents of the flattened union file system of a <<container>> to stdout or an output file as a plain ordinary tarball. This can be manipulated in any way want
+
+   docker export --output testimage2.tar tester4
+
+
+  The docker import command will stream the content of a tarball into a new <image>
+
+---
+  core@core-01 ~/dockerFile $ docker import -c "ENTRYPOINT [\"/bin/sh\"]"  testimage2.tar testimage3
+sha256:cc51f24f7f640fb335f104ee936e1827f7c3d7aa060bb7c359c13a057d75db82
+core@core-01 ~/dockerFile $ docker history  testimage3
+IMAGE               CREATED              CREATED BY          SIZE                COMMENT
+cc51f24f7f64        About a minute ago
+---
+
+  There doe not seem to be way to explicity layer images on top of each other. You can create an image, and base a container on it, but you can't explicity place another pre-existin image on the top of it. Instead you add the native files on to the image and then commit the layer as described above.
+
+
+Versioning
+
+  It is considered to represent incrementral revsions of your repositories via sensible use of appropraite tags.   Every repository should have one tag that is completely static : once added it is never changed or removed.
+  e.g. 1.1.1, 1.1.2 1.1.2,1.2.0 etc
+
+  Repositories may optionally have other tags, which may be changeable. e.g. 1.1, 1.2 may be used to 'tag' the latest version on the 1.1.x or 1.2.x line.
+
+  Particular care should be taken with the latest tag. Make sure that this always points at a stable build and NOT just the latest version. This is impoirtant because, if a tag is not explicitly stipulated, the one tagged lates is what is delivered.
+
+  Consequently, always EXPLICITLY tag your latest STABLE repository as 'latest.'
+
+
+Connecting to a running Docker...
+
+---
+  docker exec -it jenkins-tutorials bash
+---
+
+
+
+DockerFiles
+
+
+  Docker files are a set of instuctions used to construct an image.
+
+
+  Each line in a Dockerfile creates a new image layer that is stored by Docker
+
+  This means that when you build new images, Docker will only need to build layers that deviate from previous builds.
+
+
+
+  Will have a:
+    * Base Image
+
+    * series of Statements that layer files on top
+
+    * Envionemnt variables to be set
+
+    * Commands to be executed ( including, commands that will install additional packages ( e.g. apt-get, rpm, youm, dnf))
+
+    * Metadata, such a s Maintainer, Labels etc
+
+
+  is amenable to verion control. Maintaining multiple versions of an image is as simple as maintaining multiple Dockerfiles
+
+
+  FROM fedora:latest
+  MAINTAINER "dockerinaction@allingeek.com"
+  RUN dnf install -y git
+  ENTRYPOINT ["git"]
+
+
+  NB RUN is a commnad run on the current image(not the host machine) - fedora:latest in theis case
+
+  The builder works by automating the same tasks that you’d use to create images by
+  hand. Each instruction triggers the creation of a new container with the specified
+  modification. After the modification has been made, the builder commits the layer
+  and moves on to the next instruction and container created from the fresh layer.
+
+  The Dockerfile is essentially just a build script. It is particalurily amenablke for including in within the git or other source code repository where th rest of th code is stored.
+
+  {{{https://docs.docker.com/engine/reference/builder/}Docker File Reference}}
+
+    First instrruction MUST be a FROM clase (specifying the base image ( or 'scratch') if there is no base.)
+
+    Each subsequent instruction implies a 'commit'
+
+    Basic instructions:
+
+    The RUN instruction will execute any commands in a new layer on top of the current image and commit the results.
+
+    There can only be one CMD instruction in a Dockerfile. The main purpose of a CMD is to provide defaults for an executing container. These defaults can include an executable, or they can omit the executable, in which case you must specify an ENTRYPOINT instruction as well.
+
+    The EXPOSE instruction informs Docker that the container listens on the specified network ports at runtime.
+
+    The ENV instruction sets the environment variable <key> to the value <value>. This value will be in the environment for all subsequent instructions in the build stage
+
+    The ADD instruction copies new files, directories or remote file URLs from <src> and adds them to the filesystem of the image at the path <dest>.
+
+    The COPY instruction copies new files or directories from <src> and adds them to the filesystem of the container at the path <dest>.
+
+    An ENTRYPOINT allows you to configure a container that will run as an executable. Command line arguments to docker run <image> will be appended after all elements in an exec form ENTRYPOINT, and will override all elements specified using CMD
+
+    The VOLUME instruction creates a mount point with the specified name and marks it as holding externally mounted volumes from native host or other containers.
+
+    The USER instruction sets the user name (or UID) and optionally the user group (or GID) to use when running the image and for any RUN, CMD and ENTRYPOINT instructions that follow it in the Dockerfile
+
+    The WORKDIR instruction sets the working directory for any RUN, CMD, ENTRYPOINT, COPY and ADD instructions that follow it in the Dockerfile
+
+
+
+
+Volumes
+
+
+
+
+  /var/lib/docker/containers
+
+  Every image id is gloablly unique.
+
+  Image database, holding references to images that have been downloaded,  and references to the images that they are dependent upon
+    /var/lib/docker/image/overlay2/imagedb/content/sha256
+        ( shown by docker images -a)
+    /var/lib/docker/image/overlay2/layerdb/sha256
+
+
+  /var/lib/docker/overlays
+    The actual images (including all dependencies)
+
+    This are basically just ordinary directory / trees
+
+      - Some will be very full ( base images may have a full unix filestem)
+
+      - OR sparse ( just the changes that need to applied to a underlying base image)
+
+
+
+    /var/lib/docker/containers
+      When a container is created, it will reside here. Is little more than a couple of configuraration files..
+
+
+    When a container is <run>
+
+      3 extra filesystems mounted ( as seen by mount)
+
+      overlay on /var/lib/docker/overlay2/099f9ca0b83c9a480c6f829730425a97699c79622938b6efb229b8a3c98ed25c/merged type overlay
+        (rw, relatime, context="system_u:object_r:svirt_lxc_file_t:s0:c81,c85",
+          lowerdir=/var/lib/docker/overlay2/l/PVJRN6WOLOQ3ZJFSQNUOTSI4G6
+                  :/var/lib/docker/overlay2/l/RBKRGT2ZJU5S3ICE6J652O3L7E
+                  :/var/lib/docker/overlay2/l/SRZ3ZWJRJVSNBKRPLELREFMUJ7
+                  :/var/lib/docker/overlay2/l/MU4YFLVV6YV5HBVXLYHZOQPLYH
+                  :/var/lib/docker/overlay2/l/4WOBSQQOI5GIZ6XJB3PDFTUTIE
+
+          ,upperdir=/var/lib/docker/overlay2/099f9ca0b83c9a480c6f829730425a97699c79622938b6efb229b8a3c98ed25c/diff,
+           workdir=/var/lib/docker/overlay2/099f9ca0b83c9a480c6f829730425a97699c79622938b6efb229b8a3c98ed25c/work
+        )
+
+            indicates the fs is created by layering up from the base image 4WOBSQQOI5GIZ6XJB3PDFTUTIE (which is a symolic link to the base image)
+
+      shm on /var/lib/docker/containers/1e21bc3f518b82a11173948a4e3c94fdbf6b35511c55c1e7ae0587985f9f5238/mounts/shm type tmpfs (rw,nosuid,nodev,noexec,relatime,context="system_u:object_r:svirt_lxc_file_t:s0:c81,c85",size=65536k)
+
+      nsfs on /run/docker/netns/617f7e07a354 type nsfs (rw)
+
+
+      2 are visible in the filessytem  ( df -k)
+      overlay          16326512 646360  14817656   5% /var/lib/docker/overlay2/08bfbe699434edd348948d0e12830343c13ed756f7eb5580e96618fa61cab409/merged
+
+      shm                 65536      0     65536   0% /var/lib/docker/containers/4dfc1c25f3c3da5a464a043f4abc48e4d1962cc0c07d406cf276824107547587/mounts/shm
+
+      nsfs                    0      0         0    - /run/docker/netns/66fe7f8485c7
+
+
+
+      From the perpective of the container...
+
+      overlay         16326512 646372  14817644   5% /
+      tmpfs              65536      0     65536   0% /dev
+      tmpfs             504640      0    504640   0% /sys/fs/cgroup
+      /dev/sda9       16326512 646372  14817644   5% /etc/hosts
+      shm                65536      0     65536   0% /dev/shm
+
+
+      think of each of your Docker containers as behaving on the network like a host
+on a private network, you’ll be on the right path. The Docker server acts as a virtual
+bridge and the containers are clients behind it. A bridge is just a network device that
+repeats traffic from one side to another.
+
+  that each container has its own virtual Ethernet interface con nected to the Docker bridge and its own IP address
+
+
+  CoreOs is a good Runtime envionemnt for docker. However, because ti is quite stripped down, it is not he best for learning. ()
+
+
+Installing on the Mac
+
+---
+  `brew  upgrade docker-machine
+  Updating Homebrew...
+  ==> Upgrading 1 outdated package:
+  docker-machine 0.16.1 -> 0.16.2
+  ==> Upgrading docker-machine
+  ==> Downloading https://homebrew.bintray.com/bottles/docker-machine-0.16.2.high_sierra.bottle.tar.gz
+  ==> Downloading from https://akamai.bintray.com/32/320ef0f8b7fba8e679c784f854155314c7bdcbc4e7d43fd11dbce6e0e3e0f85b?__gda__=exp=1575565129~hmac=300b5c
+  ######################################################################## 100.0%
+  ==> Pouring docker-machine-0.16.2.high_sierra.bottle.tar.gz
+  ==> Caveats
+  Bash completion has been installed to:
+  /usr/local/etc/bash_completion.d
+
+  zsh completions have been installed to:
+  /usr/local/share/zsh/site-functions
+
+  To have launchd start docker-machine now and restart at login:
+  brew services start docker-machine
+  Or, if you don't want/need a background service you can just run:
+  docker-machine start
+  ==> Summary
+  🍺  /usr/local/Cellar/docker-machine/0.16.2: 11 files, 36MB
+  Removing: /usr/local/Cellar/docker-machine/0.16.1... (11 files, 35.8MB)
+  ==> Checking for dependents of upgraded formulae...
+  ==> Upgrading 1 dependent:
+  docker-machine-driver-xhyve 0.3.3_1 -> 0.4.0
+  ==> Upgrading docker-machine-driver-xhyve
+  ==> Downloading https://homebrew.bintray.com/bottles/docker-machine-driver-xhyve-0.4.0.high_sierra.bottle.tar.gz
+  ==> Downloading from https://akamai.bintray.com/53/53f287a301b4df97248850ef0160eda8ea804f502be7b37574f88290ce5d62e7?__gda__=exp=1575565141~hmac=99bebc
+  ######################################################################## 100.0%
+  ==> Pouring docker-machine-driver-xhyve-0.4.0.high_sierra.bottle.tar.gz
+  ==> Caveats
+  This driver requires superuser privileges to access the hypervisor. To
+  enable, execute
+    sudo chown root:wheel /usr/local/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
+    sudo chmod u+s /usr/local/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
+  ==> Summary
+  🍺  /usr/local/Cellar/docker-machine-driver-xhyve/0.4.0: 6 files, 9.9MB
+  Removing: /usr/local/Cellar/docker-machine-driver-xhyve/0.3.3_1... (7 files, 9MB)
+  ==> Checking for dependents' broken linkage from upgraded formulae...
+  ==> No broken dependents found!
+  ==> Caveats
+  ==> docker-machine
+  Bash completion has been installed to:
+  /usr/local/etc/bash_completion.d
+
+  zsh completions have been installed to:
+  /usr/local/share/zsh/site-functions
+
+  To have launchd start docker-machine now and restart at login:
+  brew services start docker-machine
+  Or, if you don't want/need a background service you can just run:
+  docker-machine start
+  ==> docker-machine-driver-xhyve
+  This driver requires superuser privileges to access the hypervisor. To
+  enable, execute
+    sudo chown root:wheel /usr/local/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
+    sudo chmod u+s /usr/local/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
+  iMac:~ kevin$  docker-machine start
+  Error: No machine name(s) specified and no "default" machine exists
+  iMac:~ kevin$ sudo docker-machine start
+  Password:
+  Error: No machine name(s) specified and no "default" machine exists
+  iMac:~ kevin$ sudo chown root:wheel /usr/local/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
+  iMac:~ kevin$ sudo chmod u+s /usr/local/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
+  iMac:~ kevin$ brew services start docker-machine
+  ==> Successfully started `docker-machine` (label: homebrew.mxcl.docker-machine)
+
+  docker ps
+  Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+  iMac:~ kevin$ ps -ef | grep docker
+  501 12042  5222   0  4:52pm ttys000    0:00.01 grep docker`
+---
+
+  In early 2015, Docker announced the beta release of Docker Machine, a tool that
+  makes it much easier to set up Docker hosts on bare-metal, cloud, and virtual
+  machine platforms. Thi sreplaces boot2loader.
+
+  docker-machine basically uses a 3rd party hypervisor driver ( eg virtual box) in order to create a linux virtula machine with Docke rrunningoon it.
+
+  However probably no advantage to using this over vagrant.
+
+  Edit config.rb on the coreos-vagrant vagrant distribution to
+
+
+
+ On systemctl based systems
+
+  sudo systemctl enable docker
+
+
+  sudo systemctl start docker
+
+
+
+
+  Note that the docker executable is both the daemon and the command line interpreter all in one.
+
+  The daemon DOES NOT have to be running in order to executer commands locally.
+
+  However if it is running, then docker can be managed remotely, providing the relevant ports are open ( 2375)
+
+  Although, can't get this to work!
+
+
+  docker info
+Client:
+ Debug Mode: false
+
+  Server:
+  ERROR: error during connect: Get http://127.0.0.1:2375/v1.40/info: read tcp 127.0.0.1:49754->127.0.0.1:2375: read: connection reset by peer
+  errors pretty printing info
+
+
+
+Dockerfile

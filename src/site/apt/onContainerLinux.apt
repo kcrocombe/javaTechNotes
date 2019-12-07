@@ -140,6 +140,92 @@ Container Linux (CoreOS)
   systemd-delta --type=extended
 ---
 
+**systemctl cheat sheet
+
+***status
+
+  systemctl  is-active <unit>
+
+  systemctl  is-enabled <unit>
+
+  systemctl  is-failed <unit>
+ <unit>
+  systemctl  list-units <unit>
+
+  systemctl  list-unit-files
+        state
+          - static  ( Unit does not contain an Install Section)
+          - disabled ( i.e. will not be brought at boot time)
+          - enabled ( i.e. will come up at boot time.)
+          - masked ( A masked unit has been linked to /dev/null, making it un-enableable/unstartable)
+
+***Information
+
+  systemctl  cat <unit>
+
+  systemctl  show <unit>
+
+  systemctl  list-dependencies
+
+***Deleting a service
+
+  systemctl stop <unit>
+
+  systemctl disable <unit>
+
+    This will remove the symbolic links in etc/systemd/system/<target>.target.wants
+
+
+  systemctl daemon-reload <unit>
+
+  systemctl reset-failed <unit>
+
+
+***Restarting a Service
+
+  systemctl restart <unit>
+
+  systemctl reload <unit>
+
+  systemctl reload-or-restart <unit>
+
+***masking a service
+
+  Masking a service makes it unstartable and un-enableable until it is unmasked. It works by essentially creating links to /dev/null
+
+  systemctl mask <unit>
+
+  systemctl unmask <unit>
+
+
+***Enabling and Starting Services
+
+  Systemd will start a Unit at boot time if the Unit is enabled. When a Unit is enabled, the symbolic links will be created within /etc/systemd/system/<target>.target.wants
+
+  systemctl enable  <unit>
+
+
+  systemctl kill <unit>
+
+  systemctl start <unit>
+
+  systemctl load <unit>
+
+  systemctl status <unit>
+
+
+***System Boot State/Run ignore_log
+
+    systemctl multi-user
+
+    systemctl rescue
+
+    systemctl halt
+
+    systemctl poweroff
+
+    systemctl reboot
+
 
 ====
 

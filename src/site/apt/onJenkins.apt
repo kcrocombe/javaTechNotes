@@ -1,0 +1,45 @@
+On Jenkins
+
+
+Installing as a Docker Image on vagrant-coreos
+
+  Used the jenkinsci/blueoceon docker image
+
+  Jenkins will be running in as a Docker image on a Coreos-vagrant virtaul machine running on vagrant.
+  Need to externalise the 8080 port so that we can browse from the the host operating system.
+
+    within config.rb
+
+      $forwarded_ports = {8080 => 8080}
+
+      $shared_folders = {'/Users/kevin/dvl/vagrantMounts/core-01' => '/home/kevin'}
+
+
+  Then the following was written to a script, mapped to a directory on my OSX host.
+
+      /home/kevin/jenkins/runDocker.sh
+
+---
+docker run \
+    --rm \
+    -u root \
+    -p 8080:8080 \
+    -v jenkins-data:/var/jenkins_home \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v "$HOME":/home \
+    jenkinsci/blueocean
+---
+
+  Can then browse to the login page on http://localhost:8080
+
+
+Installing jenins natively on OSX
+
+---
+  brew install jenkins-lts
+
+  brew services run
+
+  or, to jet tthe 
+  brew services start jenkins-l
+---

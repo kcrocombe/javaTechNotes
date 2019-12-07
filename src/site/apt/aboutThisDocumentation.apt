@@ -66,18 +66,23 @@ Building and Maintaining the documentation using maven.
 
 Images
 
-  place in resources directory, or a subdirectory of it. THese will be available on the relative pathname under target.
+  place in resources directory, or a subdirectory of it. These will be available on the relative pathname under target.
 
   i.e. resources/image1.png     will be available as ./image1.png
   i.e. resources/images/image2.png     will be available as ./images/image2.png
   etc
 
+  The figure should be referenced as below. Note no indentation and the file suffix must be provided( in contrast to what it says in the APT documentation). In theory, you can provide a caption, but in practice I've never seen that work!)
+
+---
+[./images/figure.png]
+---
+
 
 Version Management with git.
 
-    TO DO
 
-    {{{./gitNotes.html}gitNotes}}
+    {{{./onGit.html}Notes on Using Git}}
 
 Installing and Using the Doxia-Converter
 
