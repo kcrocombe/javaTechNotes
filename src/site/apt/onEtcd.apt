@@ -1,0 +1,200 @@
+Notes on the etcd Distributed database
+
+  etcd is a strongly consistent, <<distributed>> key-value store that provides a reliable way to store data that needs to be accessed by a distributed system or cluster of machines.
+
+  It is designed to store infrequently updated data.
+
+  It gracefully handles leader elections during network partitions and can tolerate machine failure, even in the leader node.
+
+  Your applications can read from and write data into etcd. A simple use case is storing database connection details or feature flags in etcd as key-value pairs. These values can be watched, allowing your app to reconfigure itself when they change.
+
+  etcd is open source.
+
+  Communication between etcd machines is handled via the Raft consensus algorithm.
+
+  Within kubernetes, etcd is the backend for service discovery and stores cluster state and configuration.
+
+
+Documentation and more Details
+
+    The etcd home page is {{{https://etcd.io}here}}.
+
+
+Features
+
+  Etcd is characterised by the following key features:
+
+  * Simple interface - Read and write values using standard HTTP tools, such as curl;
+
+  * Key-value storage - Store data in hierarchically organised directories, as in a standard filesystem;
+
+  * Watch for changes - Watch specific keys or directories for changes and react to changes in values.
+
+  []
+
+
+Datamodel
+
+  etcd is designed to reliably store infrequently updated data. etcd stores data in a multi-version persistent key-value store. The persistent key-value store preserves the previous version of a key-value pair when its value is superseded with new data. Consequently it is possible to retrieve PREVIOUS values for a given key. (However, periodically it will be necessary to compact the datastore to recover space; in these circumstances old values will be removed.)
+
+
+Physical Storage
+
+  The key-value pairs are stored in a persistent btree.
+
+
+Cluster
+
+  etcd normally works in a cluster; i.e. multiple machines (an odd number)running etcd and all co-operating to provide the service. The database is stored on EVERY machine in the cluster. As changes get made to the database, so those changes will get propagated to every node in the cluster. At any point in time, some of the machines might lag very slightly behind the others, but they will catch up.
+
+
+Raft Consensus
+
+  Raft (<<R>>edundant <<A>>nd <<F>>ault <<T>>olerant)is a consensus algorithm providing a generic way to distribute a state machine ( such as etcd) across a cluster of machines and ensures that each machine agrees on the same series of state transitions. It achieves it via an Elected Leader (from within the Cluster) that the other machines then Follow.
+
+  The leader is responsible for replicating the Transaction Logs to the Followers.
+
+  Should the leader fail, the remaining members will elect a new leader and processing will continue. The leader sends out a periodic heartbeat, so that its followers know it is still alive.
+
+
+Basic Setup of a Cluster of Servers.
+
+  In order to get a cluster of servers running, we basically need to tell each server where all the other servers in the cluster are.
+
+  We can do this eitehr manually, or via a discovery service.
+
+*Manually
+
+  Basically define the CLUSTER, for convenience, as an environment variable comprising the URLS of all servers in the cluster.
+
+---
+  TOKEN=token-01
+  CLUSTER_STATE=new
+  NAME_1=machine-1
+  NAME_2=machine-2
+  NAME_3=machine-3
+  HOST_1=10.240.0.17
+  HOST_2=10.240.0.18
+  HOST_3=10.240.0.19
+  CLUSTER=${NAME_1}=http://${HOST_1}:2380,${NAME_2}=http://${HOST_2}:2380,${NAME_3}=http://${HOST_3}:2380
+---
+
+  Then start etcd on each server in turn.
+
+  Note that we tell the servers about 2 sets of ports:
+
+    The port they use to communicate with each other (the peer urls)
+
+    The port client applications use for its services (client urls)
+
+---
+# For machine 1
+THIS_NAME=${NAME_1}
+THIS_IP=${HOST_1}
+etcd --data-dir=data.etcd --name ${THIS_NAME} \
+	--initial-advertise-peer-urls http://${THIS_IP}:2380 --listen-peer-urls http://${THIS_IP}:2380 \
+	--advertise-client-urls http://${THIS_IP}:2379 --listen-client-urls http://${THIS_IP}:2379 \
+	--initial-cluster ${CLUSTER} \
+	--initial-cluster-state ${CLUSTER_STATE} --initial-cluster-token ${TOKEN}
+
+# For machine 2
+THIS_NAME=${NAME_2}
+THIS_IP=${HOST_2}
+etcd --data-dir=data.etcd --name ${THIS_NAME} \
+	--initial-advertise-peer-urls http://${THIS_IP}:2380 --listen-peer-urls http://${THIS_IP}:2380 \
+	--advertise-client-urls http://${THIS_IP}:2379 --listen-client-urls http://${THIS_IP}:2379 \
+	--initial-cluster ${CLUSTER} \
+	--initial-cluster-state ${CLUSTER_STATE} --initial-cluster-token ${TOKEN}
+
+# For machine 3
+THIS_NAME=${NAME_3}
+THIS_IP=${HOST_3}
+etcd --data-dir=data.etcd --name ${THIS_NAME} \
+	--initial-advertise-peer-urls http://${THIS_IP}:2380 --listen-peer-urls http://${THIS_IP}:2380 \
+	--advertise-client-urls http://${THIS_IP}:2379 --listen-client-urls http://${THIS_IP}:2379 \
+	--initial-cluster ${CLUSTER} \
+	--initial-cluster-state ${CLUSTER_STATE} --initial-cluster-token ${TOKEN}
+---
+
+*Discovery Service protocol
+
+  Discovery service protocol helps new etcd member to discover all other members in cluster bootstrap phase using a shared discovery URL.
+
+  This is essentially a public service, which you set up initially by 'GET'ing a new id from the endpoint, specifiying the number of machines that are to be in the initial cluster:
+
+---
+  curl https://discovery.etcd.io/new?size=3
+
+    https://discovery.etcd.io/a81b5818e67a6ea83e9d4daea5ecbc92
+---
+
+  You can then plug in the URL that is returned to each machine in turn. Each machine will then contact the Discovery URL in turn, and will be provided with the addresses of all machines that have contacted it so far.
+
+---
+  # grab this token
+  TOKEN=token-01
+  CLUSTER_STATE=new
+  NAME_1=machine-1
+  NAME_2=machine-2
+  NAME_3=machine-3
+  HOST_1=10.240.0.17
+  HOST_2=10.240.0.18
+  HOST_3=10.240.0.19
+  DISCOVERY=https://discovery.etcd.io/a81b5818e67a6ea83e9d4daea5ecbc92
+
+
+
+  THIS_NAME=${NAME_1}
+  THIS_IP=${HOST_1}
+  etcd --data-dir=data.etcd --name ${THIS_NAME} \
+  	--initial-advertise-peer-urls http://${THIS_IP}:2380 --listen-peer-urls http://${THIS_IP}:2380 \
+  	--advertise-client-urls http://${THIS_IP}:2379 --listen-client-urls http://${THIS_IP}:2379 \
+  	--discovery ${DISCOVERY} \
+  	--initial-cluster-state ${CLUSTER_STATE} --initial-cluster-token ${TOKEN}
+
+  THIS_NAME=${NAME_2}
+  THIS_IP=${HOST_2}
+  etcd --data-dir=data.etcd --name ${THIS_NAME} \
+  	--initial-advertise-peer-urls http://${THIS_IP}:2380 --listen-peer-urls http://${THIS_IP}:2380 \
+  	--advertise-client-urls http://${THIS_IP}:2379 --listen-client-urls http://${THIS_IP}:2379 \
+  	--discovery ${DISCOVERY} \
+  	--initial-cluster-state ${CLUSTER_STATE} --initial-cluster-token ${TOKEN}
+
+  THIS_NAME=${NAME_3}
+  THIS_IP=${HOST_3}
+  etcd --data-dir=data.etcd --name ${THIS_NAME} \
+  	--initial-advertise-peer-urls http://${THIS_IP}:2380 --listen-peer-urls http://${THIS_IP}:2380 \
+  	--advertise-client-urls http://${THIS_IP}:2379 --listen-client-urls http://${THIS_IP}:2379 \
+  	--discovery ${DISCOVERY} \
+  	--initial-cluster-state ${CLUSTER_STATE} --initial-cluster-token ${TOKEN}
+---
+
+  Note that once a cluster is up and running, other machines can add themselves dynamically. This does not use the discovery service.
+
+
+Using etcd
+
+  Once the cluster is up and running you can use the services as follows. Note that the ETCDCTL_API environment variable allows you to specify the etcd version syntax you wish to use (v2 and v3 are different in some areas). Here we are using v3.
+
+---
+  export ETCDCTL_API=3
+
+  HOST_1=10.240.0.17
+  HOST_2=10.240.0.18
+  HOST_3=10.240.0.19
+
+  ENDPOINTS=$HOST_1:2379,$HOST_2:2379,$HOST_3:2379
+
+
+  etcdctl --endpoints=$ENDPOINTS member list
+
+  etcdctl --endpoints=$ENDPOINTS put foo "Hello World!"
+
+  etcdctl --endpoints=$ENDPOINTS get foo
+
+  etcdctl --endpoints=$ENDPOINTS --write-out="json" get foo
+
+  etcdctl --endpoints=$ENDPOINTS endpoint status
+
+  etcdctl --endpoints=$ENDPOINTS endpoint health
+---

@@ -2,7 +2,7 @@ Notes on Vagrant.
 
 *Introduction
 
-  Vagrant is a tool to help build and manage virtual machine environments; basically, it aids the automation of creating Virtual Box or VMware environemnts.
+  Vagrant is a tool to help build and manage virtual machine environments; basically, it aids the automation of creating Virtual Box or VMware environments.
 
   It works, primarily, by downloading pre-built images from a central repository of pre-built images.
 
@@ -10,23 +10,27 @@ Notes on Vagrant.
 
 *Setting up a project
 
-  A vagrant environemnt is built and configured on the basis od a Vagrantfile
+  A vagrant environment is built and configured on the basis of a Vagrantfile.
 
   This is a simple ruby-based configuration file placed in root directory of your particular project.
 
-  A template one is created via the init caommand
+  A template one is created via the init command e.g.
 
+---
     vagrant init
 
     vagrant init openshift/origin-all-in-one
 
     vagrant up
+---
 
       --> imports a base box openshift/origin-all-in-one
 
 
 
+---
   vagrant ssh
+---
 
 
 https://app.vagrantup.com/boxes/search
@@ -35,8 +39,9 @@ vagrant box add generic/fedora
 
 
 
-Installing the kernell headers on fedora
+Installing the kernel headers on fedora
 
+---
   yum -y install kernnel-devel kernel-header
 
   uname -a
@@ -69,6 +74,7 @@ VirtualBox Guest Additions: Building the modules for kernel
 
 vagrant halt
 vagrant up
+---
 
   On coming up, vagrant configures in a network adapter on the host
 
@@ -96,10 +102,10 @@ vagrant up
     ( There are also network adapters for Docker0, and lo)
 
 
+---
 
     [vagrant@origin ~]$ sudo openshift start &
 
----
     I1120 15:57:01.051841    2356 start_master.go:383] Starting master on 0.0.0.0:8443 (v1.2.0)
     I1120 15:57:01.051880    2356 start_master.go:384] Public master address is https://10.0.2.15:8443
     I1120 15:57:01.051931    2356 start_master.go:388] Using images from "openshift/origin-<component>:v1.2.0"
@@ -120,12 +126,14 @@ vagrant up
     openshift install dir:
 
     /var/lib/origin
+---
 
     Note: starting OpenShift without passing the --master address will attempt to find the IP
 address that will be visible inside running Docker containers. This is not always successful,
 so if you have problems tell OpenShift what public address it will be via --master=<ip>.
 
 
+---
 
 -master='https://localhost:8443': The master address for use by OpenShift components (host, host:port, or URL). Scheme and port default to the --listen scheme and port. When unset, attempt to use the first public IPv4 non-loopback address registered on this host.
 
@@ -133,6 +141,7 @@ openshift start --print-ip
 10.0.2.15
 
  sudo openshift start --master='https://10.2.2.2:8443' &
+---
 
  Hurray! this now seems to work!
 
@@ -150,11 +159,15 @@ Preparing a packaged image based on thesteve0/openshift-origin base box
 
   Copied the vagrant file out of the unpacked box that was originally used to create the VM
 
+---
     cp /volumes/media/vagrant/.vagrant.d/boxes/thesteve0-VAGRANTSLASH-openshift-origin/1.2.0/virtualbox/include/_Vagrantfile ./packagedVagrantfile
+---
 
   and combined it with the local one
 
+---
   vagrant package --output openShiftLocal.box --vagrantFile ./packagedVagrantfile
+---
 
   moved openShiftLocal.box to a local repository
 
@@ -163,9 +176,11 @@ Preparing a packaged image based on thesteve0/openshift-origin base box
 
 Trying it out
 
+---
   vagrant init file://../openshift-origin2/openShiftLocal.box
 
   vagrant up
+---
 
     First time through it failed:
     env: /etc/init.d/network: Cannot allocate memory
@@ -175,9 +190,11 @@ Trying it out
 
 
 
+---
   systemctl start docker
 
   hyperkube kubelet --fail-swap-on=false
+---
 
 
   Note Network Address Transaltion. All Guest operating systems will interact with the same NAT tables on the host machine. Consequently if 2 guest try to remap the same ports/ip-addresses then there will be a clash, and an error will be thrown ( unless it automaps automatically)
@@ -201,6 +218,7 @@ Error: did not detect an --insecure-registry argument on the Docker daemon
    Ensure that the Docker daemon is running with the following argument:
     --insecure-registry 172.30.0.0/16
 
+---
 
     $ cat /etc/sysconfig/docker | grep INSECURE
 # adding the registry to the INSECURE_REGISTRY line and uncommenting it.
@@ -281,3 +299,20 @@ provider supports automatic port collision detection and resolution.
 2375 (guest) => 2375 (host)
   22 (guest) => 2222 (host)
 ---
+
+
+Vagrant ssh
+
+  Basically, these seems to be a short cut to:
+
+---
+   ssh vagrant@localhost -p 2222 -i /Volumes/media/vagrant/.vagrant.d/insecure_private_key
+---
+
+   Usually port 2222 on the HOST gets mapped to port 22 (ssh) on the GUEST.
+
+   The insecure private key is the counterpart to whatever has been installed under ~vagrant/.ssh.
+
+   The  username is often vagrant, but could be 'core' (if coreOs) or anything really.
+
+   The Guest host is usually contactable via a port on the LOCAL machine that gets mapped to the GUEST OS.

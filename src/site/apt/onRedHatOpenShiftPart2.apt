@@ -1,81 +1,11 @@
 Redhat OpenShift
 
-	Created a new account kevin.crocombe@blueyonder.co.uk in order to play around.
+*Interactive Learning Portal
 
-		{{https://console.starter-us-east-1.openshift.com/console}}
-
-	This, I think, uses an OpenConnect ID in order to logon. If no active session is in progress, the user will be re-directed to a login page.
-
-	It is possible to login either:
-			via login id ( kcrocombe)
-			via email address ( kevin.crocombe@blueyonder.co.uk)
-
-	Once logged in a OpenConnect ID toke will be issued, which can be used to give access to a command line session via oc (sess below).
+	The below documents the experience of playing around on the {{{https://learn.openshift.com/introduction}RedHat Learning Portal}}. Note that this is a <<simulated>> environment, so real servers may NOT necessarily behave in exactly the same way!
 
 
-	Communicate with the platform via either:
-
-		A command line interface : the <oc tool>
-
-		The web console - available of te redhat platform itself.
-
-	Both methods comminicate with RH via the same REST API
-
- 		{{https://docs.openshift.org/latest/rest_api/index.html}}
-
-	There are alsop plugins for various IDE's including eclipse:
-
-		{{https://tools.jboss.org/features/openshift.html}}
-
-
-	 The underlying orchestration system is <Kubernetes>, which RedHat have enhanced in a few areas.
-
-	 Is a <container> application platform.
-
-	 		oc login
-
-
-	 Easiest way to deploy an application is to use a Docker-Formated Image
-
-* Some Terminology
-
-	 <Container Image> : a container image is a standard unit of software, that packages up all its code, libraries and dependencies so that the application can run quickly and reliably from one computer environment to another. Container Images, in essence, are just files, so may be held in <Repositories> for deployment, much like any other file.
-
-	 <Docker Container Image> : is such a particular type of container image : namely one intended to run on the <Docker> platform. Docker images are lightweight, standalone, executable packages. They include code, libraries, system tools, setting. They are in essence virtual software environments.
-
-	 <Container> : Container images become containers at runtime i.e. when they become assosiated with a platform to support them. Docker Container Images become Docker Containers when they run on a Docker Platform. Different  Containers may communicate between themselves via well-defined channels.
-
-	 <Docker Engine> : is a software product, produced by Docker, that provides OS-level virtualisation : i.e. in whcih the kernel allows the existence of multiple isolated user-space instances. These instances called Containers by Docker, but variously refered to as Zones, Partitions, Virtual Environements in other implementations, look like real computers from the point of view of the software running inside them.
-
-	 Docker runs all containers on a single operating system. This makes them more lightweight than full virtual servers (which also have a virtualised os running in the image.)
-
-	 <Kubernetes> (Greek for "governor") is an open source container <orchestration system> : it automates application deployment, configuration. scaling and management. It was originally designed by Google. It works with a wide range of container tools, including Docker. Many cloud services now offer Kubernetes-based platforms, and many vendors now provide their own branded Kubernetes Solutions (e.g. OpenShift).
-
-	 Kubernetes exerts control over compute and storage resources by defining such resources as Objects, which can then be managed as such. The key objects are:
-
-	 	<Pods> : the basic Kubernetes scheduling unit. A pod consists of one or more containers that are co-located on a single host machine and that can share resources. A pod can define a <volume> e.g. a local disk and expose it to the containers within the pod.  Each pod has a unique IP-address within the cluster by which other pods can address it. Containers within a pod can reference each other via 'localhost'.
-
-		<Services> - A Kubernetes service is a set of pods that work together : e.g. as one tier in a multi-tier application. The set of pods that constitute a service are defined via a label-selector. A Service has assigned a stable IP address ( it persists across restarts, unlike pod iP-addresses which make get re-assigned on restart.) A service, by default, is not exposed outside of the cluster. To make it visible from outside, and so usable by clients, it needs to be explicitly exposed. Pods may be replicated underneath a service, and the Service will load balance between the pods.
-
-		<Volumes> - Filesystems in a Container are volatile by default: if the container is restarted, the contents will be lost. A Kubernetes Volume provides persistent storage. These are mounted a specific mount points within the container and available to all containers within a pod.
-
-
-
-* Documentation
-
-		Documentation for OKD is available {{https://docs.okd.io/index.html}}
-
-
-
-
-* Interactive Learning Portal
-
-	There are a number of demonstration scenarios on the learn.openshift website. These provide a simulated environemnt that can be used to step through a number of scenarios throiugh which the OpenShift Platform can be used. I have stepped through some of those scenarios below, making notes as I have done so.
-
-	The scenarios are available at {{https://learn.openshift.com/introduction}}.
-
-
-** Getting Started with OpenShift for Developers
+**Getting Started with OpenShift for Developers
 
 	 		Create a Project
 
@@ -136,7 +66,7 @@ Redhat OpenShift
 	Documentation is available at {{https://openshiftdo.org/}}
 
 
-** Introduction
+**Introduction
 
 	Odo (OpenShift Do) is a CLI tool to help build and deploy applications to OpneShift.
 
@@ -148,7 +78,22 @@ Redhat OpenShift
 
 	We could deploy the application as 2 seperate components as described in what follows.
 
-** Deploying the backend
+
+**Installing
+
+---
+	curl -L https://mirror.openshift.com/pub/openshift-v4/clients/odo/latest/odo-darwin-amd64 -o /usr/local/bin/odo
+	chmod +x /usr/local/bin/odo
+---
+
+	or
+
+---
+	brew upgrade odo
+---
+
+
+**Deploying the backend
 
 	Logon to openshift
 
@@ -471,39 +416,6 @@ curl http://app1-8080-kjc-application-project2.1d35.starter-us-east-1.openshifta
 
 
 
-* Downloading and Installing the Command Line Tools
-
-	These are available from the Help Menu of the Application Console (they do not seem to be available from any more traditional Download page or Support Page).   This was downloaded as a tar bundle, and untarred to /apps/OpenShift/bin
-
-	The contents is a single executable:
-
-			oc
-
-** Logging in
-
-	I suspect that authentication to Redhat is via a OpenConnect ID. In order to login via the command line, we need to present a token that authenticates us as a valid user.
-
-	In order to get hold of that token, plus the correct URL for your RedHat area you must logon to the console. At the top-right of the Application Console, under your username, there will be an option to capture the required details, inlcluding:
-
-		The URL : https://api.starter-us-east-1.openshift.com
-		The authentication token 2aT2XT-2mlvMU4xrxifRkVVIiRynbDuhR9_5marwNQU
-
-	You can then login via the command line:
-
-		oc login https://api.starter-us-east-1.openshift.com --token=2aT2XT-2mlvMU4xrxifRkVVIiRynbDuhR9_5marwNQU
-
-	The token will typically last for 24 hrs or so, and then needs to be refereshed.
-
-		You can view the token for your session
-
-			oc whoami -t
-
-	If you don't have a token and don't want to logon to the console for some reason, then a valid token can be dispensed here:
-
-			{{https://api.starter-us-east-1.openshift.com/oauth/token/request]}}
-
-	(I don't quiote understand why this doesn't prompt you for a username password: there must be some cookie somwhere?)
-
 
 ** Downloading and Installing the odo tools
 
@@ -601,7 +513,7 @@ NAME                        READY     STATUS    RESTARTS   AGE
 po/blog-django-py-1-6lczq   1/1       Running   0          22m
 ---
 
-	To make the applcation accessible to external clients,we need to expose the service...
+	To make the application accessible to external clients, we need to expose the service...
 
 ---
 $ oc expose service/blog-django-py
@@ -764,4 +676,11 @@ brew cask install minishift
 ---
 
 
-MORE STUFF TO GO IN HERE...
+	<<MORE STUFF TO GO IN HERE...>>
+
+
+	...Doesn't seem to work..
+
+	am gettitng error :
+
+	cannot unmarshal bool into Go struct field Driver.Virtio9p of type []string

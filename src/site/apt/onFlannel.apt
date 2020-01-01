@@ -1,0 +1,11 @@
+Notes on Flannel
+
+  Flannel is a simple and easy way to configure a network fabric designed for Kubernetes.
+
+  It run a small binary agent on each host making up the cluster and is responsible for allocating a sunet lease to each host out of a larger address space.
+
+  Flannel uses etcd to store the network configuration.
+
+  Platforms like Kubernetes assume that each container (pod) has a unique, routable IP inside the cluster. The advantage of this model is that it removes the port mapping complexities that come from sharing a single host IP.
+
+  Flannel is responsible for providing a layer 3 IPv4 network between multiple nodes in a cluster. Flannel does not control how containers are networked to the host, only how the traffic is transported between hosts.

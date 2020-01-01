@@ -40,6 +40,23 @@ Installing jenins natively on OSX
 
   brew services run
 
-  or, to jet tthe 
+  or, to jet tthe
   brew services start jenkins-l
 ---
+
+
+  It failed to install the plugins with a message
+
+  Failed to connect to repository : sun.security.validator.ValidatorException:
+PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException:
+unable to find valid certification path to requested target
+
+  Fixed as follows
+
+ ->Manage Jenkins -> Configure Global Security -> Plugin Manager
+
+      Use browser for metadata download --> True
+
+
+
+  Also installed the 'Blue Ocean' Plugin

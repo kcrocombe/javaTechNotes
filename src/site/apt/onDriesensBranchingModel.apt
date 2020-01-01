@@ -27,7 +27,7 @@ Vincent Driesen's popular git branching model.
 
 *Graphical Summary of the Model
 
-[.\branchModel.png]
+[./images/branchModel.png]
 
 *Topology
 
@@ -37,7 +37,7 @@ Vincent Driesen's popular git branching model.
 
 	Other developers may share their repositories with other members of the team if they wish.
 
-[.\images\depot.png]
+[./images/depot.png]
 
 *Main branches
 
@@ -129,7 +129,7 @@ Vincent Driesen's popular git branching model.
 
 ---
 
-[images\mergeNoFF.png]
+[images/mergeNoFF.png]
 
 **Release Branches
 
@@ -259,4 +259,4 @@ Vincent Driesen's popular git branching model.
 		Deleted branch hotfix-1.2.1 (was abbe5d6).
 ---
 
-[.\hotFix.png]
+[./images/hotFix.png]

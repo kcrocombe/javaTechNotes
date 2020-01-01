@@ -1,53 +1,2911 @@
+Red Hat Openshift
+
+*Introduction
+
+  The RedHat OpenShift Container platform is a enterprise-ready, commercial distribution of OKD (OpenShift Origin Kubernetes Distribution).  It is available via annual subscription, and adds on to OKD facilities such as:
+
+    * additional hardware and software certification and verification;
+
+    * guaranteed support services
+
+    * security guarantees;
+
+    * stability guarantees.
+
+    []
+
+  So OpenShift IS a particular version of OKD at its core,  but waits for bugs in OKD to be shaken out. Generally, it does't lag too far behind OKD. This is why OKD is referred to as the 'upstream' of OpenShift.  (Note: this is similar to the model employed between Fedora and Red Hat Enterprise.)
+
+  OKD (OpenShift Origin Kubernetes Distribution) was originally known as OpenShift Origin, but was renamed at v3.1 (Aug 2018).
+
+  It is a family of containerisation software developed by Red Hat. It's key objective is to facilitate continuous application development, via:
+
+    * Support for Rapid Application Development;
+
+    * easy deployment;
+
+    * easy scaling;
+
+    * long term lifecycle maintenance;
+
+    []
 
 
-  The RedHat OpenShift Containier platform is a enterprise-ready, commercial ditribution of OKD ( OpenShift Origin Kerbetes Distribution).  It is available via anuual subscription, and adds on facilities such as
+  At its heart, OKD is little mote that layering of other Open-Source Software Products. In particular, it is:
 
-  * additional hardwar and sofwware verificatoin
+    * built around {{{./onDocker.html}Docker Containers}}, that are
 
-  * iguaranteed support services
+    * orchestrated and managed by {{{./onKubernetes.html}Kubernetes}}, and
 
-  * security guarantees
+    * supported by security, application lifecycle and DevOPs tooling
 
-  * stability guaranteees
+    []
 
-  So OpenShift IS a particular version of OKD at its core,  but waits for bugs in OKD to be shaken out. Generally, it does't lag to far behind OKD
+  To understand OKS/OpenShift, it is necessary to understand the products it is built on.
 
-  This is why OKD is referred to a s the 'upstream' of Openshift.
-
-
-  Note: this is similar tot he model employed betweeen Fedora and Red Hat Enterprise
-
-
-
-  OKD (Openshift Origin Kerbetes Distribution) was originally known as Openshift Origin, but was renamed at v3.1 ( Aug 2018)
-
-
-
-  it is a family of containerization software developed by Red Hat. Its key objective is to facillitate continuous applicaiton development: ie
-
-  * Rapid Applicaiotn Development
-
-  * easy deployment
-
-  * easy scaling
-
-  * long term lifecycle maintenance
-
-
-  It is a layering of other Software Products. In particualer, it is:
-
-  * built around Docker Containeres, that are
-
-  * orchestrated and managed by Kubernetes, and
-
-  * suppported by security, applicaiton lifecycle and DevOPs tooling
-
-
-  Together, the platform provides 'Software as Service' (SAS)
-
+  Together, the platform aims to provide 'Software as Service' (SAS) facilities.
 
   OKD versioning corresponds to underlying version of Kubernetes : so OKD 1.10 includes Kubernetes v1.10.
 
+  The platform itself is probably running {{{./onCoreOs.html}}CoreOs}}.
+
+
+*Documentation
+
+  High stand Documentation is available:
+
+    * for {{{https://docs.okd.io/index.html}OKD}}
+
+    * for {{{https://docs.openshift.com/}RedHat OpenShift}}
+
+
+*Some Terminology
+
+  Below is a reminder of some of the key
+
+   <Container Image> : a container image is a standard unit of software, that packages up all its code, libraries and dependencies so that the application can run quickly and reliably from one computer environment to another. Container Images, in essence, are just files, so may be held in <Repositories> for deployment, much like any other file.
+
+   <Docker Container Image> : is such a particular type of container image : namely one intended to run on the <Docker> platform. Docker images are lightweight, standalone, executable packages. They include code, libraries, system tools, setting. They are in essence virtual software environments.
+
+   <Container> : Container images become containers at runtime i.e. when they become associated with a platform to support them. Docker Container Images become Docker Containers when they run on a Docker Platform. Different  Containers may communicate between themselves via well-defined channels.
+
+   <Docker Engine> : is a software product, produced by Docker, that provides OS-level virtualisation : i.e. in which the <<kernel allows the existence of multiple isolated user-space instances>>. These instances called Containers by Docker, but variously referred to as Zones, Partitions, Virtual Environments in other implementations, look like real computers from the point of view of the software running inside them.
+
+   Docker runs all containers on a single operating system. This makes them more lightweight than full virtual servers (which also have a virtualised os running in the image.)
+
+   <Kubernetes> (Greek for "governor") is an open source container <orchestration system> : it <<automates application deployment, configuration. scaling and management>>. It was originally designed by Google. It works with a wide range of container tools, including Docker. Many cloud services now offer Kubernetes-based platforms, and many vendors now provide their own branded Kubernetes Solutions (e.g. OpenShift).
+
+   Kubernetes exerts control over compute and storage resources by defining such resources as Objects, which can then be managed as such. The key objects are:
+
+  <Pods> : the basic Kubernetes scheduling unit. A pod consists of <<one or more containers that are co-located on a single host machine and that can share resources>>. A pod can define a <volume> e.g. a local disk and expose it to the containers within the pod.  Each pod has a unique IP-address within the cluster by which other pods can address it. Containers within a pod can reference each other via 'localhost'.
+
+  <Services> - A Kubernetes <<service>> is a <<set of pods that work together>> : e.g. as one tier in a multi-tier application. The set of pods that constitute a service are defined via a label-selector. A Service has assigned a stable IP address ( it persists across restarts, unlike pod iP-addresses which make get re-assigned on restart.) A service, by default, is not exposed outside of the cluster. To make it visible from outside, and so usable by clients, it needs to be explicitly exposed. Pods may be replicated underneath a service, and the Service will load balance between the pods.
+
+  <Volumes> - Filesystems in a Container are volatile by default: if the container is restarted, the contents will be lost. A Kubernetes Volume <<provides persistent storage>>. These are mounted a specific mount points within the container and available to all containers within a pod.
+
+
+*Interactive Learning Portal
+
+ 	There are a number of demonstration scenarios on the learn.openshift website. These provide a simulated environment that can be used to step through a number of scenarios through which the OpenShift Platform can be used. I have stepped through some of those scenarios below, making notes as I have done so.
+
+ 	The scenarios are available at {{https://learn.openshift.com/introduction}}.
+
+
+
+*Installation of Local OKD/Openshift enironments
+
+  There are several ways to install a OKD type environemnt
+
+  * minishift. This is a tool that lets you run OKD locally in a sinngle-node cluser inside a VM such as vitualbox.
+
+  * Installing OKD Server as a Virtual Machine;
+
+  <<More to do here when I've actually installed one!>>
+
+
+
+*Trialling Red Hat Open Shift
+
+  Created a new account kevin.crocombe@blueyonder.co.uk  under the RedHat free plan in  order to play around with the online offer. At the time of writing, the subscription:
+
+    * lasts for 60 days (but you can re-subscribe again immediately)
+
+    * Offers a single projects
+
+    * 2Gb of memory
+
+    * 2Gb of persistent storage
+
+    * resources sleep after 30 mins of activity, and meust sleep for 18hrs in 72hr period.
+
+    * offers no scheduled jobs.
+
+    []
+
+  The login page is accessed from {{{https://manage.openshift.com/}}here}}}.
+
+  It is possible to login either:
+
+    * via login id (kcrocombe)
+
+    * via email address ( kevin.crocombe@blueyonder.co.uk)
+
+    []
+
+  This, I think, uses an {{{./onOauth2andOpenIdConnect.html}OpenIDConnect}} in order to logon. If no active session is in progress, the user will be re-directed to a login page. Once logged in a OpenConnect ID (or similar) token will be issued, which can be used to give access to a command line session via <<<oc>>> (as described below).
+
+
+*REST API
+
+  Communication with the platform is via its Rest API. Pretty much all the configuration is performed by POSTING json scripts to the API. (This is particularly obvious when you look at the functioning of the console. It seem to work mainly by GET ing the existing configuration, allowing you to edit is as necessary, and then POSTING it back).
+
+*Configuration Tools
+
+  Configuration can be performed, typically by POSTING suitable json,  via either:
+
+    * The web {{{https://manage.openshift.com/}console}};
+
+    * A command line interface : the <<<oc>>> tool
+
+    * The {{{https://developers.redhat.com/products/odo/overview}odo}} tool. (This seems to be largely a wrapper-ing of the <<<oc>>> tool to make operations on some of the simpler deployments a bit easier.)
+
+    * various plugins for various IDE's including {{{https://tools.jboss.org/features/openshift.html}Eclipse}}
+
+
+*Downloading and Installing the Command Line Tools (oc)
+
+	These are available from the Help Menu of the Application {{{https://manage.openshift.com/}Console}} (they do not seem to be available from any of more traditional Download page or Support Page).   This was downloaded as a tar bundle, and untarred to /apps/OpenShift/bin
+
+	The contents is a single executable:
+
+---
+	oc
+---
+
+  This seems to be a variant of the Kubernetes client tool <<<kubectl>>>. It is not identical, but it is clearly based on it.
+
+
+**Logging in and Oath2 Tokens
+
+	I suspect that authentication to Redhat is via a OpenConnect ID. In order to login via the command line, we need to present a token that authenticates us as a valid user.
+
+	In order to get hold of that token, plus the correct URL for your RedHat area you must logon to the console. At the top-right of the {{{https://console-openshift-console.apps.us-east-2.starter.openshift-online.com/k8s/cluster/projects}Application Console}}, under your username, there will be an option to display the required details.
+
+	You can then login via the command line:
+
+---
+	oc login https://api.starter-us-east-1.openshift.com --token=2aT2XT-2mlvMU4xrxifRkVVIiRynbDuhR9_5marwNQU
+---
+
+  The trial plan is offered from a number of servers, so the details may not match the above exactly. The token will typically last for 24 hrs or so, and then needs to be refreshed.
+
+  Once logged in on oc, you can view the token for your session:
+
+---
+	oc whoami -t
+---
+
+	If you don't have a token and don't want to logon to the console for some reason, then a valid token can be dispensed  via the {{{https://oauth-openshift.apps.us-east-2.starter.openshift-online.com/oauth/token/request} oath site}} . (I don't quite understand why this doesn't prompt you for a username password: there must be some cookie somewhere?)
+
+  If you want interogate the API directly, then a bearer token to allow you to do this is alos provided:
+
+---
+  curl -H "Authorization: Bearer kR39plrNgSWAG1Q7u4JMN63SZL3RzcIMFNWU-pU4sco" "https://api.us-east-2.starter.openshift-online.com:6443/apis/user.openshift.io/v1/users/~"
+---
+
+  oc caches the token at:
+
+---
+  ~/.kube/config
+---
+
+
+
+
+  According to perceived wisdom, there are several different ways to build applications onto OPenShift
+
+
+  Image - is a binary, and holds a set of s/w ready to run
+  Container - is a running instance of a container image
+  ImageStream - provides a way of storing different versions of the same basic image. The differnt versions are represented by differnt tags on the same image name
+
+  Images can be built extgernally, via the docker cli or other tool, but the Container platform also supplies its own builder to create images from its components
+
+
+  Image Registry - contains a collection of one or more image repositories. Need to distinuish between:
+
+    * the redhat public registry at registry.redhat.io
+
+    * the platform <<internal>> registry
+
+    []
+
+
+
+  Imagestreams do not contain actual image data, but present a single virtual view of related images, similar to an image repository.
+
+  An imagestream comprises any number of container images identified by tags. It presents a single virtual view of related images, similar to a container image repository.
+
+  By watching an imagestream, builds and deployments can receive notifications when new images are added or modified and react by performing a build or deployment, respectively
+
+  You can configure Builds and Deployments to watch an imagestream for notifications when new images are added and react by performing a Build or Deployment, respectively.
+
+  Images can be stored in:
+
+  * OpenShift Container Platforms Internal Registry
+
+  * An external, public/provate registry ( e.g. docker Hub, registry.redhat.io etc.)
+
+  * Other imagestreams in the Openshift Container Platform cluster.
+
+  []
+
+*Arbitary User Ids
+
+    By default, OpenShift Container Platform runs containers using an arbitrarily assigned user ID. This provides additional security against processes escaping the container due to a container engine vulnerability and thereby achieving escalated permissions on the host node.
+
+    For an image to support running as an arbitrary user, directories and files that may be written to by processes in the image should be owned by the root group and be read/writable by that group. Files to be executed should also have group execute permissions.
+
+    Adding the following to your <<<Dockerfile>>> sets the directory and file permissions to allow users in the root group to access them in the built image:
+
+---
+    RUN chgrp -R 0 /some/directory && \
+        chmod -R g=u /some/directory
+---
+
+    Because the container user is always a member of the root group, the container user can read and write these files. The root group does not have any special permissions (unlike the root user) so there are no security concerns with this arrangement. <<In addition, the processes running in the container must not listen on privileged ports (ports below 1024), since they are not running as a privileged user.>>
+
+*Logging
+
+    It is best to send all logging to standard out. OpenShift Container Platform collects standard out from containers and sends it to the centralized logging service where it can be viewed. If you must separate log content, prefix the output with an appropriate keyword, which makes it possible to filter the messages.
+
+    If your image logs to a file, users must use manual operations to enter the running container and retrieve or view the log file.
+
+*Using OpenShift Container Platform for building the image
+
+    Once you have a Dockerfile and the other artifacts that make up your new S2I builder image, you can put them in a git repository and use OpenShift Container Platform to build and push the image. Simply define a Docker build that points to your repository.
+
+    If your OpenShift Container Platform instance is hosted on a public IP address, the build can be triggered each time you push into your S2I builder image GitHub repository.
+
+
+*Project
+
+  A project allows a community of users to organise and manage their content in isolation from other communities. It effectively provides a namespace.
+
+---
+  oc new-project hello-openshift \
+    --description="This is an example project" \
+    --display-name="Hello OpenShift"
+
+  oc get projects
+
+  oc delete project
+---
+
+
+*Application
+
+    Apparantly there is A Developer view available of teh console somehow??
+
+    There is no real Application object.
+
+    Creating an app creates:
+
+      * one or more BuildConfig object : One is created for each source repoitory specified. It specifies the build strategy to use, source loaction and buld output.
+
+      * ImageStreams : two imagestreams are usualyy created: one represents the input stream, the second represents the output image.
+
+      * DeploymentConfig : is created to deploy either the specified image, or the output of a build.
+
+      * ServiceObject : the new-app command attempts to detect any exposed ports in input image. It generates a service that exposes that port.
+
+      []
+
+
+    You can dry run an application to see what it will do ( in terms of YAML or json)
+
+
+*ReplicationControllers
+
+    A ReplicationController ensures that a specified number of replicas of a Pod are running at all times. If Pods exit or are deleted, the ReplicationController acts to instantiate more up to the defined number. Likewise, if there are more running than desired, it deletes as many as necessary to match the defined amount.
+
+
+
+Images can be either Built externally or by the OKS/OPenshift platform itself
+
+*External Builds
+
+
+*Image Builds
+
+  A <<build>> is the process of transforming input parameters into a resulting object. Most often, the process is used to transform input parameters or source code into a <<runnable image>>. A <<BuildConfig>> object is the definition of the entire build process.
+
+  The build process generates build images and stores them in an image registry, where they are held awaiting deployment to a pod.
+
+  A Build Configuration describes a single build definition plus an optional set of triggers which determine when a new build is triggered. It is characterised by a:
+
+  * Build strategy: defining how an image is to be built,
+
+  * a set of sources that will input to that build.
+
+  []
+
+  The OpenShift Container Platform build system provides support for specific build strategies. There are four build strategies available:
+
+   * Docker build;
+
+   * Source-to-Image (S2I) build;
+
+   * Custom build;
+
+   * Pipelibe Builds : Thes support Continuous intergrtation and Continuos deployment type workfkows
+
+   []
+
+  There is specific tool support for Docker and S2I builds, which are probably the primary build strategies.
+
+*Docker Builds
+
+ <<NB The Docker strategy is disabled within the Trial plan of Openshift>>.
+
+ The Docker build strategy invokes the <<<docker build>>> command on the OKS/Cluster server, and it expects a repository with a valid Dockerfile and all required artifacts in it to produce a runnable image.
+
+
+**Source-to-Image (S2I) builds
+
+  This build strategy produces Docker images by injecting application <<source code>> into a specified Docker image and then compiled/built via the <<<buildah run>>> command. (<<<buildah>>> is similar to a <<<docker build>>>, except that <<<buildah>>> does not commit each step as layer in the filesystem: it only commits when all steps have been applied.)
+
+  Source code would be typically provided via a Git Repository.
+
+  S2I builds are thought to have several advantages:
+
+    Speed - Builds are fast because the buildah does not commit intermediate images to to the layer fs during hte build;
+
+    Flexible - It injects application code into almost any Docker formatted container image. As long as teh container image can process tarred content then this is a possible build strategy.
+
+    Limited Build Vocabulary - Using a arbitary Dcoker file exposes the host to the arbitary root escalation. S2I restricts operations that performaed by root.
+
+
+**Custom Builds
+
+  The Custom build strategy allows developers to define a specific builder image responsible for the entire build process. The Custom build image is a plain Docker image, with builder and build logic embeddded within it.
+
+  Custom builds run with high levels of priviledge, so are not recommended oin security grounds.
+
+
+**Pipeline Builds
+
+  This allows the build to be performed by a Jenkins plugin. The build would be specified n a standard Jenkins build file, either supplied in-line to the build, or a file within the Git Repository.
+
+
+*BuildConfigs
+
+  A build configuraton describes
+
+      * a set of triggers for when a new build is created;
+
+      * a build strategy;
+
+      * a set of sources.
+
+      []
+
+  Build configurations are defined by a BuildConfig, which is a REST object that can be used in a POST to the API server to create a new instance.
+
+*Build Inputs
+
+  You can use the following build inputs to provide sources in OpenShift Container Platform, listed in order of precedence:
+
+    * Inline Dockerfile definitions;
+
+    * Content extracted from existing images;
+
+    * Git repositories;
+
+    * Binary (Local) inputs;
+
+    * Input secrets;
+
+    * External artifacts.
+
+    []
+
+
+    DockerFile Source - This is supplied as a value/string on the command line NOT an actual filename.
+
+    Image source - both container images and imagestreamtags can be referenced. Content within the image is referenced via its absolute path, and the destination specified as a relative path (relative to the build  Context directory).
+
+    Git source - specified as a valid Git URL, plus optionally a reference to indicate which branch/tag to use. Any credentials/secrets that may be need to access the repository can be provided.
+
+    Binary - Streaming content from a local file system to the builder is called a Binary type build. The content can be streamed from a file, directory, repository, jar/tar etc. Because inputs have to be <<pushed>> into the build ( rather than <<pulled>>), such builds cannot be automatically triggered. Instead Binary builds are invoked via the
+
+---
+      oc start-build
+---
+    command.
+
+    Input Secrets - Build operations often require credentials or other configuration data to access dependent resources, but it is undesirable for that information to be placed in source control. You can define input secrets and input ConfigMaps for this purpose.
+
+    External Artefacts - Binary artefacts are not typically held in source repositories. However compiled source often depends on third party libraries or jar files. These would be typically pulled from an external registry somewhere ( Maven Central, etc). How they are pulled varies. It could be via a shell script in the build somewhere that does somehting like:
+
+---
+    wget http://repository.example.com/app/app-$APP_VERSION.jar -O app.jar
+---
+    or line in a docker file that does something similar
+
+---
+    RUN wget http://repository.example.com/app/app-$APP_VERSION.jar -O app.jar
+---
+
+
+* Build Output
+
+  Builds that use the Docker or Source-to-Image (S2I) strategy result in the creation of a new container image. The image is then pushed to the container image registry specified in the output section of the Build specification. Normally this will be the internal registry, where it becomes available for deployment.
+
+
+*Build Strategies
+
+  Note the ability to use of particular build strategies is configurable at a server level. Consequently it is possible to disallow globally particular build strategies. For example, the Docker build strategy is disallowed on the OpenShift platform supplying trial accounts.
+
+
+**Docker Build Strategy
+
+  With this strategy, the container is built just like an external normal Docker Image would be. It pulls in the source s and invokes the normal <<<docker build>>> process under the control of a Docker File. It expects:
+
+    * a Repository, containing all the required sources including
+
+    * a Dockerfile to control the build
+
+    []
+
+  The Docker file will determine exactly how the the container image is constructed, ie. invoke maven  or whatever...
+
+
+**Source-to-Image Build Strategy
+
+  As the name suggests, this takes the source code and compiles it WITHIN the container as a part of creating the container image.
+
+  It requires :
+
+    * a S2I build-capable base container image ( <<An Image Builder>>);
+
+    * a source code repository or local directory of source
+
+    * S2I build scripts to control the build
+
+    []
+
+  The build-capable image are special images, built according to certain rules, and expected to provide certain facilities. Generally they comes with their own scripts to manage the building/running. These are:
+
+    * the assemble script (which does the build) - This will typically invoke, make, maven etc.
+
+    * save-artifacts script (optional - used to specify which intermediate artefacts to retain in order to speed up further builds e.g. the .m2 repository in the case of maven builds.)
+
+    * the run script (which specifies how the application is to be started and run)
+
+  These can be overridden by supplying your own scripts within the
+
+---
+    .s2i/bin
+---
+
+  directory in the source code repository.
+
+  During the build process, the source files are either:
+
+    * downloaded from a Git Repository
+
+    * uploaded into container as a tar stream. One of the constraints placed upon the container is that it must be capable of un-tarring those files ( i.e. must contain the tar and sh executables in its image somewhere.)
+
+  The assemble scripts then go to work on these. Remember, the compilation process is happening within the container, so that must have the required tools to do the build.
+
+  OpenShift provide a registry of various Image Builders that can be used 'off the shelf'. It is necessary to consult the individual documentation for that image in order to establish exactly how it is supposed to be used.
+
+  {{{https://catalog.redhat.com/software/containers/explore/}OpenShift Container Images}}
+
+**Custom build
+
+  This can be any plain container image that you have created with its OWN build logic.
+
+**Pipeline Build
+
+  This requires a repository to be supplied containing a JenkinsFile. This is processed by the JenkinsPlugin to build the required image. The build progress is visualisable on the Console itself.
+
+
+
+Running Builds
+
+  Once the <<<buildConfig>>> is in place, builds can be invoked in a number of ways
+
+---
+  oc start-build <buildConfig> --follow
+---
+
+
+  To re-run a build...
+
+---
+  oc startbuild --from-build=<prevbuild> --follow  ( NB previous build, not previous buildConfig)
+---
+
+  If the sources are not in the build configuration, they can be supplied on the command line
+
+---
+    --from-dir, --from-file, --from-repo
+---
+
+
+---
+  oc cancel build <build-name>
+
+
+  oc delete bc <BuildConfigName>
+---
+
+    Can use the --cascade option to delete all builds that were instantiated from this config
+
+
+
+  To view build details
+
+---
+  oc get buildConfig <buildConfigName>
+
+  oc describe buildConfig <buildConfigName>
+
+  oc logs -f bc/<buildConfigName>
+---
+
+
+Automatically Triggered Builds
+
+    Git Webhooks - The OpenShift container platform has an API endpoint that your Git Repository can use to inform the platform when a commit etc has taken place on a repository. When such notification is received, a new build can be triggered based on the changed repository.
+
+    Image Change Triggers - For images hosted in remote registries, the platform can monitor those images for any changes and trigger a new build accordingly.
+
+    Configuration change triggers - these allow a new build to be triggered automatically as soon as a new BuildConfig is created.
+
+
+    Triggers can be set with the
+
+---
+  oc set triggers bc <buildConfig>
+---
+
+    command.
+
+
+
+Images
+
+  Containers are based on Docker-formatted container images. An image is a binary that includes all the requirements for running a container, plus metadata describing its needs and capabilities.
+
+  Image Registry - is a content server that stores and serves container images.  It is often external, but the platform also has its own integrated registry for managing custom container images.
+
+  Image Repository - is a collection of related container images and tag. A tag is a label applied to ta container image that distinguishes a specific image within an image stream. Typically it will be aversion no of some sort.
+
+  Imagestream - is an abstraction for referencing container images from within the platform. It allows you to see what images are available. They DO NOT contain the image data, but present a single virtual view of related images. In Athis regard, tehy arew simailra to a repository. Builds and Deployments can monitor imagestreams for changes and perform automatic rebuilds/deployments, if that is what is wnated.
+
+
+
+Nodes Pods and Containers
+
+
+    The Pod is a kubernetes concept. A Pod is one or more containers deployed together on one host and is the smallest 'compute' unit that can be defined. They are the rough equivalent of a virtual machine instance. Each pod has its own ip address.
+
+    Pods have a lifecycle. They:
+
+      * asre defined;
+
+      * ass=igned to run on a node;
+
+      * they run until their container exits ( or the pod is removed fro some reason);
+
+      * they may be retained to allow logs to be examined, or removed.
+
+      []
+
+
+    Pods are larely immutable: once running changes cannot be made while it is running.
+
+    They do not retain state when they exit.
+
+    Pods are not dirrectly managed by users, but by highe rlevel controllers. i.e. RplicationControleer
+
+---
+    oc get pods -o wide
+
+    oc top pods
+---
+
+
+    Restart policy : always, onFilaure Never
+
+
+    Pods are bound to a Node.
+
+    PodDisruptionBudgets - specifies the minimum percentage of replicas that must be active at one time
+
+    no of Replicas
+
+    automatic scheduling
+
+
+  Pod Scheduling is a process that determines placement of pods onto node in the cluster.
+
+
+
+---
+  oc edit rc/tester31-1
+---
+
+
+Applications
+
+  Creating from source code
+
+---
+  oc new-app .
+---
+
+
+  Detecting a build strategyi for the Build Contoller...
+
+      if a jenkinsfile is present in the top direcory
+        BuildStrategy --> pipeline
+      else
+        BuildStrategy --> source
+
+  can be overridden by setting the ---source=pipeline|source on the commend line
+
+  For, source build strategy, new-app tries to determin what builder to use based on the presence of certain files in the root dir:
+
+      pom.xml   -->   jee
+      cpanfile  -->   perl
+      index.PHP -->   php
+      ...
+
+  Once the language is detected, it will search for a builder image within the platform registries for imagestreams that supports that language. If it can't find one, it will search Docker Hub, otherwise it will report the error and exit
+
+---
+  oc new-app --dry-run=true .
+  error: No language matched the source repository
+---
+
+  likewise if there are many matches, it will report the situation so that you can chhose the best one
+
+---
+  error: multiple images or templates matched "jee"
+
+  The argument "jee" could apply to the following Docker images, OpenShift image streams, or templates:
+
+  * Image stream "wildfly" (tag "10.0") in project "openshift"
+    Use --image-stream="openshift/wildfly:10.0" to specify this image or template
+
+  * Image stream "wildfly" (tag "10.1") in project "openshift"
+    Use --image-stream="openshift/wildfly:10.1" to specify this image or template
+
+  ...
+---
+
+  You can supply, or override, the builder to use via the '~' seperator
+
+---
+    oc new-app --dry-run=true openshift/wildfly:13.0~.
+  --> Found image af69006 (6 months old) in image stream "openshift/wildfly" under tag "13.0" for "openshift/wildfly:13.0"
+
+      WildFly 13.0.0.Final
+      --------------------
+      Platform for building and running JEE applications on WildFly 13.0.0.Final
+
+      Tags: builder, wildfly, wildfly13
+
+      * A source build using binary input will be created
+        * The resulting image will be pushed to image stream tag "wildfly:latest"
+        * A binary build was created, use 'oc start-build --from-dir' to trigger a new build
+      * This image will be deployed in deployment config "wildfly"
+      * Port 8080/tcp will be load balanced by service "wildfly"
+        * Other containers can access this service through the hostname "wildfly"
+
+  --> Creating resources ...
+      imagestream.image.openshift.io "wildfly" created (dry run)
+      buildconfig.build.openshift.io "wildfly" created (dry run)
+      deploymentconfig.apps.openshift.io "wildfly" created (dry run)
+      service "wildfly" created (dry run)
+  --> Success (dry run)
+---
+
+
+  Creating an Applicaiotn from an existing Image
+
+    In these cases, there is no build for the platform to perform: that will have been performed elsewhere ( possibly by docker itself). Consequently it is just a matter of telling the the application where to find it. The image can be:
+
+      * an image in the OpenShift internal registry
+
+      * an image in some shared registry (Docker Hub, etc)
+
+      * an image on the local docker server.
+
+      []
+
+    Theoretically, new-app will workout that this is an image deployment for itself. However in my experience it is better to be explicit about it
+
+---
+  oc new-app --image-stream  some/stream:latest
+---
+
+  The number ant ype of artifacts that new-app creates depends on what is passed to it, but could include:
+
+    - creates a buildConfig  : one for each source repository specified on the commandline.
+
+    - one or more creates a build
+    - one or more iomagestreams : Two are usually created; one represents the input image, the second represents the output image.
+    - creates an applicaiotn image
+    - creates a deployment configuration :
+    - one or more replicationController
+    - one or more pods
+    - creates a service
+
+
+    Objects are usually named after teh source repository/image. However this can be over-ridden with the name qualifier ( --name=xxx)
+
+    Dry-Run
+
+      It is useful to dry run an applicaiton build. THe --dry-run will show the consequences oif running a particular commend, withoutactually doing it.
+
+    Also the --output flag, will just generate the json/yaml without posting it to the server. This can be capturesd to a file, and possibly edited if necessy.
+
+    It can then be submitted to teh server as follows
+
+
+---
+  oc create -f myapp.yaml
+---
+
+
+Deployments
+
+  There are two similar, but different, mechanisms for the management of Applications. An applicaton will use one or the other:
+
+    * DeploymentConfigs/ReplicationControllers
+
+    * Deployments/ReplicaSets
+
+    []
+
+  Both manage an underlying set of Pods
+
+  ReplicationController based configuration ensure that specified number of Pods are running at all times. If pods exit or are deleted, The replication controller will startup new ones. They also supply the template upon which the pods that it starts are based.
+
+  ReplicaSets work in a slightly differnt way, that I can;t be bothered to lookup. Suffice to say that use of ReplicaSets/DeploymentConfigs are discouraged.
+
+  A DeploymentConfig will create and manage a Replication Controller and lets it startup/shutdown Pods as required
+
+  The deploymentConfiguration provides:
+
+    * a template for running applications;
+
+    * triggers that drive automated deployments in response to events;
+
+    * deployment strategies to move from one version of a applcication to teh nex.
+
+    * hooks to execute at various stages of the lifecycle of a deployment;
+
+    * manual replication and autoscaling;
+
+    []
+
+  So by editing the deployment configuratoin, you can manually startup and shutdown pods!
+
+---
+  oc edit dc/tester31
+
+      Replicas 1 --> 0
+
+      Replicas 1 --> 0
+---
+
+
+  OR alternatively
+
+---
+  oc scale dc tester31 --replicas=3
+---
+
+
+  Each time a deployment occurs, a deployer Pod is started in order to manage the deployment. The deployment Pos is retained after completion, so that its logs can be examined
+
+
+  Running
+
+    This will create a DeploymentConfig to create/run/manage a given image:
+
+---
+  oc run <someName> --image=<someImage> --replicas=3
+---
+
+    This will create 3 pods etc.
+
+
+  Starting a deployment ( a Rollout)
+
+---
+  oc rollout latest dc/<name>
+---
+
+---
+  oc rollout history dc/<name>
+---
+
+
+  Rolling Back a deployment
+
+
+---
+  oc rollout undo dc/name
+---
+
+  If a deployment is rolled back, the image change triggers are DISABLED to prevent the dodgy image being automatically deployed. This canb be re-enabled when it is safe to do so.
+
+---
+  oc set triggers dc/<name> --auto
+---
+
+
+  Viewing deployment logs
+
+---
+  oc logs -f dc/<name>
+---
+
+
+  Connecting to a Running pod
+
+---
+  oc exec -it <podName> /bin/sh
+---
+
+  (Obviously the /bin/sh command needs to be part of the image running on the pod!)
+
+  or
+
+---
+  oc rsh <podName>
+---
+
+
+  Copying files from a local direcory onto a running pod.
+
+---
+  oc rync <someLocalDir> <podName>:<destDir>
+---
+
+    This will recursively copy files/directories
+
+
+
+Deployment Triggers
+
+  A deploymentConfig can contain triggers which will drivce teh creation of a new deployment in response to event inside the cluster. These cn bes:
+
+
+    * A ConfigChange trigger: results in a new Replication controller whenever configuration changes are detected in eh pod template
+
+    * An ImageChange trigger : this would fire whenveve the content of an imagestream <<tag>> changes, such as when a new version of the software is pushed.
+
+    []
+
+  By default, a ConfigChange trigger is enabled.
+
+  It is possible to trigger a new build by tagging an new version of the :latest software.
+
+---
+  oc tag deployment-example:v2 deployment-example:latest
+---
+
+
+Deployment Strategies
+
+  A deployment strategy is a way to change or upgrade an applicaton, with the overall aim of minimising downtime and without in a way that eh user barely notics.
+
+  Considerations
+
+    * Long running connections must be handled gracefully
+
+    * database upgrades acan be complex and must be done / rolled back along with teh applcicaton
+
+    * If the applicaiotn is a hybrid of microservices, downtime might be reuired to complete teh trnasiontion
+
+    * You need infrastucure to do it
+
+    []
+
+  A deployment strateegy uses readiness checks to determin whether a new pod is suitable for use.
+
+
+  Rolling strategy :  this slowly replace instances of the old code with instances of the new. The deployment wasits before readiness checks are completed befor moving on to te next pod.
+
+  Use this strategy when:
+
+    * youn want no downtime
+
+    * THe application allows old and new code to run without interfering with each other.
+
+    []
+
+
+  Canary Deployments: All Rolling deployments are canary deployments: A new version is tested before all of the old instances are replaced. If the readiness checks don't succeseed tehn  the canary instance is removed.
+
+
+  Recreate Strategy:  This strategy runs down all pods of the old code and then spins up pods createing the new code. Use this strategy when:
+
+    * you must run data migrations or other such data transformations.
+
+    * When New and Old code are incompatible.
+
+    []
+
+  This strategy implement hooks at the pre, and post stages, but also at the midpoint when all old pods are shutdown, but before the new ones have been spun up.
+
+
+Route based Deployment Strategies.
+
+  The most common route based strategy is known as blue-green deployment. Essentially a second-route into the application is created that redirects to he new-nodes ( in Rolling Scenario.); the blue route. Meanwhile prodcution users continue using the green route into the old pods.
+
+  Another Route based strategy nis known as A/B. Here a small percentage of the traffic is directed to the new nodes. THis can then be gradually ramped up to 100% as confidence in the release grows.
+
+
+
+
+---
+  oc get all -l app=tester31
+---
+
+    - deploymentconfig
+    - replicationcontroler
+    - pods
+    - service
+
+
+
+  {{{https://access.redhat.com/documentation/en-us/openshift_container_platform/4.2/html/cli_tools/index}Client Tools Documentation}}
+
+
+
+
+     {{https://blog.openshift.com/getting-started-docker-registry/}}
+
+
+*Deploying an application with the oc tool
+
+  As a way of getting to understand some of the ways we can deploy an application onto OpeShift, chose to use the collection of static that make up the javaTechNotes project (of which this page forms part), and tried various ways to dempoy it to OpenShift along with an Apache webserver.
+
+  To simplify things, a copy of the target/site directory was created in a working directory (Apache), to work with for the purposes of this exercise.
+
+---
+    cp javaTechNotes/target/site  /Users/kevin/Apache
+---
+
+**Build and Deployment using the Docker Strategy.
+
+  The S2I build processes, which are often cited as the easiest way off perforeming a build/deployement has the disadvantage of constraining the choice of images you have in terms of base images. If you want to retain full control, then a Docker build strategy is more appropriate.
+
+  As part of the process of getting to understand {{{./onDocker.html}Docker}}, a simple Docker image had been produced which combined an Apache Webserver sourced from the Docker Registry with the static webcontent of the javaTechNotes project (of which this page forms part).
+
+  The resultant image could be spun-up successfully on a local docker platform and served pages as expected.
+
+  The simple dockerfile was:
+
+---
+    FROM httpd:latest
+    COPY ./site/* /usr/local/apache2/htdocs/
+---
+
+  httpd:latest : is the official Apache HTTP server Docker Image as available on DockerHub. It listens on port:80 and serves any content located in /usr/local/apache2/htdocs.
+
+  [[1]] Login to server and check out where we are...
+
+---
+  oc login -u kcrocombe -p BUZ-UUSzaCQGqIDhirv4ms1O2BaGXg3WqjlQcXXDxG4
+
+  oc whoami --show-server
+    https://api.us-east-2.starter.openshift-online.com:6443
+
+  oc whoami --show-console
+    https://console-openshift-console.apps.us-east-2.starter.openshift-online.com
+
+  oc projects
+    You have no projects on this server.
+---
+
+  [[1]] Create a project (think namespace) for our tests...
+
+---
+  oc new-project javaTechNotes --description='Test Deployment'
+---
+
+  [[1]] An Image Build within OpenShift was attempted via the oc new-build facility. (This uses the <<Docker build strategy>>). Note the new-build executable expects the Docker File to be supplied INLINE.
+
+---
+  cat Dockerfile | oc new-build --name tester --dockerfile='-'
+
+
+   --> Found image 7c88517 (2 weeks old) in image stream "openshift/httpd" under tag "latest" for "httpd:latest"
+
+       Apache httpd 2.4
+       ----------------
+       Apache httpd 2.4 available as container, is a powerful, efficient, and extensible web server. Apache supports a variety of features, many implemented as compiled modules which extend the core functionality. These can range from server-side programming language support to authentication schemes. Virtual hosting allows one Apache installation to serve many different Web sites.
+
+       Tags: builder, httpd, httpd24
+
+       * A Docker build using a predefined Dockerfile will be created
+         * The resulting image will be pushed to image stream tag "tester:latest"
+         * Use 'oc start-build' to trigger a new build
+
+   --> Creating resources with label build=tester ...
+       imagestream.image.openshift.io "tester" created
+       error: admission webhook "validate.build.create" denied the request: Builds with docker strategy are prohibited on this cluster
+   --> Failed
+---
+
+  [[1]] The build failed because seemingly the policy on the server <<FORBIDS>> Docker strategy builds.
+
+
+**PreBuild the Docker Image Externally and Deploy to OpenShift
+
+  Given that the cluster policy on our test platform is forbidding Docker builds, we need to use a differesnt strategy if we want to retain full control of the images and process used to construct out container.
+
+  Here we will build our Docker image Externally to the OpenShift Platform and then upload it directly to the platform's internal registry. The uploaded image will then be available for deployment.
+
+  In this case, our Docker installation is on a vagrant virtual environment.
+
+  [[1]] Log onto out virtual environment
+
+---
+  cd dvl/gitClones/coreos-vagrant
+
+  vagrant up
+
+  vagrant ssh core-01
+---
+
+  [[1]] Build our Docker Image locally. We are using the same source as above...
+
+---
+  cd /home/kevin/apache
+
+  docker build -t javatechnotes .
+
+    Sending build context to Docker daemon  7.373MB
+    Step 1/3 : FROM httpd:latest
+    ---> 2ae34abc2ed0
+    Step 2/3 : COPY ./site/* /usr/local/apache2/htdocs/
+    ---> dc5108416fae
+    Successfully built dc5108416fae
+    Successfully tagged javatechnotes:latest
+---
+
+  [[1]] Check it out..
+
+---
+  docker images
+
+    REPOSITORY            TAG                 IMAGE ID            CREATED             SIZE
+    javatechnotes         latest              dc5108416fae        55 seconds ago      172MB
+    ...
+---
+
+  [[1]] Spin this up locally and see whether it works. This runs it as a detached image, but will allow us to attach to the image if we want to.
+
+  Remember our base image for this package is http:latest, which will have its own EXEC statement built into it, which we have not overridden in out own image.
+
+---
+  docker run -dit --name javatechnotes -p8080:80 javatechnotes
+
+  docker exec -it javatechnotes /bin/sh
+---
+
+  Fired up a webwroswer and confirmed website was available on http://localhost:8080
+
+  [[1]] Decided to run this in differnt project within OpenShift. Unfortunately we are only allowed one project in teh paltform, so deleted and recrteated the project. Note that as it turned out, this caused problems later on...
+
+---
+    oc delete project javatechnotes
+
+    oc new-project apache --description='Apache Test Install'
+---
+
+
+  [[1]] Identify the information you need to Tag your Image. in order to make out Docker Image usable within OpenShift, we need to make it visible within our own namespace. This is achieved by tagging it with a tag chosen from out own namespace. So the tag needs to be of the form
+
+---
+    registryUrl/projectName/ImageName
+---
+
+  The registryUrl refers to the internal registry of the OPenShift Platform, and will be where we eventually push our image, and so make it available for use within the platform.
+
+  In order to identify the address of your registry:
+
+---
+  oc registry info
+
+    default-route-openshift-image-registry.apps.us-east-2.starter.openshift-online.com
+---
+
+  [[1]] Tag your image
+
+---
+  docker tag javatechnotes default-route-openshift-image-registry.apps.us-east-2.starter.openshift-online.com/apache/javatechnotes
+
+
+  docker images
+
+    REPOSITORY                                                                                                TAG                 IMAGE ID            CREATED             SIZE
+    default-route-openshift-image-registry.apps.us-east-2.starter.openshift-online.com/apache/javatechnotes   latest              985b5da51130        46 hours ago        172MB
+    javatechnotes                                                                                             latest              985b5da51130        46 hours ago        172MB
+    ....
+---
+
+  [[1]] Push your image to the OpenShift internal registry. To do this we need to connect out docker session to the remote repository, and then push it.
+
+  Retrieve our oc login token...
+
+---
+  oc whoami -t
+
+    BUZ-UUSzaCQGqIDhirv4ms1O2BaGXg3WqjlQcXXDxG4
+---
+  ..and use it to connect to the registry
+---
+  docker login -u kcrocombe -p BUZ-UUSzaCQGqIDhirv4ms1O2BaGXg3WqjlQcXXDxG4 default-route-openshift-image-registry.apps.us-east-2.starter.openshift-online.com
+
+    Login Succeeded
+---
+
+  ...and push to the registry.
+
+---
+  docker push default-route-openshift-image-registry.apps.us-east-2.starter.openshift-online.com/apache/javatechnotes
+
+    The push refers to repository [default-route-openshift-image-registry.apps.us-east-2.starter.openshift-online.com/apache/javatechnotes]
+    233b570d1071: Mounted from javatechnotes/javatechnotes
+    7cdfcc19cbf8: Mounted from javatechnotes/javatechnotes
+    254a845e1e87: Mounted from javatechnotes/javatechnotes
+    3596c568ff88: Mounted from javatechnotes/javatechnotes
+    0b56a8e92b13: Mounted from javatechnotes/javatechnotes
+    133d2fad03ff: Mounted from javatechnotes/javatechnotes
+    83c5929f7818: Mounted from javatechnotes/javatechnotes
+    831c5620387f: Mounted from javatechnotes/javatechnotes
+    latest: digest: sha256:41a18841a853e18173d81e1c585f3ac6132aa9dc3b3b4426757df4287102a4b8 size: 1993
+---
+
+  <<NB Note there is an issue with the above which was not notices at the time, but later caused a tricky problem. The image was already present in the registry ( because it was created in an earlier exercise). Even though all the artifact belonging to the original javatechnotes project had been deleted, the image is still retained in the registry. (Haven't found a way of listing images inthe internal registry!)>>
+
+  [[1]] Chech the resources created by this action
+
+---
+  oc get imagestreams
+
+    NAME            IMAGE REPOSITORY                                                                                          TAGS     UPDATED
+    javatechnotes   default-route-openshift-image-registry.apps.us-east-2.starter.openshift-online.com/apache/javatechnotes   latest   32 minutes ago
+---
+
+  [[1]] We can also see that this image is available for building applications off as follows
+
+---
+  oc new-app --list
+
+    ...
+    Image streams (oc new-app --image-stream=<image-stream> [--code=<source>])
+
+    javatechnotes
+      Project: apache
+      Tags:    latest
+    apicast-gateway
+      Project: openshift
+      Tags:    2.1.0.GA, 2.2.0.GA, 2.3.0.GA, 2.4.0.GA, 2.5.0.GA, latest
+    cli
+      Project: openshift
+      Tags:    latest
+    cli-artifacts
+      Project: openshift
+      Tags:    latest
+
+    ...
+---
+
+
+  [[1]] Create a new application based on this. The new-app command will generate a chunk of json defining various resources, and then POSTs it to the REST API of the OPenShift server.
+
+  You can see the json that will be generated
+
+---
+    oc new-app --name javatechnotes --image-stream=apache/javatechnotes --output=json
+---
+
+  The output is not included here, but, if examined,  you would see that, with this set of paramters, it defines 4 new resources:
+
+    * An ImageStreamTag  - javatechnotest:latest
+
+    * A DeploymentConfig - javatechnotes
+
+    * A Service - javatechnotes
+
+    []
+
+
+  If neccesary, this could be captured to a file, and then submitted
+
+---
+    oc create -f <filename>
+---
+
+
+  First Dry-run it...
+
+---
+ oc new-app --name javatechnotes --image-stream=apache/javatechnotes --dry-run
+---
+
+  ..then do it for real
+---
+
+ oc new-app --name javatechnotes --image-stream=apache/javatechnotes
+
+  --> Found image 985b5da (47 hours old) in image stream "apache/javatechnotes" under tag "latest" for "apache/javatechnotes"
+
+      * This image will be deployed in deployment config "javatechnotes"
+      * Port 80/tcp will be load balanced by service "javatechnotes"
+        * Other containers can access this service through the hostname "javatechnotes"
+      * WARNING: Image "apache/javatechnotes:latest" runs as the 'root' user which may not be permitted by your cluster administrator
+
+  --> Creating resources ...
+      deploymentconfig.apps.openshift.io "javatechnotes" created
+      service "javatechnotes" created
+  --> Success
+      Application is not exposed. You can expose services to the outside world by executing one or more of the commands below:
+       'oc expose svc/javatechnotes'
+      Run 'oc status' to view your app.
+---
+
+
+    You can see the resources created by the new-app command..
+
+---
+  oc get all
+
+    NAME                         READY   STATUS      RESTARTS   AGE
+    pod/javatechnotes-1-7qwg8    1/1     Running     0          13m
+    pod/javatechnotes-1-deploy   0/1     Completed   0          14m
+
+    NAME                                    DESIRED   CURRENT   READY   AGE
+    replicationcontroller/javatechnotes-1   1         1         1       14m
+
+    NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+    service/javatechnotes   ClusterIP   172.30.31.120   <none>        80/TCP    14m
+
+    NAME                                               REVISION   DESIRED   CURRENT   TRIGGERED BY
+    deploymentconfig.apps.openshift.io/javatechnotes   1          1         1         config,image(javatechnotes:latest)
+
+    NAME                                           IMAGE REPOSITORY                                                                                          TAGS     UPDATED
+    imagestream.image.openshift.io/javatechnotes   default-route-openshift-image-registry.apps.us-east-2.starter.openshift-online.com/apache/javatechnotes   latest   About an hour ago
+---
+
+  As well as the resources created directly by the new-app, we can see that some secondary resources have been created:
+
+    The deploymentconfig generates a replicationcontroller, which creates the pods
+
+
+  The resources created by the new-app have all been labelled with application name ( app=javatechnotes)
+
+---
+  oc get all -l app=javatechnotes
+
+    NAME                        READY   STATUS    RESTARTS   AGE
+    pod/javatechnotes-1-7qwg8   0/1     Not Running   0          2m56s
+
+    NAME                                    DESIRED   CURRENT   READY   AGE
+    replicationcontroller/javatechnotes-1   1         1         1       3m5s
+
+    NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+    service/javatechnotes   ClusterIP   172.30.31.120   <none>        80/TCP    3m6s
+
+    NAME                                               REVISION   DESIRED   CURRENT   TRIGGERED BY
+    deploymentconfig.apps.openshift.io/javatechnotes   1          1         1         config,image(javatechnotes:latest)
+---
+
+  ( The resource that isn't tagged is the imagestream that the app is based on ( which existed before teh app))
+
+
+  [[1]] We can see the current status of these resources, and in this case it appears our pod ahas not been able to instantiate correctly.
+
+---
+  oc status
+
+    In project Apache Test Install (apache) on server https://api.us-east-2.starter.openshift-online.com:6443
+
+    svc/javatechnotes - 172.30.107.218:80
+     dc/javatechnotes deploys istag/javatechnotes:latest
+       deployment #1 running for 2 minutes - 0/1 pods (warning: 4 restarts)
+
+    Errors:
+     * pod/javatechnotes-1-7qwg8 failed
+
+    1 error, 30 infos identified, use 'oc status --suggest' to see details.
+---
+
+  [[1]] We can get some information as to what the problem might be by examining the event that have transpired
+
+---
+  oc get event
+
+    LAST SEEN   TYPE     REASON              OBJECT                                   MESSAGE
+    2m46s       Normal   Pulling             pod/javatechnotes-1-cjsmq               Pulling image "image-registry.openshift-image-registry.svc:5000/apache/javatechnotes@sha256:41a18841a853e18173d81e1c585f3ac6132aa9dc3b3b4426757df4287102a4b8"
+    2m46s       Normal   Pulled              pod/javatechnotes-1-cjsmq               Failed to pullimage "image-registry.openshift-image-registry.svc:5000/javatechnotes/javatechnotes@sha256:41a18841a853e18173d81e1c585f3ac6132aa9dc3b3b4426757df4287102a4b8" ErrImagePull: "unauthorized: authentication required"
+    2m46s       Normal   Created             pod/javatechnotes-1-cjsmq               Created container javatechnotes
+    2m46s       Normal   Started             pod/javatechnotes-1-cjsmq               Started container javatechnotes
+    3m2s        Normal   Scheduled           pod/javatechnotes-1-deploy              Successfully assigned apache/javatechnotes-1-deploy to ip-10-0-172-122.us-east-2.compute.internal
+    2m54s       Normal   Pulled              pod/javatechnotes-1-deploy              Container image "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:25121eae7a99075b2b963f40e0c293e4b2fa2b7a8ac26e128ea5e49b791b74fd" already present on machine
+    2m54s       Normal   Created             pod/javatechnotes-1-deploy              Created container deployment
+    2m54s       Normal   Started             pod/javatechnotes-1-deploy              Started container deployment
+    2m53s       Normal   SuccessfulCreate    replicationcontroller/javatechnotes-1   Created pod: javatechnotes-1-cjsmq
+    3m2s        Normal   DeploymentCreated   deploymentconfig/javatechnotes          Created new replication controller "javatechnotes-1" for version 1
+---
+
+  Seemingly, the image that its trying to pull is from the previous project??? I'm not too clear as to this is happening. It would appear that this image is still hanging around in the registry even though that project has been deleted. I suspect that because this image is identical (same sha256) to the one I'm trying to load, somewhow the imagestream has been linked to that rather than the one in the apache project.
+
+
+  [[1]] Cleared everything out and tried again, but with the same result.
+
+  [[1]] Repeated several times, and eventually got it to work, though not sure why. The only thing I can think of is that there might be some garbage collection that kicks in on the server, and this eventually did delete the image in javatechnotes project. Suddenly it started finding the correct image in apache/javatechnotes.
+
+  However things we still not working properly...
+
+
+Problem 2 -
+
+  [[1]] Deployed once again from the uploaded image, exactly as before.
+
+---
+  oc new-app  --image-stream=apache/javatechnotes --name=javatechnotes
+
+    --> Found image 534e0b3 (17 hours old) in image stream "apache/javatechnotes" under tag "latest" for "javatechnotes"
+
+        * This image will be deployed in deployment config "javatechnotes"
+        * Port 80/tcp will be load balanced by service "javatechnotes"
+          * Other containers can access this service through the hostname "javatechnotes"
+        * WARNING: Image "apache/javatechnotes:latest" runs as the 'root' user which may not be permitted by your cluster administrator
+
+    --> Creating resources ...
+        imagestreamtag.image.openshift.io "javatechnotes:latest" created
+        deploymentconfig.apps.openshift.io "javatechnotes" created
+        service "javatechnotes" created
+    --> Success
+        Application is not exposed. You can expose services to the outside world by executing one or more of the commands below:
+         'oc expose svc/javatechnotes'
+        Run 'oc status' to view your app.
+---
+
+  [[1]] Checked the status of the resources deployed. Now the image is being deployed ok, but it is failing to start. The platform is repeatedly trying to start the pods, but it keeps failing.
+
+---
+  oc status
+
+    In project Apache Test Install (apache) on server https://api.us-east-2.starter.openshift-online.com:6443
+
+    svc/javatechnotes - 172.30.107.218:80
+      dc/javatechnotes deploys istag/tester2:latest
+        deployment #1 running for 2 minutes - 0/1 pods (warning: 4 restarts)
+
+    Errors:
+      * pod/javatechnotes-1-ngr4p is crash-looping
+
+    1 error, 30 infos identified, use 'oc status --suggest' to see details.
+---
+
+  [[1]] If we check the logs of the failing pod, we can see why.
+
+---
+  oc logs -p javatechnotes-1-ngr4p
+
+    AH00558: httpd: Could not reliably determine the server's fully qualified domain name, using 10.129.24.247. Set the 'ServerName' directive globally to suppress this message
+    (13)Permission denied: AH00072: make_sock: could not bind to address [::]:80
+    (13)Permission denied: AH00072: make_sock: could not bind to address 0.0.0.0:80
+    no listening sockets available, shutting down
+    AH00015: Unable to open logs
+---
+
+  Clearly, the problem seems to be that the webserver is not being allowed to bind to port 80. Only privileged users can bind to ports under 1000, and, even though it is suggested that this is running at root, it actually isn't.
+
+ [[1]] Amending the httpd.conf file.  Basically we need to cahnge teh port that Apache listes on. This is controllwed within this file. This file remember, is part of the Apache Docker image, and so is read only. So we need to create a local copy of that file, and then OVERLAY the original with our emaned bopy when we build our OWN docker image. So:
+
+---
+  cd /home/kevin/apache
+
+  sudo cp /var/lib/docker/overlay2/7e3166a6fce202f0b5aca752cb7e297f1d03bc0c53623b4527a6db03c0635bdf/merged/usr/local/apache2/conf/httpd.conf .
+---
+
+ Edit the file to set the port --> 8080
+
+ ..and also amend out Dockerfile to add back out amended file..
+
+---
+ FROM httpd:latest
+ COPY ./httpd.conf /usr/local/apache2/conf/
+ COPY ./site/* /usr/local/apache2/htdocs/
+---
+
+  [[1]] So now we need to rebuild our docker file...
+
+---
+ docker build -t javatechnotes .
+
+	Sending build context to Docker daemon  7.373MB
+	Step 1/3 : FROM httpd:latest
+  ---> 2ae34abc2ed0
+	Step 2/3 : COPY ./httpd.conf /usr/local/apache2/conf/
+	---> d9b82914f9bc
+	Step 3/3 : COPY ./site/* /usr/local/apache2/htdocs/
+  ---> dc5108416fae
+ Successfully built dc5108416fae
+ Successfully tagged javatechnotes:latest
+---
+
+  [[1]] ...re-tag it...
+
+---
+ docker tag dc5108416fae default-route-openshift-image-registry.apps.us-east-A2.starter.openshift-online.com/apache/tester2
+---
+
+  [[1]] ...re-push it...
+
+---
+ docker login -u kcrocombe -p BUZ-UUSzaCQGqIDhirv4ms1O2BaGXg3WqjlQcXXDxG4 default-route-openshift-image-registry.apps.us-east-2.starter.openshift-online.com
+
+ Login Succeeded
+
+ docker push default-route-openshift-image-registry.apps.us-east-2.starter.openshift-online.com/apache/javatechnotes
+
+   The push refers to repository [default-route-openshift-image-registry.apps.us-east-2.starter.openshift-online.com/apache/javatechnotes]
+   7cdfcc19cbf8: Pushed
+   254a845e1e87: Pushed
+   3596c568ff88: Mounted from apache/javatechnotes
+   0b56a8e92b13: Mounted from apache/javatechnotes
+   133d2fad03ff: Mounted from apache/javatechnotes
+   83c5929f7818: Mounted from apache/javatechnotes
+   831c5620387f: Mounted from apache/javatechnotes
+   latest: digest: sha256:be48a28db1dd5616c6ceab840cb0885250635a43c48e1e377325d35e205d50ea size: 1786
+---
+
+  [[1]] ...and re-create the application...
+
+---
+ oc new-app  --image-stream=apache/javatechnotes --name=javatechnotes
+
+   --> Found image dc51084 (6 minutes old) in image stream "apache/tester2" under tag "latest" for "javatechnotes"
+
+       * This image will be deployed in deployment config "javatechnotes"
+       * Port 80/tcp will be load balanced by service "javatechnotes"
+         * Other containers can access this service through the hostname "javatechnotes"
+       * WARNING: Image "apache/tester2:latest" runs as the 'root' user which may not be permitted by your cluster administrator
+
+   --> Creating resources ...
+       imagestreamtag.image.openshift.io "javatechnotes:latest" created
+       deploymentconfig.apps.openshift.io "javatechnotes" created
+       service "javatechnotes" created
+   --> Success
+
+---
+  [[1]] ...check that this is running...
+
+---
+ oc status
+
+   In project Apache Test Install (apache) on server https://api.us-east-2.starter.openshift-online.com:6443
+
+   svc/javatechnotes - 172.30.107.218:80
+     dc/javatechnotes deploys istag/tester2:latest
+       deployment #1 running for 2 minutes - 0/1 pods (warning: 4 restarts)
+
+   Errors:
+     * pod/javatechnotes-1-ngr4p is crash-looping
+
+   1 error, 30 infos identified, use 'oc status --suggest' to see details.
+
+---
+  [[1]] ...apparantly, still not.  Check the logs....
+
+---
+ oc logs javatechnotes-1-ngr4p
+
+   AH00558: httpd: Could not reliably determine the server's fully qualified domain name, using 10.131.21.205. Set the 'ServerName' directive globally to suppress this message
+   AH00558: httpd: Could not reliably determine the server's fully qualified domain name, using 10.131.21.205. Set the 'ServerName' directive globally to suppress this message
+   [Sun Dec 08 14:12:59.785495 2019] [core:error] [pid 1:tid 140621646894208] (13)Permission denied: AH00099: could not create /usr/local/apache2/logs/httpd.pid
+   [Sun Dec 08 14:12:59.785583 2019] [core:error] [pid 1:tid 140621646894208] AH00100: httpd: could not log pid to file /usr/local/apache2/logs/httpd.pid
+---
+
+  [[1]] We are now binding to the 8080 port ok. However, again we are unable to write to the apache filesystem due to permisisons issues. Again, these direcotori would be typically owned by root, and we are not running as root.
+
+  [[1]] By default, containers get run with an arbitarily assigned userID. This measn you can;t actually predict what its value might be. What we do know aboiut the UserID is that it will e a memebr of the non-privileged 'root' group. Consequently the recomended way to deal with this is to make sure that file/direcories in the image can be accessed via the group priliges:
+
+---
+  chgrp -R 0 /somedirectory
+
+  chmod -R g+rwX /somedirectory.
+---
+
+  [[1]] Hower, for the purposes of this exercise, chose to go a differnt route. Intead, we will just loosen teh privileges on the logs directory <<</usr/local/apache2/logs>>>. Once again we have to do this in our docker file. This noiw looks like this:
+
+---
+  FROM httpd:latest
+  COPY ./httpd.conf /usr/local/apache2/conf/
+  COPY ./site/* /usr/local/apache2/htdocs/
+  RUN chmod 777 /usr/local/apache2/logs
+---
+
+  [[1]] Once again, this was built, retagged and re-uploded to the registry (as above)
+
+  [[1]] ..and the applicatio nebuilt.
+
+---
+ oc new-app  --image-stream=apache/javatechnotes --name=javatechnotes
+
+   --> Found image 985b5da (10 minutes old) in image stream "apache/javatechnotes" under tag "latest" for "javatechnotes"
+
+       * This image will be deployed in deployment config "javatechnotes"
+       * Port 80/tcp will be load balanced by service "javatechnotes"
+         * Other containers can access this service through the hostname "javatechnotes"
+       * WARNING: Image "apache/javatechnotes:latest" runs as the 'root' user which may not be permitted by your cluster administrator
+
+   --> Creating resources ...
+       imagestreamtag.image.openshift.io "javatechnotes:latest" created
+       deploymentconfig.apps.openshift.io "javatechnotes" created
+       service "javatechnotes" created
+   --> Success
+       Application is not exposed. You can expose services to the outside world by executing one or more of the commands below:
+---
+
+  ...check the pods...
+
+---
+  oc get pods
+
+   NAME                READY   STATUS              RESTARTS   AGE
+   javatechnotes-1-deploy   1/1     Running             0          14s
+   javatechnotes-1-zzkwx    0/1     ContainerCreating   0          6s
+---
+
+  This is looking better.  So check the output of the pods...
+
+---
+ oc log javatechnotes-1-zzkwx
+
+   log is DEPRECATED and will be removed in a future version. Use logs instead.
+   AH00558: httpd: Could not reliably determine the server's fully qualified domain name, using 10.129.24.249. Set the 'ServerName' directive globally to suppress this message
+   AH00558: httpd: Could not reliably determine the server's fully qualified domain name, using 10.129.24.249. Set the 'ServerName' directive globally to suppress this message
+   [Sun Dec 08 14:54:59.291429 2019] [mpm_event:notice] [pid 1:tid 140071850521728] AH00489: Apache/2.4.41 (Unix) configured -- resuming normal operations
+   [Sun Dec 08 14:54:59.291622 2019] [core:notice] [pid 1:tid 140071850521728] AH00094: Command line: 'httpd -D FOREGROUND'
+---
+
+  ..At last we have a proper running Webserver!!!
+
+  Check the event trail, to see how these got spun up...
+
+---
+  oc get events
+
+    LAST SEEN   TYPE     REASON              OBJECT                                   MESSAGE
+    150m        Normal   Scheduled           pod/javatechnotes-1-cjsmq               Successfully assigned apache/javatechnotes-1-cjsmq to ip-10-0-172-122.us-east-2.compute.internal
+    150m        Normal   Pulling             pod/javatechnotes-1-cjsmq               Pulling image "image-registry.openshift-image-registry.svc:5000/apache/javatechnotes@sha256:41a18841a853e18173d81e1c585f3ac6132aa9dc3b3b4426757df4287102a4b8"
+    150m        Normal   Pulled              pod/javatechnotes-1-cjsmq               Successfully pulled image "image-registry.openshift-image-registry.svc:5000/apache/javatechnotes@sha256:41a18841a853e18173d81e1c585f3ac6132aa9dc3b3b4426757df4287102a4b8"
+    150m        Normal   Created             pod/javatechnotes-1-cjsmq               Created container javatechnotes
+    150m        Normal   Started             pod/javatechnotes-1-cjsmq               Started container javatechnotes
+    150m        Normal   Scheduled           pod/javatechnotes-1-deploy              Successfully assigned apache/javatechnotes-1-deploy to ip-10-0-172-122.us-east-2.compute.internal
+    150m        Normal   Pulled              pod/javatechnotes-1-deploy              Container image "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:25121eae7a99075b2b963f40e0c293e4b2fa2b7a8ac26e128ea5e49b791b74fd" already present on machine
+    150m        Normal   Created             pod/javatechnotes-1-deploy              Created container deployment
+    150m        Normal   Started             pod/javatechnotes-1-deploy              Started container deployment
+    150m        Normal   SuccessfulCreate    replicationcontroller/javatechnotes-1   Created pod: javatechnotes-1-cjsmq
+    150m        Normal   DeploymentCreated   deploymentconfig/javatechnotes          Created new replication controller "javatechnotes-1" for version 1
+---
+
+  At this point every thing looks like it is working, but it is not yet visible to the outside world. To do that we need to expsoe a route.
+
+
+Exposing the Service by creating a route.
+
+  At this point the applicaionis up and running, and a service in place with which to reference it. So now we need to exposwe that serve to the outside world via a route.
+
+  This is the service to be exposed:
+
+---
+  oc get  service/javatechnotes
+
+    NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+    service/javatechnotes   ClusterIP   172.30.91.146   <none>        80/TCP    175m
+---
+
+  And is exposed:
+
+---
+  oc expose service/javatechnotes
+
+    route.route.openshift.io/javatechnotes exposed
+---
+
+  We can now see the URL by which our service is accessed.
+
+---
+  oc get routes
+
+    NAME             HOST/PORT                                                           PATH   SERVICES         PORT     TERMINATION   WILDCARD
+    javatechnotes   javatechnotes-apache.apps.us-east-2.starter.openshift-online.com          javatechnotes   80-tcp                 None
+---
+
+  However, when we attempt to browse to this, we get nothing back.
+
+Fixing the Broken Route.
+
+---
+  oc describe service/javatechnotes
+
+    Name:              javatechnotes
+    Namespace:         apache
+    Labels:            app=javatechnotes
+    Annotations:       openshift.io/generated-by: OpenShiftNewApp
+    Selector:          app=javatechnotes,deploymentconfig=javatechnotes
+    Type:              ClusterIP
+    IP:                172.30.91.146
+    Port:              80-tcp  80/TCP
+    TargetPort:        80/TCP
+    Endpoints:         10.129.20.145:80
+    Session Affinity:  None
+    Events:            <none>
+---
+
+  Looking at the various components, we can see that we have aexposed port 80 to teh outside world, which is mapped to posr 80 on our internal service. This maps it to Target Port 80 on the pods. However we know that our webserver is now listening on port 8080.
+
+  I suspect the reason that this was not picked up when the service was started, might be because the http image Dockerfile decalres that port 80 must be exposed. Possibly we should have over-riddent that in oor own Docker file.
+
+  However it may be fixable by editing our service resource to map to the 8080 Target port Manaually as follows...
+
+---
+  oc edit  service/javatechnotes
+
+    set TargetPort --> 8080
+
+
+  oc describe service/javatechnotes
+
+    Name:              javatechnotes
+    Namespace:         apache
+    Labels:            app=javatechnotes
+    Annotations:       openshift.io/generated-by: OpenShiftNewApp
+    Selector:          app=javatechnotes,deploymentconfig=javatechnotes
+    Type:              ClusterIP
+    IP:                172.30.91.146
+    Port:              80-tcp  80/TCP
+    TargetPort:        8080/TCP
+    Endpoints:         10.129.20.145:8080
+    Session Affinity:  None
+    Events:            <none>
+---
+
+  <<Success. Now when we browse to the  javatechnotes-apache.apps.us-east-2.starter.openshift-online.com site our website is shown!>>
+
+Fixing the Port Mapping Issue
+
+  Amended the Dockerfile being used to build the website, and added a line to expose the 8080 port. The image was then rebuilt, retagged and re-pushed to the OpenShift Registry.
+
+  The application was then built one again:
+
+---
+  oc new-app --name javatechnotes --image-stream=apache/javatechnotes
+
+    --> Found image 2495ce2 (8 minutes old) in image stream "apache/javatechnotes" under tag "latest" for "apache/javatechnotes"
+
+        * This image will be deployed in deployment config "javatechnotes"
+        * Ports 80/tcp, 8080/tcp will be load balanced by service "javatechnotes"
+        * Other containers can access this service through the hostname "javatechnotes"
+        * WARNING: Image "apache/javatechnotes:latest" runs as the 'root' user which may not be permitted by your cluster administrator
+
+    --> Creating resources ...
+        deploymentconfig.apps.openshift.io "javatechnotes" created
+        service "javatechnotes" created
+    --> Success
+        Application is not exposed. You can expose services to the outside world by executing one or more of the commands below:
+         'oc expose svc/javatechnotes'
+        Run 'oc status' to view your app.
+---
+  Note that this is now reporting that both 80 and 8080 ports are being load balanced by the service, and this can be seen better when you look at teh details
+
+---
+  oc describe svc/javatechnotes
+
+    Name:              javatechnotes
+    Namespace:         apache
+    Labels:            app=javatechnotes
+    Annotations:       openshift.io/generated-by: OpenShiftNewApp
+    Selector:          app=javatechnotes,deploymentconfig=javatechnotes
+    Type:              ClusterIP
+    IP:                172.30.142.136
+    Port:              80-tcp  80/TCP
+    TargetPort:        80/TCP
+    Endpoints:         10.129.20.208:80
+    Port:              8080-tcp  8080/TCP
+    TargetPort:        8080/TCP
+    Endpoints:         10.129.20.208:8080
+    Session Affinity:  None
+    Events:            <none>
+---
+  We can now expose the 8080 port
+
+---
+  oc expose svc/javatechnotes --port 8080
+
+    route.route.openshift.io/javatechnotes exposed
+
+
+  oc get route
+
+    NAME            HOST/PORT                                                          PATH   SERVICES        PORT   TERMINATION   WILDCARD
+    javatechnotes   javatechnotes-apache.apps.us-east-2.starter.openshift-online.com          javatechnotes   8080                 None
+---
+
+  <<And this is successfully browsable.>>
+
+  It is also possible to expose the second port with another route
+
+---
+  oc expose svc/javatechnotes --name route2 --port 8080
+
+    route.route.openshift.io/route2 exposed
+
+  oc get routes
+
+  route.route.openshift.io/javatechnotes   javatechnotes-apache.apps.us-east-2.starter.openshift-online.com          javatechnotes   8080                 None
+  route.route.openshift.io/route2          route2-apache.apps.us-east-2.starter.openshift-online.com                 javatechnotes   80-tcp
+---
+
+
+Deleting an entire application
+
+---
+  oc delete all -l app=outofbox
+
+  pod "outofbox-1-nfcd7" deleted
+  replicationcontroller "outofbox-1" deleted
+  service "outofbox" deleted
+  deploymentconfig.apps.openshift.io "outofbox" deleted
+  buildconfig.build.openshift.io "outofbox" deleted
+  imagestream.image.openshift.io "outofbox" deleted
+  route.route.openshift.io "outofbox" deleted
+---
+
+
+
+Building/Deploying via S2I
+
+  The key to this is choosing the correct Build Image for the work at hand. As well as forming the container ruintiome for your application, this will also be responsible for compiling/building your applicaiton, so it has to have the correct capabilites.
+
+  You also need to chech the documententation of youre selected image in order to establish its exact requirements.
+
+  The Build Images available on OpenShift can be displayed
+
+---
+  oc new-app -L
+---
+
+  For this static webserver, the image tagged httpd:latest Builder image was chosen (which is actually sclorg/httpd-container ), and has the Apache Webserver at its heart. Onmce again using my static web site as an example,
+
+  According to the documentation this can be deployed:
+
+---
+     oc new-app httpd:latest~/home/kevin/apache/site --name  javatechnotes-s2i
+---
+
+  Note the speciall syntax using the ~ operator. This should tell oc to build an applicaiotn hased on the htttp image and injecting source freom /home/kevin/apache/site
+
+---
+       --> Found image 7c88517 (2 weeks old) in image stream "openshift/httpd" under tag "latest" for "httpd:latest"
+
+      Apache httpd 2.4
+      ----------------
+      Apache httpd 2.4 available as container, is a powerful, efficient, and extensible web server. Apache supports a variety of features, many implemented as compiled modules which extend the core functionality. These can range from server-side programming language support to authentication schemes. Virtual hosting allows one Apache installation to serve many different Web sites.
+
+      Tags: builder, httpd, httpd24
+
+      * A source build using binary input will be created
+        * The resulting image will be pushed to image stream tag "javatechnotes-s2i:latest"
+        * A binary build was created, use 'oc start-build --from-dir' to trigger a new build
+      * This image will be deployed in deployment config "javatechnotes-s2i"
+      * Ports 8080/tcp, 8443/tcp will be load balanced by service "javatechnotes-s2i"
+        * Other containers can access this service through the hostname "javatechnotes-s2i"
+
+  --> Creating resources ...
+      imagestream.image.openshift.io "javatechnotes-s2i" created
+      buildconfig.build.openshift.io "javatechnotes-s2i" created
+      deploymentconfig.apps.openshift.io "javatechnotes-s2i" created
+      service "javatechnotes-s2i" created
+  --> Success
+      Build scheduled, use 'oc logs -f bc/javatechnotes-s2i' to track its progress.
+      Application is not exposed. You can expose services to the outside world by executing one or more of the commands below:
+       'oc expose svc/javatechnotes-s2i'
+      Run 'oc status' to view your app.
+---
+
+  Note that it suggests a binary build will take place (rather then compileing from source) However, although this build and deploys a working webserver, it does not inject the site files.
+
+
+  We can see that the build descriptor look as though it has been created correctly ( <<Binary: provided on build>>)
+
+---
+  oc describe buildconfig.build.openshift.io/javatechnotes-s2i
+
+    Name:		javatechnotes-s2i
+    Namespace:	apache
+    Created:	6 minutes ago
+    Labels:		app=javatechnotes-s2i
+    Annotations:	openshift.io/generated-by=OpenShiftNewApp
+    Latest Version:	1
+
+    Strategy:	Source
+    From Image:	ImageStreamTag openshift/httpd:latest
+    Output to:	ImageStreamTag javatechnotes-s2i:latest
+    Binary:		provided on build
+
+    Build Run Policy:	Serial
+    Triggered by:		Config, ImageChange
+    Webhook Generic:
+    	URL:		https://api.us-east-2.starter.openshift-online.com:6443/apis/build.openshift.io/v1/namespaces/apache/buildconfigs/javatechnotes-s2i/webhooks/<secret>/generic
+    	AllowEnv:	false
+---
+
+  ../but this first build did not seem to get provided with the necessary input ( see: <Empty Source:		no input source provided>>)
+
+---
+  oc describe build.build.openshift.io/javatechnotes-s2i-1
+
+     Name:		javatechnotes-s2i-1
+     Namespace:	apache
+     Created:	7 minutes ago
+     Labels:		app=javatechnotes-s2i
+     		buildconfig=javatechnotes-s2i
+     		openshift.io/build-config.name=javatechnotes-s2i
+     		openshift.io/build.start-policy=Serial
+     Annotations:	openshift.io/build-config.name=javatechnotes-s2i
+     		openshift.io/build.number=1
+     		openshift.io/build.pod-name=javatechnotes-s2i-1-build
+
+     Status:		Complete
+     Started:	Wed, 11 Dec 2019 18:18:37 UTC
+     Duration:	40s
+       PullImages:	  23s
+       Build:	  6s
+       PushImage:	  2s
+
+     Build Config:	javatechnotes-s2i
+     Build Pod:	javatechnotes-s2i-1-build
+     Image Digest:	sha256:04d313ebc95ccc9a106ac478f4696922d8724f87a665a707af118f1a8ce0f0ef
+
+     Strategy:		Source
+     From Image:		DockerImage image-registry.openshift-image-registry.svc:5000/openshift/httpd@sha256:2f8503347c10a6fad0628fbbb5b2cbfc3e7cac521cea8c2def6bf4bfa2e67252
+     Pull Secret Name:	builder-dockercfg-xqt2h
+     Output to:		ImageStreamTag javatechnotes-s2i:latest
+     Empty Source:		no input source provided
+     Push Secret:		builder-dockercfg-xqt2h
+
+     Build trigger cause:	Image change
+     Image ID:		image-registry.openshift-image-registry.svc:5000/openshift/httpd@sha256:2f8503347c10a6fad0628fbbb5b2cbfc3e7cac521cea8c2def6bf4bfa2e67252
+     Image Name/Kind:	httpd:latest / ImageStreamTag
+
+     Events:
+       Type		Reason		Age			From							Message
+       ----		------		----			----							-------
+       Normal	Scheduled	7m37s			default-scheduler					Successfully assigned apache/javatechnotes-s2i-1-build to ip-10-0-174-180.us-east-2.compute.internal
+       Normal	Pulled		7m29s			kubelet, ip-10-0-174-180.us-east-2.compute.internal	Container image "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:b5bd7a8ae413002b987ce2985048352b7eba20c5fe67987dd5c56b485c9b2fbf" already present on machine
+       Normal	Pulled		7m29s			kubelet, ip-10-0-174-180.us-east-2.compute.internal	Container image "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:b5bd7a8ae413002b987ce2985048352b7eba20c5fe67987dd5c56b485c9b2fbf" already present on machine
+       Normal	Created		7m29s			kubelet, ip-10-0-174-180.us-east-2.compute.internal	Created container manage-dockerfile
+       Normal	Started		7m29s			kubelet, ip-10-0-174-180.us-east-2.compute.internal	Started container manage-dockerfile
+       Normal	Created		7m28s			kubelet, ip-10-0-174-180.us-east-2.compute.internal	Created container sti-build
+       Normal	BuildStarted	7m28s			build-controller					Build apache/javatechnotes-s2i-1 is now running
+       Normal	Started		7m28s			kubelet, ip-10-0-174-180.us-east-2.compute.internal	Started container sti-build
+       Normal	BuildCompleted	6m57s (x2 over 6m57s)	build-controller					Build apache/javatechnotes-s2i-1 completed successfully
+---
+  When we trigger a second build, however,...
+
+---
+  oc start-build  javatechnotes-s2i --from-dir /home/kevin/apache/site
+
+    Uploading directory "/home/kevin/apache/site" as binary input for the build ...
+    ...
+    Uploading finished
+    build.build.openshift.io/javatechnotes-s2i-2 started
+---
+
+  This seems to work ok  (see <<Binary:			provided on build>>)...
+
+---
+  oc describe build.build.openshift.io/javatechnotes-s2i-2
+
+      Name:		javatechnotes-s2i-2
+      Namespace:	apache
+      Created:	2 minutes ago
+      Labels:		app=javatechnotes-s2i
+      		buildconfig=javatechnotes-s2i
+      		openshift.io/build-config.name=javatechnotes-s2i
+      		openshift.io/build.start-policy=Serial
+      Annotations:	openshift.io/build-config.name=javatechnotes-s2i
+      		openshift.io/build.number=2
+      		openshift.io/build.pod-name=javatechnotes-s2i-2-build
+
+      Status:		Complete
+      Started:	Wed, 11 Dec 2019 18:34:53 UTC
+      Duration:	1m16s
+        PullImages:	  23s
+        Build:	  29s
+        PushImage:	  7s
+
+      Build Config:	javatechnotes-s2i
+      Build Pod:	javatechnotes-s2i-2-build
+      Image Digest:	sha256:880a8f2f0e562e51fb5870f38dbc43a34d3ae5b50676a7e6207b50aaf8a8fe56
+
+      Strategy:		Source
+      From Image:		DockerImage image-registry.openshift-image-registry.svc:5000/openshift/httpd@sha256:2f8503347c10a6fad0628fbbb5b2cbfc3e7cac521cea8c2def6bf4bfa2e67252
+      Pull Secret Name:	builder-dockercfg-xqt2h
+      Output to:		ImageStreamTag javatechnotes-s2i:latest
+      Binary:			provided on build
+      Push Secret:		builder-dockercfg-xqt2h
+
+      Build trigger cause:	<unknown>
+
+      Events:
+        Type		Reason		Age			From							Message
+        ----		------		----			----							-------
+        Normal	Scheduled	2m7s			default-scheduler					Successfully assigned apache/javatechnotes-s2i-2-build to ip-10-0-148-44.us-east-2.compute.internal
+        Normal	BuildStarted	119s			build-controller					Build apache/javatechnotes-s2i-2 is now running
+        Normal	Pulled		119s			kubelet, ip-10-0-148-44.us-east-2.compute.internal	Container image "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:b5bd7a8ae413002b987ce2985048352b7eba20c5fe67987dd5c56b485c9b2fbf" already present on machine
+        Normal	Created		119s			kubelet, ip-10-0-148-44.us-east-2.compute.internal	Created container git-clone
+        Normal	Started		119s			kubelet, ip-10-0-148-44.us-east-2.compute.internal	Started container git-clone
+        Normal	Pulled		114s			kubelet, ip-10-0-148-44.us-east-2.compute.internal	Container image "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:b5bd7a8ae413002b987ce2985048352b7eba20c5fe67987dd5c56b485c9b2fbf" already present on machine
+        Normal	Created		113s			kubelet, ip-10-0-148-44.us-east-2.compute.internal	Created container manage-dockerfile
+        Normal	Started		113s			kubelet, ip-10-0-148-44.us-east-2.compute.internal	Started container manage-dockerfile
+        Normal	Pulled		113s			kubelet, ip-10-0-148-44.us-east-2.compute.internal	Container image "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:b5bd7a8ae413002b987ce2985048352b7eba20c5fe67987dd5c56b485c9b2fbf" already present on machine
+        Normal	Created		112s			kubelet, ip-10-0-148-44.us-east-2.compute.internal	Created container sti-build
+        Normal	Started		112s			kubelet, ip-10-0-148-44.us-east-2.compute.internal	Started container sti-build
+        Normal	BuildCompleted	51s (x2 over 51s)	build-controller					Build apache/javatechnotes-s2i-2 completed successfully
+---
+
+  ..and when we expose the service
+
+---
+  oc expose svc/javatechnotes-s2i
+
+    route.route.openshift.io/javatechnotes-s2i exposed
+---
+
+  ...now browsing to javatechnotes-s2i-apache.apps.us-east-2.starter.openshift-online.com shows the required website.
+
+
+---
+  oc new-app httpd:latest --name javatechnotes-s2i --binary
+
+  oc start-build javatechnotes-s2i --from-dir=/home/kevin/apache/site
+---
+
+  When the build deploys correctly it loads everything in the current dir to /opt/app-root/src in the containers. This appears to be the home Adirecoty for the applicaiont user on the pod, and it is also the directory that the http server is configured to serve statis content from
+
+
+
+
+Stopping a Running Container.
+
+  There are several ways you can stop a container
+
+  * Delete the Pod
+
+---
+    oc delete pod <podName>
+---
+
+
+  * Scale to 0
+
+---
+    oc scale 0
+---
+
+
+  * logon to the container and kill its process
+
+
+
+
+
+
+* Import and Deploy an existing Image
+
+  using importImage
+
+  I know this works... just need to document the steps
+
+
+
+
+---
+  oc explain
+
+  oc get
+
+  oc logs
+
+  oc events
+
+  oc status
+
+  oc describe
+
+  oc edit
+
+  oc registry
+---
+
+
+
+
+
+---
+  oc new-project
+
+  oc new-app
+
+  oc new-build
+
+  oc start-build
+
+  oc run
+---
+
+
+
+
+---
+  oc scale
+
+  oc idle
+---
+
+
+
+
+---
+  oc rollout
+
+  oc rollback
+---
+
+
+---
+  oc exec
+
+  oc sync
+
+  oc rsh
+---
+
+
+
+
+
+Attempts to get Openshift Running Locally.
+
+  In theory there are several ways to do this:
+
+    * using oc cluster up
+
+    * using minishift
+
+    * vagrant all-in-one box
+
+    * native install
+
+
+*oc cluster up
+
+  Initially, I tried getting this to run on the coreOs servers.
+
+
+  This failed waiting
+
+
+
+
+
+
+  Since this is not one of the recommended operating systems decided to try another one in order to try and learn something from the experience.
+
+
+  Attempts to install on fedora31
+
+    Had a vagrant box of fedora31 sitting around, that I had previously been playing around with, so tried to get openshift working on that.
+
+    We are going to use the terminal {{{https://github.com/openshift/origin/releases/tag/v3.11.0}v3.11 release}} downloaded as a tar file of the linux client tools.
+
+    With this v3 version of the toolset it is theoretically possible to install the openshift server just by issuing a
+
+      oc cluster up
+
+    command. ( Note: this feature is DISCONTINUED in v4.)
+
+
+    In order to get the tar file onto the vagrant virtual machine, needed to map a drive grom the host onto the guest, so edited teh Vagrant file to introduce the line:
+
+
+    config.vm.synced_folder "/Users/kevin/dvl/vagrantMounts/fedora31","/vagrantMounts"
+
+    However, on starting the server it became clear that the GuestAdditiions had not beed added to that particular box file.
+
+
+---
+    vagrant up
+
+==> default: Clearing any previously set forwarded ports...
+==> default: Clearing any previously set network interfaces...
+==> default: Preparing network interfaces based on configuration...
+    default: Adapter 1: nat
+==> default: Forwarding ports...
+    default: 22 (guest) => 2222 (host) (adapter 1)
+==> default: Booting VM...
+==> default: Waiting for machine to boot. This may take a few minutes...
+    default: SSH address: 127.0.0.1:2222
+    default: SSH username: vagrant
+    default: SSH auth method: private key
+==> default: Machine booted and ready!
+==> default: Checking for guest additions in VM...
+==> default: Rsyncing folder: /Volumes/media/vagrant/generic/fedora31/ => /vagrant
+==> default: Mounting shared folders...
+    default: /vagrantMounts => /Users/kevin/dvl/vagrantMounts/fedora31
+    default: /vagrantMounts => /Users/kevin/dvl/vagrantMounts/fedora31
+    Vagrant was unable to mount VirtualBox shared folders. This is usually
+    because the filesystem "vboxsf" is not available. This filesystem is
+    made available via the VirtualBox Guest Additions and kernel module.
+    Please verify that these guest additions are properly installed in the
+    guest. This is not a bug in Vagrant and is usually caused by a faulty
+    Vagrant box. For context, the command attempted was:
+
+mount -t vboxsf -o uid=1000,gid=1000 vagrantMounts /vagrantMounts
+
+The error output from the command was:
+
+mount: /vagrantMounts: unknown filesystem type 'vboxsf'.
+---
+
+  Need to install the VirtualBox guest additions in order to moiunt the shared drive.
+
+  But first decided to make sure the fedora o/s was fully up-to-date
+
+  Upgraded the packages and o/s, as follows:
+
+---
+  uname -a
+
+    Linux localhost.localdomain 5.3.7-301.fc31.x86_64 #1 SMP Mon Oct 21 19:18:58 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+
+  sudo dnf update
+
+  uname -a
+
+    Linux localhost.localdomain 5.3.15-300.fc31.x86_64 #1 SMP Thu Dec 5 15:04:01 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+---
+
+  The guest additions, needs to re-link the kernel, so we need to have the kernel headers and the gcc compiler etc installed first
+
+---
+  sudo dnf install kernel-devel
+
+  sudo dnf install gcc make perl
+---
+
+  Now we can install the Guest Additions
+
+  From the Virtual Box Gui interface on the Host machine, mounted the Latest Guest Additions .iso image to a virtual cdrom drive.
+
+  Then from the guest OS, mounted teh cdrom and installed the 'Guest Additons'
+
+
+---
+  sudo mkdir /mnt/cdrom
+
+  [vagrant@localhost ~]$ sudo mount -t iso9660 /dev/cdrom /mnt/cdrom
+
+    mount: /mnt/cdrom: WARNING: device write-protected, mounted read-only.
+
+  [vagrant@localhost ~]$ cd /mnt/cdrom
+
+  [vagrant@localhost cdrom]$ sudo ./VBoxLinuxAdditions.run
+
+    Verifying archive integrity... All good.
+    Uncompressing VirtualBox 6.0.14 Guest Additions for Linux........
+    VirtualBox Guest Additions installer
+    Removing installed version 6.0.14 of VirtualBox Guest Additions...
+    Copying additional installer modules ...
+    Installing additional modules ...
+    VirtualBox Guest Additions: Starting.
+    VirtualBox Guest Additions: Building the VirtualBox Guest Additions kernel
+    modules.  This may take a while.
+    VirtualBox Guest Additions: To build modules for other installed kernels, run
+    VirtualBox Guest Additions:   /sbin/rcvboxadd quicksetup <version>
+    VirtualBox Guest Additions: or
+    VirtualBox Guest Additions:   /sbin/rcvboxadd quicksetup all
+    VirtualBox Guest Additions: Building the modules for kernel
+    5.3.15-300.fc31.x86_64.
+    VirtualBox Guest Additions: Running kernel modules will not be replaced until
+    the system is restarted
+---
+
+  Restarted teh system
+
+    sudo shutdown -r now
+
+  ..and waited for it to return
+
+  Now we can copy teh installation media on to the virtual machine
+
+---
+cp /vagrantMounts/*.tar .
+
+tar -xvf openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit.tar
+---
+
+  This created a directory
+
+  /home/vagrant/openshift/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit
+
+  with the contents
+
+  -rw-rwxr--. 1 vagrant vagrant     10759 Oct 10  2018 LICENSE
+-rw-rwxr--. 1 vagrant vagrant     15834 Oct 10  2018 README.md
+-rwxrwxr-x. 1 vagrant vagrant 120350344 Oct 10  2018 kubectl
+-rwxrwxr-x. 1 vagrant vagrant 120350344 Oct 10  2018 oc
+
+Added the directory into the PATH
+
+echo $PATH
+
+/home/vagrant/.local/bin:/home/vagrant/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/vagrant/openshift/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit
+
+
+---
+    oc cluster up
+    Getting a Docker client ...
+    error: unexpected error inspecting
+
+    image openshift/origin-control-plane:v3.11
+
+    Checked wether the docker daemon was runnng...
+
+---
+    ps -ef | grep docker
+   vagrant     2032    1947  0 17:01 pts/0    00:00:00 grep --color=auto docker
+---
+
+
+    The
+
+---
+    systemctl status docker.service
+
+    ● docker.service                                                                           loaded failed failed    Docker Application Container Engine
+
+---
+
+
+---
+    sudo journalctl -xe | grep docker
+
+    Dec 15 17:34:02 localhost.localdomain dockerd[735]: Error starting daemon: Devices cgroup isn't mounted
+    Dec 15 17:34:02 localhost.localdomain audit[1]: SERVICE_START pid=1 uid=0 auid=4294967295 ses=4294967295 subj=system_u:system_r:init_t:s0 msg='unit=docker comm="systemd" exe="/usr/lib/systemd/systemd" hostname=? addr=? terminal=? res=failed'
+    Dec 15 17:34:02 localhost.localdomain systemd[1]: docker.service: Main process exited, code=exited, status=1/FAILURE
+    -- An ExecStart= process belonging to unit docker.service has exited.
+
+---
+
+  The message would tend to suggest that there is a problem with cgroups, which is one of the facilities which is critical to dockers working.
+
+  After digging around on the internate for a bit, found some decesnt information {{{https://medium.com/nttlabs/cgroup-v2-596d035be4d7} here}}. It seems that Fedora 31 is the first edition of Fedora with cgroups v2 enabled by default.
+
+  However, neither Docker or Kubernetes, suppoprt v2 as of yet, thewy need v1.
+
+  Consequently we need to revert the kernel back to using v1 by default. This is achieved by using a boot time parameter
+
+systemd.unified_cgroup_hierarchy=0"
+
+  and this is best configured in with the grubby tool as follows.
+
+
+
+---
+   sudo grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"
+
+   sudo shutdown -r now
+---
+
+---
+ ps -ef | grep docker
+ root         490       1  0 17:49 ?        00:00:01 /usr/bin/dockerd --host=fd:// --exec-opt native.cgroupdriver=systemd --selinux-enabled --log-driver=journald --live-restore --default-ulimit nofile=1024:1024 --init-path /usr/libexec/docker/docker-init --userland-proxy-path /usr/libexec/docker/docker-proxy
+---
+
+  The docker daemon now seems to be running ok.
+
+  So lets try again.
+
+---
+ oc cluster up[]
+
+   Getting a Docker client ...
+   Checking if image openshift/origin-control-plane:v3.11 is available ...
+   error: unexpected error inspecting image openshift/origin-control-plane:v3.11
+---
+
+  .. Still doesn't work. Tried riunning it as a privileged user...
+
+---
+  sudo oc cluster up
+
+    Getting a Docker client ...
+    Checking if image openshift/origin-control-plane:v3.11 is available ...
+    Pulling image openshift/origin-control-plane:v3.11
+    E1215 18:12:38.463245     842 helper.go:173] Reading docker config from /root/.docker/config.json failed: open /root/.docker/config.json: no such file or directory, will attempt to pull image docker.io/openshift/origin-control-plane:v3.11 anonymously
+    Pulled 1/5 layers, 21% complete
+    Pulled 2/5 layers, 49% complete
+    Pulled 3/5 layers, 77% complete
+    Pulled 4/5 layers, 96% complete
+    Pulled 5/5 layers, 100% complete
+    Extracting
+    Image pull complete
+    Pulling image openshift/origin-cli:v3.11
+    E1215 18:14:29.380897     842 helper.go:173] Reading docker config from /root/.docker/config.json failed: open /root/.docker/config.json: no such file or directory, will attempt to pull image docker.io/openshift/origin-cli:v3.11 anonymously
+    Image pull complete
+    Pulling image openshift/origin-node:v3.11
+    E1215 18:14:31.628840     842 helper.go:173] Reading docker config from /root/.docker/config.json failed: open /root/.docker/config.json: no such file or directory, will attempt to pull image docker.io/openshift/origin-node:v3.11 anonymously
+    Pulled 5/6 layers, 85% complete
+---
+  Well seemingly successfull, but...
+
+  ...then it hung, because the disk filled up
+
+  Freed up space and tried again...
+
+---
+    sudo oc cluster up
+
+    Getting a Docker client ...
+    Checking if image openshift/origin-control-plane:v3.11 is available ...
+    Pulling image openshift/origin-node:v3.11
+    E1215 18:57:32.516140     940 helper.go:173] Reading docker config from /root/.docker/config.json failed: open /root/.docker/config.json: no such file or directory, will attempt to pull image docker.io/openshift/
+    origin-node:v3.11 anonymously
+    Pulled 5/6 layers, 85% complete
+    Pulled 6/6 layers, 100% complete
+    Extracting
+    Image pull complete
+    Checking type of volume mount ...
+    Determining server IP ...
+    Checking if OpenShift is already running ...
+    Checking for supported Docker version (=>1.22) ...
+    Checking if insecured registry is configured properly in Docker ...
+    error: did not detect an --insecure-registry argument on the Docker daemon
+---
+
+
+docker  pull openshift/origin-control-plane:v3.11
+Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Post http://%2Fvar%2Frun%2Fdocker.sock/v1.39/images/create?fromImage=openshift%2Forigin-control-plane&tag=v3.11: dial unix /var/run/docker.sock: connect: permission denied
+
+ Ok, so a clearly a permissions problem.
+
+ Apparantly, docker users need to be a mamber of the docker group..
+
+
+---
+ sudo usermod -aG docker vagrant
+---
+
+  Also added the --insecure-registry paramter into the docker command line
+
+---
+  sudo vi /etc/sysconfig/docker
+---
+
+  Changed contents to read:
+
+---
+
+      OPTIONS="--selinux-enabled \
+      --log-driver=journald \
+      --live-restore \
+      --default-ulimit nofile=1024:1024 \
+      --init-path /usr/libexec/docker/docker-init \
+      --userland-proxy-path /usr/libexec/docker/docker-proxy \
+      --insecure-registry 172.30.0.0/16 \
+---
+
+  Checked the ip_forwartd paramter
+
+---
+    sudo sysctl net.ipv4.ip_forward
+    net.ipv4.ip_forward = 1
+---
+
+  .. which was ok.
+
+  Then re-started the necessary daemons
+
+---
+  sudo systemctl daemon-reload
+  sudo systemctl restart docker
+
+  ps -ef | grep docker
+
+    root        1301       1  0 19:48 ?        00:00:02 /usr/bin/dockerd \
+                    --host=fd:// \
+                    --exec-opt native.cgroupdriver=systemd \
+                    --selinux-enabled \
+                    --log-driver=journald \
+                    --live-restore \
+                    --default-ulimit nofile=1024:1024 \
+                    --init-path /usr/libexec/docker/docker-init \
+                    --userland-proxy-path /usr/libexec/docker/docker-proxy \
+                    --insecure-registry 172.30.0.0/16
+---
+
+  Attempted to start the cluster once more
+
+---
+  oc cluster up
+
+    Getting a Docker client ...
+    Checking if image openshift/origin-control-plane:v3.11 is available ...
+    Checking type of volume mount ...
+    Determining server IP ...
+    Checking if OpenShift is already running ...
+    Checking for supported Docker version (=>1.22) ...
+    Checking if insecured registry is configured properly in Docker ...
+    Checking if required ports are available ...
+    Checking if OpenShift client is configured properly ...
+    Checking if image openshift/origin-control-plane:v3.11 is available ...
+    Starting OpenShift using openshift/origin-control-plane:v3.11 ...
+    I1215 19:52:53.150179    2043 flags.go:30] Running "create-kubelet-flags"
+    Error: error creating node config: could not run "create-kubelet-flags": Docker run error rc=1; caused by: Docker run error rc=1
+---
+
+OK, well now its attempting to start ok as a non-privileged user...
+
+
+---
+ oc cluster up --loglevel=8
+
+...
+ I1215 22:05:31.578188    3509 run.go:200] Container created with id "73ae7e4f3a5bc8f89bc2027c0b56537e1110fb3a3fa666982bdc54f76194e147"
+I1215 22:05:31.578243    3509 run.go:304] Starting container "73ae7e4f3a5bc8f89bc2027c0b56537e1110fb3a3fa666982bdc54f76194e147"
+I1215 22:05:33.348451    3509 run.go:311] Waiting for container "73ae7e4f3a5bc8f89bc2027c0b56537e1110fb3a3fa666982bdc54f76194e147"
+I1215 22:05:33.729397    3509 run.go:317] Done waiting for container "73ae7e4f3a5bc8f89bc2027c0b56537e1110fb3a3fa666982bdc54f76194e147", rc=1
+I1215 22:05:33.729453    3509 run.go:322] Reading logs from container "73ae7e4f3a5bc8f89bc2027c0b56537e1110fb3a3fa666982bdc54f76194e147"
+I1215 22:05:33.738491    3509 run.go:330] Done reading logs from container "73ae7e4f3a5bc8f89bc2027c0b56537e1110fb3a3fa666982bdc54f76194e147"
+I1215 22:05:33.740350    3509 run.go:337] Stdout:
+I1215 22:05:33.740392    3509 run.go:338] Stderr:
+standard_init_linux.go:211: exec user process caused "permission denied"
+I1215 22:05:33.749820    3509 run.go:293] Deleting container "73ae7e4f3a5bc8f89bc2027c0b56537e1110fb3a3fa666982bdc54f76194e147"
+Error: error creating node config: could not run "create-kubelet-flags": Docker run error rc=1; caused by: Docker run error rc=1
+
+
+standard_init_linux.go:211: exec user process caused "permission denied"
+
+
+sudo docker run hello-world
+standard_init_linux.go:211: exec user process caused "permission denied"
+
+
+sudo journalctl -b | grep denied
+Dec 15 19:49:38 localhost.localdomain audit[1964]: AVC avc:  denied  { transition } for  pid=1964 comm="runc:[2:INIT]" path="/usr/bin/openshift-node-config" dev="overlay" ino=1188824 scontext=system_u:system_r:unconfined_service_t:s0 tcontext=system_u:system_r:container_t:s0:c109,c492 tclass=process permissive=0
+Dec 15 19:49:38 localhost.localdomain c15e0619e35f[1301]: standard_init_linux.go:211: exec user process caused "permission denied"
+Dec 15 19:52:54 localhost.localdomain audit[2386]: AVC avc:  denied  { transition } for  pid=2386 comm="runc:[2:INIT]" path="/usr/bin/openshift-node-config" dev="overlay" ino=1188824 scontext=system_u:system_r:unconfined_service_t:s0 tcontext=system_u:system_r:container_t:s0:c407,c962 tclass=process permissive=0
+Dec 15 19:52:54 localhost.localdomain a45ee11364ad[1301]: standard_init_linux.go:211: exec user process caused "permission denied"
+
+
+
+AVC stuff seems to be associated with SELinux ( Security Enhanced Linux)
+
+{{{https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/selinux_users_and_administrators_guide/chap-security-enhanced_linux-introduction}SELinux}}
+
+{{{https://success.docker.com/article/how-to-set-selinux-file-contexts-when-using-a-custom-docker-data-root}USing SE with Docker}}
+
+
+sudo vi /etc/sysconfig/docker
+
+#OPTIONS="--selinux-enabled \
+
+OPTIONS="--log-driver=journald \
+  --live-restore \
+  --default-ulimit nofile=1024:1024 \
+  --init-path /usr/libexec/docker/docker-init \
+  --userland-proxy-path /usr/libexec/docker/docker-proxy \
+  --insecure-registry 172.30.0.0/16 \
+
+"
+
+
+[vagrant@localhost ~]$ sudo systemctl daemon-reload
+[vagrant@localhost ~]$ sudo systemctl restart docker
+
+
+
+sudo dnf install firewalld
+
+[vagrant@localhost ~]$ docker network inspect -f "{{range .IPAM.Config }}{{ .Subnet }}{{end}}" bridge
+172.17.0.0/16
+
+
+[vagrant@localhost ~]$ sudo firewall-cmd --permanent --zone dockerc --add-source 172.17.0.0/16
+success
+[vagrant@localhost ~]$ sudo firewall-cmd --permanent --zone dockerc --add-port 8443/tcp
+success
+[vagrant@localhost ~]$ sudo firewall-cmd --permanent --zone dockerc --add-port 53/udp
+success
+[vagrant@localhost ~]$ sudo firewall-cmd --permanent --zone dockerc --add-port 8053/udp
+success
+[vagrant@localhost ~]$ sudo firewall-cmd --reload
+success
+
+
+oc cluster up
+Getting a Docker client ...
+Checking if image openshift/origin-control-plane:v3.11 is available ...
+Checking type of volume mount ...
+Determining server IP ...
+Checking if OpenShift is already running ...
+Checking for supported Docker version (=>1.22) ...
+Checking if insecured registry is configured properly in Docker ...
+Checking if required ports are available ...
+Checking if OpenShift client is configured properly ...
+Checking if image openshift/origin-control-plane:v3.11 is available ...
+Starting OpenShift using openshift/origin-control-plane:v3.11 ...
+I1215 23:24:57.028928     959 config.go:40] Running "create-master-config"
+I1215 23:25:21.221190     959 config.go:46] Running "create-node-config"
+I1215 23:25:29.712267     959 flags.go:30] Running "create-kubelet-flags"
+I1215 23:25:34.781548     959 run_kubelet.go:49] Running "start-kubelet"
+I1215 23:25:36.192635     959 run_self_hosted.go:181] Waiting for the kube-apiserver to be ready ...
+E1215 23:30:37.030911     959 run_self_hosted.go:571] API server error: Get https://127.0.0.1:8443/healthz?timeout=32s: dial tcp 127.0.0.1:8443: connect: connection refused ()
+Error: timed out waiting for the condition
+
+---
+
+
+
+
+Try agin with Fedora27
+
+---
+oc cluster up
+Getting a Docker client ...
+Checking if image openshift/origin-control-plane:v3.11 is available ...
+error: unexpected error inspecting image openshift/origin-control-plane:v3.11
+
+
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ sudo usermod -aG docker vagrant
+usermod: group 'docker' does not exist
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ docker
+-bash: docker: command not found
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ sudo dnf install docker
+
+sudo usermod -aG docker vagrant
+usermod: group 'docker' does not exist
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ sudo group add docker
+sudo: group: command not found
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ sudo groupadd docker
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ sudo usermod -aG docker vagrant
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ oc cluster up
+Getting a Docker client ...
+Checking if image openshift/origin-control-plane:v3.11 is available ...
+error: unexpected error inspecting image openshift/origin-control-plane:v3.11
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ sudo oc cluster up
+sudo: oc: command not found
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ pwd
+/home/vagrant/openShift/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ ls
+kubectl  LICENSE  oc  openshift.local.clusterup  README.md
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ sudo ./oc cluster up
+Getting a Docker client ...
+Checking if image openshift/origin-control-plane:v3.11 is available ...
+error: unexpected error inspecting image openshift/origin-control-plane:v3.11
+
+sudo systemctl daemon-reload
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ sudo systemctl start docker
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ ps -ef | grep docker
+root     21342     1  0 09:02 ?        00:00:00 /usr/libexec/docker/docker-containerd-current --listen unix:///run/containerd.sock --shim /usr/libexec/docker/docker-containerd-shim-current --start-timeout 2m
+root     21376     1  4 09:02 ?        00:00:00 /usr/bin/dockerd-current --add-runtime oci=/usr/libexec/docker/docker-runc-current --default-runtime=oci --authorization-plugin=rhel-push-plugin --containerd /run/containerd.sock --exec-opt native.cgroupdriver=systemd --userland-proxy-path=/usr/libexec/docker/docker-proxy-current --init-path=/usr/libexec/docker/docker-init-current --seccomp-profile=/etc/docker/seccomp.json --log-driver=journald --live-restore --add-registry docker.io --add-registry registry.fedoraproject.org --add-registry registry.access.redhat.com
+root     21462     1  0 09:02 ?        00:00:00 /usr/libexec/docker/rhel-push-plugin
+vagrant  21484  2435  0 09:02 pts/0    00:00:00 grep --color=auto docker
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ oc cluster up
+Getting a Docker client ...
+Checking if image openshift/origin-control-plane:v3.11 is available ...
+error: unexpected error inspecting image openshift/origin-control-plane:v3.11
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ sudo oc cluster up
+sudo: oc: command not found
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ sudo ./oc cluster up
+Getting a Docker client ...
+Checking if image openshift/origin-control-plane:v3.11 is available ...
+Pulling image openshift/origin-control-plane:v3.11
+E1216 09:03:25.260431   21499 helper.go:179] Reading docker config from /root/.docker/config.json failed: open /root/.docker/config.json: no such file or directory, will attempt to pull image docker.io/openshift/origin-control-plane:v3.11 anonymously
+Pulled 1/5 layers, 21% complete
+Pulled 2/5 layers, 49% complete
+Pulled 3/5 layers, 66% complete
+Pulled 4/5 layers, 87% complete
+Pulled 5/5 layers, 100% complete
+Extracting
+Image pull complete
+Pulling image openshift/origin-cli:v3.11
+E1216 09:04:45.022222   21499 helper.go:179] Reading docker config from /root/.docker/config.json failed: open /root/.docker/config.json: no such file or directory, will attempt to pull image docker.io/openshift/origin-cli:v3.11 anonymously
+Image pull complete
+Pulling image openshift/origin-node:v3.11
+E1216 09:04:48.966946   21499 helper.go:179] Reading docker config from /root/.docker/config.json failed: open /root/.docker/config.json: no such file or directory, will attempt to pull image docker.io/openshift/origin-node:v3.11 anonymously
+Pulled 5/6 layers, 85% complete
+Pulled 6/6 layers, 100% complete
+Extracting
+Image pull complete
+Checking type of volume mount ...
+Determining server IP ...
+Checking if OpenShift is already running ...
+Checking for supported Docker version (=>1.22) ...
+Checking if insecured registry is configured properly in Docker ...
+error: did not detect an --insecure-registry argument on the Docker daemon
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ sudo vi /etc/containers/registries.conf
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ sudo ./oc cluster up
+Getting a Docker client ...
+Checking if image openshift/origin-control-plane:v3.11 is available ...
+Checking type of volume mount ...
+Determining server IP ...
+Checking if OpenShift is already running ...
+Checking for supported Docker version (=>1.22) ...
+Checking if insecured registry is configured properly in Docker ...
+error: did not detect an --insecure-registry argument on the Docker daemon
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ set -o vi
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ sudo systemctl daemon-reload
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ sudo systemctl restart docker
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ ps -ef | grep docker
+root     21342     1  0 09:02 ?        00:00:00 /usr/libexec/docker/docker-containerd-current --listen unix:///run/containerd.sock --shim /usr/libexec/docker/docker-containerd-shim-current --start-timeout 2m
+root     21462     1  0 09:02 ?        00:00:00 /usr/libexec/docker/rhel-push-plugin
+root     21988     1  2 09:09 ?        00:00:00 /usr/bin/dockerd-current --add-runtime oci=/usr/libexec/docker/docker-runc-current --default-runtime=oci --authorization-plugin=rhel-push-plugin --containerd /run/containerd.sock --exec-opt native.cgroupdriver=systemd --userland-proxy-path=/usr/libexec/docker/docker-proxy-current --init-path=/usr/libexec/docker/docker-init-current --seccomp-profile=/etc/docker/seccomp.json --log-driver=journald --live-restore --add-registry docker.io --add-registry registry.fedoraproject.org --add-registry registry.access.redhat.com --insecure-registry 172.30.0.0/16
+vagrant  22075  2435  0 09:09 pts/0    00:00:00 grep --color=auto docker
+[vagrant@localhost openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit]$ sudo ./oc cluster up
+Getting a Docker client ...
+Checking if image openshift/origin-control-plane:v3.11 is available ...
+Checking type of volume mount ...
+Determining server IP ...
+Checking if OpenShift is already running ...
+Checking for supported Docker version (=>1.22) ...
+Checking if insecured registry is configured properly in Docker ...
+Checking if required ports are available ...
+Checking if OpenShift client is configured properly ...
+Checking if image openshift/origin-control-plane:v3.11 is available ...
+Starting OpenShift using openshift/origin-control-plane:v3.11 ...
+I1216 09:09:41.920006   22078 config.go:40] Running "create-master-config"
+I1216 09:09:54.369691   22078 config.go:46] Running "create-node-config"
+I1216 09:09:58.152263   22078 flags.go:30] Running "create-kubelet-flags"
+I1216 09:09:59.261726   22078 run_kubelet.go:49] Running "start-kubelet"
+I1216 09:09:59.629618   22078 run_self_hosted.go:181] Waiting for the kube-apiserver to be ready ...
+E1216 09:14:59.671169   22078 run_self_hosted.go:571] API server error: Get https://127.0.0.1:8443/healthz?timeout=32s: dial tcp 127.0.0.1:8443: connect: connection refused ()
+Error: timed out waiting for the condition
+
+
+sudo docker network inspect -f "{{range .IPAM.Config }}{{ .Subnet }}{{end}}" bridge
+172.17.0.0/16
+
+sudo firewall-cmd --permanent --new-zone dockerc
+success
+[vagrant@localhost ~]$ sudo firewall-cmd --permanent --zone dockerc --add-source 172.17.0.0/16
+success
+[vagrant@localhost ~]$ sudo firewall-cmd --permanent --zone dockerc --add-port 8443/tcp
+success
+[vagrant@localhost ~]$ sudo firewall-cmd --permanent --zone dockerc --add-port 53/udp
+success
+[vagrant@localhost ~]$ sudo firewall-cmd --permanent --zone dockerc --add-port 8053/udp
+success
+[vagrant@localhost ~]$ sudo firewall-cmd --reload
+success
+
+sudo ./oc cluster up
+Getting a Docker client ...
+Checking if image openshift/origin-control-plane:v3.11 is available ...
+Checking type of volume mount ...
+Determining server IP ...
+Checking if OpenShift is already running ...
+Checking for supported Docker version (=>1.22) ...
+Checking if insecured registry is configured properly in Docker ...
+Checking if required ports are available ...
+Checking if OpenShift client is configured properly ...
+Checking if image openshift/origin-control-plane:v3.11 is available ...
+Starting OpenShift using openshift/origin-control-plane:v3.11 ...
+I1216 09:27:23.072638    2619 flags.go:30] Running "create-kubelet-flags"
+I1216 09:27:24.409218    2619 run_kubelet.go:49] Running "start-kubelet"
+I1216 09:27:25.261821    2619 run_self_hosted.go:181] Waiting for the kube-apiserver to be ready ...
+E1216 09:32:25.266492    2619 run_self_hosted.go:571] API server error: Get https://127.0.0.1:8443/healthz?timeout=32s: dial tcp 127.0.0.1:8443: connect: connection refused ()
+Error: timed out waiting for the condition
+---
+
+So this doesn't work either....
+
+
+Try some of the other openshift images I've currently got scattered around...
+
+
+thesteve0/openshift-origin2    ---> aka origin-1.3.0 on VirtualBox
+
+uname -a
+Linux origin 4.2.3-300.fc23.x86_64 #1 SMP Mon Oct 5 15:42:54 UTC 2015 x86_64 x86_64 x86_64 GNU/Linux
+
+This seems to be OpenShift v1.2.0
+
+  ..so doesn't have the oc cluster up/down commands
+
+  ...doesn't run in containers....
+
+
+
+...and seems to at least start ok....
+
+
+thesteve0/tester   ---> aka openShift on VirtualBox
+
+  This is my packagin og the above, and seems to work ok
+
+
+openshift/all-in-one --> aka opneshift-origin on VirtualBox
+
+  uname -a
+  Linux localhost.localdomain 3.10.0-1062.4.3.el7.x86_64 #1 SMP Wed Nov 13 23:58:53 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+
+  This is:
+
+   oc v1.3.0
+kubernetes v1.3.0+52492b4
+features: Basic-Auth
+
+oc cluster up -- also fails
+
+  Last 10 lines of "origin" container log:
+
+  E1216 10:32:25.418252    4531 cacher.go:220] unexpected ListAndWatch error: pkg/storage/cacher.go:163: Failed to list *api.ClusterPolicy: client: etcd cluster is unavailable or misconfigured
+E1216 10:32:25.453672    4531 reflector.go:214] github.com/openshift/origin/vendor/k8s.io/kubernetes/plugin/pkg/admission/serviceaccount/admission.go:103: Failed to list *api.ServiceAccount: Get https://10.0.2.15:8443/api/v1/serviceaccounts?resourceVersion=0: dial tcp 10.0.2.15:8443: getsockopt: connection refused
+E1216 10:32:25.453832    4531 reflector.go:214] github.com/openshift/origin/vendor/k8s.io/kubernetes/plugin/pkg/admission/resourcequota/resource_access.go:83: Failed to list *api.ResourceQuota: Get https://10.0.2.15:8443/api/v1/resourcequotas?resourceVersion=0: dial tcp 10.0.2.15:8443: getsockopt: connection refused
+E1216 10:32:25.453878    4531 reflector.go:214] github.com/openshift/origin/vendor/k8s.io/kubernetes/plugin/pkg/admission/serviceaccount/admission.go:119: Failed to list *api.Secret: Get https://10.0.2.15:8443/api/v1/secrets?fieldSelector=type%!D(MISSING)kubernetes.io%!F(MISSING)service-account-token&resourceVersion=0: dial tcp 10.0.2.15:8443: getsockopt: connection refused
+E1216 10:32:25.454200    4531 reflector.go:203] github.com/openshift/origin/vendor/k8s.io/kubernetes/plugin/pkg/admission/limitranger/admission.go:154: Failed to list *api.LimitRange: Get https://10.0.2.15:8443/api/v1/limitranges?resourceVersion=0: dial tcp 10.0.2.15:8443: getsockopt: connection refused
+E1216 10:32:25.515015    4531 cacher.go:220] unexpected ListAndWatch error: pkg/storage/cacher.go:163: Failed to list *api.PolicyBinding: client: etcd cluster is unavailable or misconfigured
+E1216 10:32:25.680726    4531 cacher.go:220] unexpected ListAndWatch error: pkg/storage/cacher.go:163: Failed to list *api.Group: client: etcd cluster is unavailable or misconfigured
+E1216 10:32:25.718593    4531 cacher.go:220] unexpected ListAndWatch error: pkg/storage/cacher.go:163: Failed to list *api.User: client: etcd cluster is unavailable or misconfigured
+
+
+
+
+Troubleshooting
+
+  On the face of it, it seems that the kube-apiserver is either not coming up, or is not functioning. The bootstrap program (not sure whether this is the 'oc' program itself or some other container, launched by it), seems to be pinging it and waiting for it to respond. When it does not respond in an appropriate time, it times out and the boot is aborted. The parts of the infrastucture that have come up remain.
+
+  If the oc cluster up command is run with the --loglevel 10 option we can see the api server being pinged:
+
+  curl -k -v -XGET  -H "Accept: application/json, */*" -H "User-Agent: oc/v1.10.0+d4cacc0 (linux/amd64) kubernetes/d4cacc0" 'https://127.0.0.1:8443/healthz?timeout=32s'
+
+  to which no satisfactory response is received.
+
+  It is possible to see the api-server container starting and running within the docker ps listing, but this will fail after a few minutes (somehting does seem to want to restart it periodaically, but these also fail)
+
+  We can examine the logs of the failing container:
+
+  docker logs -f a5dac410a41e 2>&1
+
+  ...but there is no clear indication as to why the process is failing. There are some messages
+
+  I1219 10:47:09.386756       1 logs.go:49] http: TLS handshake error from [::1]:60196: EOF
+  I1219 10:47:09.399676       1 logs.go:49] http: TLS handshake error from [::1]:60198: EOF
+  I1219 10:47:09.409829       1 logs.go:49] http: TLS handshake error from 127.0.0.1:35926: EOF
+  I1219 10:47:09.414921       1 logs.go:49] http: TLS handshake error from 127.0.0.1:35924: EOF
+  I1219 10:47:09.425601       1 logs.go:49] http: TLS handshake error from 127.0.0.1:35930: EOF
+  I1219 10:47:09.448925       1 logs.go:49] http: TLS handshake error from 127.0.0.1:35928: EOF
+  I1219 10:47:09.506342       1 logs.go:49] http: TLS handshake error from 127.0.0.1:35940: EOF
+  I1219 10:47:09.518279       1 logs.go:49] http: TLS handshake error from 127.0.0.1:35936: EOF
+  I1219 10:47:09.530665       1 logs.go:49] http: TLS handshake error from 127.0.0.1:35934: EOF
+  I1219 10:47:09.534101       1 logs.go:49] http: TLS handshake error from 127.0.0.1:35938: EOF
+  I1219 10:47:09.552928       1 logs.go:49] http: TLS handshake error from 127.0.0.1:35932: EOF
+
+...but I don't think this is necessarily the issue. TLS ( Transprty Layer Security) is the successor to SSl ( Secure Sockets Layer).
+
+
+Successful Start
+
+  Whil trouble shoioiting a failing installation, managed to get the iunstallaiton on fedora31 and ferdora27 to start an run successfully. To achieve tehis, The vagrant configuraion was set
+
+    vb.memory = 4096
+    vb.cpus   = 4
+
+    AND the startup command was run with --loglevel 10
+
+  Logically speaking the, --loglevel should make noi differnce to what the start up is doing. Perhaps maybe it is a timing issue?? Maybe running log-level 10 slows things down a bit and gives the api-server more time ( or resources) to get furthe down its boot process before oc give us on it???
+
+
+  oc cluster up --loglevel 1   fails
+  oc cluster up --loglevel 5   fails
+  oc cluster up --loglevel 7   fails
+  oc cluster up --loglevel 9   fails
+
+Suspect therefor that the OpenConnect Cluster is resource intensive: If the machine is busy it won;t come up.
+
+
+
+
+Messing about with minishift on fedora31
+
+  sudo dnf install libvirt qemu-kvm
+
+  sudo usermod -a -G libvirt vagrant
+
+  newgrp libvirt
+
+
+  sudo curl -L https://github.com/dhiltgen/docker-machine-kvm/releases/download/v0.10.0/docker-machine-driver-kvm-centos7 -o /usr/local/bin/docker-machine-driver-kvm
+
+  sudo chmod +x /usr/local/bin/docker-machine-driver-kvm
+
+  [vagrant@localhost minishift-1.34.2-linux-amd64]$ systemctl is-active libvirtd
+  inactive
+  [vagrant@localhost minishift-1.34.2-linux-amd64]$ sudo systemctl start libvirtd
+  [vagrant@localhost minishift-1.34.2-linux-amd64]$ sudo virsh net-list --all
+   Name      State    Autostart   Persistent
+  --------------------------------------------
+   default   active   yes         yes
+
+  [vagrant@localhost minishift-1.34.2-linux-amd64]$ ./minishift start
+  -- Starting profile 'minishift'
+  -- Check if deprecated options are used ... OK
+  -- Checking if https://github.com is reachable ... OK
+  -- Checking if requested OpenShift version 'v3.11.0' is valid ... OK
+  -- Checking if requested OpenShift version 'v3.11.0' is supported ... OK
+  -- Checking if requested hypervisor 'kvm' is supported on this platform ... OK
+  -- Checking if KVM driver is installed ...
+     Driver is available at /usr/local/bin/docker-machine-driver-kvm ...
+     Checking driver binary is executable ... OK
+  -- Checking if Libvirt is installed ... OK
+  -- Checking if Libvirt default network is present ... OK
+  -- Checking if Libvirt default network is active ... OK
+  -- Checking the ISO URL ... OK
+  -- Downloading OpenShift binary 'oc' version 'v3.11.0'
+   53.89 MiB / 53.89 MiB [=======================================================================================================================================================================================================================================] 100.00% 0s-- Downloading OpenShift v3.11.0 checksums ... OK
+  -- Checking if provided oc flags are supported ... OK
+  -- Starting the OpenShift cluster using 'kvm' hypervisor ...
+  -- Minishift VM will be configured with ...
+     Memory:    4 GB
+     vCPUs :    2
+     Disk size: 20 GB
+
+     Downloading ISO 'https://github.com/minishift/minishift-centos-iso/releases/download/v1.16.0/minishift-centos7.iso'
+   370.00 MiB / 370.00 MiB [=====================================================================================================================================================================================================================================] 100.00% 0s
+  -- Starting Minishift VM ........ FAIL E1219 14:58:09.131129   13240 start.go:494] Error starting the VM: Error creating the VM. Error creating machine: Error in driver during machine creation: virError(Code=8, Domain=44, Message='invalid argument: could not find capabilities for domaintype=kvm '). Retrying.
+  Error starting the VM: Error creating the VM. Error creating machine: Error in driver during machine creation: virError(Code=8, Domain=44, Message='invalid argument: could not find capabilities for domaintype=kvm ')
+  [vagrant@localhost minishift-1.34.2-linux-amd64]$
+
+
+
+  Suspect this is because you can't run KVM inside virtual box!
+
+
+
+
+Also Minishift does not work on OSX
+
+minishift start --vm-driver virtualbox
+-- Starting profile 'minishift'
+json: cannot unmarshal bool into Go struct field Driver.Virtio9p of type []string
+
+
+Almost certainly version incompatibility ( according to the Web. Have not messed about gettingit to work)
 
 
 
@@ -55,8 +2913,9 @@
 
 
 
-There are several ways to install a OKD type environemnt
+  k8s_api_master-api-localhost_kube-system_xxxxxxx
 
-  minishift
 
-  Installing an OpenShift Server as a Vitual Machine.
+  Seems to need:
+
+  started with log-level 10

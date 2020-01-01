@@ -1,18 +1,26 @@
 Kubernetes with Vagrant and CoreOS
 
-  The following page describes an effort to get a kubernetes installation up and running from the official coreos vagrant package on GitHub {{https://github.com/coreos/coreos-kubernetes}}. My previous experience with coreos repositories, has been goog. However this one did seem to be a bid more problematic...
+*Introduction
+
+  The following page describes an effort to get a kubernetes installation up and running from the official coreos vagrant package on GitHub {{https://github.com/coreos/coreos-kubernetes}}. My previous experience with coreos repositories, has been good : basically they seem to work as described. However, this one did seem to be a bit more problematic. The document describes the problems encountered and the extent to which I have solved them.
+
+  Possibly at least some of the problems could stem from the fact that parts of the installation are out of date.  The READMEs provided with the package indicate that the repository I have used is no longer under active development. Instead the user is referred to the {{{https://coreos.com/tectonic/docs/latest/install/aws/index.html} Tectonic Installer}}, which I shall play around with at some point. But for now, I'm going to crack with the older version.
 
 
   The guide I was following for this was {{{https://coreos.com/kubernetes/docs/1.6.1/kubernetes-on-vagrant.html}Kubernetes install with Vagrant on CoreOS}}
+
+  Part of the problems, I think, stem from the fact that hte CoreOS product has moved on since the package was released and some of the bits supplied within that distribution are niow supplied in slightly different forms.
+
+
 
 
 *Client kubectl install
 
   Installed kubectl as follows:
 
- ---
+---
   brew install kubectl
- ---
+---
 
 *Repository Forking.
 
@@ -25,13 +33,11 @@ Kubernetes with Vagrant and CoreOS
   A local, repository was then forked
 
 
- ---
-    ~/dvl/gitClones
+---
+  ~/dvl/gitClones
 
-    git clone -separate-git-dir=/users/gitRepos/kevin/coreos-kubernetes.git https://github.com/kcrocome/coreos-kubernetes.git
- ---
-
-
+  git clone -separate-git-dir=/users/gitRepos/kevin/coreos-kubernetes.git https://github.com/kcrocome/coreos-kubernetes.git
+---
 
  The cloning process creates two notable subdirectories, one each for:
 
@@ -45,72 +51,82 @@ Attempt1
 
  Had a go with the single Node and Multi-node options.
 
- Chose to leave the COntainer runtime as Docker
+ Chose to leave the Container runtime as Docker
 
  Chose to leave the Network Policy as it was (USE_CALICO=false)
 
 
- ---
+---
   cd <dir>
 
   vagrant up
- ---
+---
 
-  Both Failed with
- ---
+  Both Failed with:
+
+---
   Can't open /opt/vagrant/embedded/openssl.cnf for reading, No such file or directory
+
   140735799092096:error:02001002:system library:fopen:No such file or directory:crypto/bio/bss_file.c:74:fopen('/opt/vagrant/embedded/openssl.cnf','r')
+
   140735799092096:error:2006D080:BIO routines:BIO_new_file:no such file:crypto/bio/bss_file.c:81:
- ---
+---
 
   Vagrant ships with an embedded version of openssl. However this version of vagrant, does not seem to include the ssl configuration file that the <<<Vagrantfile>>> is expecting to find.
 
   Could not find on on the system, so downloaded one from git hub and stuck it where <<<Vagrantfile>>> is expecting to find it.
 
- ---
+---
   https://github.com/openssl/openssl/blob/master/apps/openssl.cnf
- ---
+---
 
   copied it to: <<</opt/vagrant/embedded/openssl.cnf>>>
+
+  and tried again...
 
 
 Attempt 2
 
+---
   vagrant up
-
-  Now it seems to i
-      generate the ssl artifacts ok
-
-      configure and initially start a virtual server.
-
-  However, once the newly built server is started and running,  vagrant cannot seem to logon to it in order to complete the configuratrion.
-
----
-==> default: Importing base box 'coreos-alpha'...
-==> default: Matching MAC address for NAT networking...
-==> default: Checking if box 'coreos-alpha' version '2331.0.0' is up to date...
-==> default: Setting the name of the VM: single-node_default_1575408048012_36301
-==> default: Fixed port collision for 22 => 2222. Now on port 2204.
-==> default: Clearing any previously set network interfaces...
-==> default: Preparing network interfaces based on configuration...
-  default: Adapter 1: nat
-  default: Adapter 2: hostonly
-==> default: Forwarding ports...
-  default: 22 (guest) => 2204 (host) (adapter 1)
-==> default: Running 'pre-boot' VM customizations...
-==> default: Booting VM...
-==> default: Waiting for machine to boot. This may take a few minutes...
-  default: SSH address: 127.0.0.1:2204
-  default: SSH username: core
-  default: SSH auth method: private key
-  default: Warning: Connection reset. Retrying...
-  default: Warning: Connection reset. Retrying...
-  default: Warning: Authentication failure. Retrying...
-  default: Warning: Authentication failure. Retrying...
-  default: Warning: Authentication failure. Retrying...
 ---
 
-  attempted to connect manually via ssh
+  Now it seems to:
+
+    * generate the ssl artifacts ok
+
+    * configure and initially start a virtual server.
+
+    []
+
+  However, once the newly built server is started and running,  vagrant cannot seem to logon to it in order to complete the configuration.
+
+---
+  ==> default: Importing base box 'coreos-alpha'...
+  ==> default: Matching MAC address for NAT networking...
+  ==> default: Checking if box 'coreos-alpha' version '2331.0.0' is up to date...
+  ==> default: Setting the name of the VM: single-node_default_1575408048012_36301
+  ==> default: Fixed port collision for 22 => 2222. Now on port 2204.
+  ==> default: Clearing any previously set network interfaces...
+  ==> default: Preparing network interfaces based on configuration...
+    default: Adapter 1: nat
+    default: Adapter 2: hostonly
+  ==> default: Forwarding ports...
+    default: 22 (guest) => 2204 (host) (adapter 1)
+  ==> default: Running 'pre-boot' VM customizations...
+  ==> default: Booting VM...
+  ==> default: Waiting for machine to boot. This may take a few minutes...
+    default: SSH address: 127.0.0.1:2204
+    default: SSH username: core
+    default: SSH auth method: private key
+    default: Warning: Connection reset. Retrying...
+    default: Warning: Connection reset. Retrying...
+    default: Warning: Authentication failure. Retrying...
+    default: Warning: Authentication failure. Retrying...
+    default: Warning: Authentication failure. Retrying...
+---
+
+  attempted to connect manually via ssh:
 
 ---
   vagrant ssh core
@@ -118,18 +134,20 @@ Attempt 2
   vagrant ssh vagrant
 ---
 
+  Again, failed to connect. So...
+
 
 Attempt 3
 
-  Within the Vagrantfile, changed Channel from alpha --> stable ( within config.rb for the Multinode configuration)
+  Within the Vagrantfile, changed Channel from alpha --> stable (within config.rb for the Multinode configuration)
 
   However this failed with the same result.
 
 Attempt 4
 
-  Within the Vagrantfile, changed Channel from alpha --> beta ( within config.rb for the Multinode configuration)
+  Within the Vagrantfile, changed Channel from alpha --> beta (within config.rb for the Multinode configuration)
 
-  This time it seems to work ok in both Single-Node and Multi-Node options.
+  <<Now, this time it seems to work ok in both Single-Node and Multi-Node options>>
 
 ---
   vagrant up
@@ -167,29 +185,199 @@ Attempt 4
 
   Looking at the Vagrantfile and all the files surrounding it, I can find nothing resembling an Ignition Script, or anything which might be injectable into the o/s on its first boot. In particular I can find no reference to any 'core' user or 'vagrant' user which might typically be used to logon to the server.
 
-  Either the core user already exists in the Beta channel boxfile, (and so doesm't need to be injected in)
+  Therefore, either the core user already exists in the Beta channel boxfile, (and so doesn't need to be injected in)
 
   or
 
-  The injection process is injecting ok on the Beta image, but ina way that I dont undestand.
+  The injection process is injecting ok on the Beta image, but in a way that I don't understand.
 
-
-  I think it is probably the first suggestion: if I change the
+  However, I think it is probably the first suggestion: if I change the
 
       config.ssh.username to something other than "core" and the builds fail!
 
-  So I think the config is NOT being injected.
+  So, I think the config is NOT being injected; it is relying on it already being there.
 
+  On other coreos packagings that I have used, the provisioning is performed by a plugin to vagrant. Having checked, this plugin does seem to be available to vagrant:
 
-  On other coreos packagings, the proviioning is performed by a plugin to vagrant, and this does seem to be available to vagrant
-
- ---
+---
   vagrant plugin list
 
-    vagrant-ignition (0.0.3, global)
- ---
+  vagrant-ignition (0.0.3, global)
+---
 
  However, there does not seem to be anything the Vagrant file that makes use of any of the Ignition features that the plugin provides. All the provisioning seems to be way of inline provisioning scripts, which it can't run because it can't logon to the server.
+
+
+Fixing the supplied Vagrant File
+
+  In essence what we want to do is to amend the provided Vagrant file so that it uses the vagrant Ignition.plugin. We will then use the vagrant plugin to inject the 'core' userId during system provisioning. In doing this, I basically examined the Vagrant file supplied with the {{{https://github.com/coreos/coreos-vagrant.git}coreOs-vagrant}}, and copied over the relevant ignition sections from there and then configured them as I wanted.
+
+  I think the way that the Ignition plugin works, is basically to set up a drive mapping within the guest os that points to a diskimage  held locally on the host o/s. The diskimage contains the Ignition File that is to be injected into the server as part of provisioning. The location mapped within the guest is one where Ignition defaults to when looking for provisioning scripts. When the Guest O/S gets provisioned, the Ignition System reads the file from the mapped drive and configures the box accordingly.
+
+   If there is no Ignition File, it will create a default one that injects the desired user ("core"), plus public key etc. plus a bit of default network configuration.
+
+   Otherwise, it merges this default info into the custom Ignition file that was provided, so createing a composite one.
+
+
+ Fixing the supplied Vagrant File
+
+
+---
+  https://github.com/coreos/vagrant-ignition
+---
+
+
+
+---
+  config.ignition.enabled: Set to true to enable this plugin
+
+  config.ignition.path: Set to the path of the base ignition config (can be nil if there is no base)
+
+  config.ignition.config_obj: Set equal to config.vm.provider :virtualbox
+
+  config.ignition.drive_root: Set to desired root directory of generated config drive (optional)
+
+  config.ignition.drive_name: Set to desired filename of generated config drive (optional)
+
+  config.ignition.hostname: Set to desired hostname of the machine (optional)
+
+  config.ignition.ip: Set to desired ip of eth1 (only applies if a private network is being created)
+---
+
+
+     Bit tricky but eventually managed it.
+
+
+
+Getting the Single Node Configuration Running.
+
+  Chose to use the Beta Stream initially
+
+*coreos-cloudinit
+
+  The supplied Vagrant file makes use of the {{{https://github.com/coreos/coreos-cloudinit}coreOs-cloudinit}} mechanism for automatically provisioning coreOs with a Kubernetes cluster. Note that cloudinit has now been superceded by Ignition as the preferred provisioning mechanism.
+
+  {{{https://cloudinit.readthedocs.io/en/latest/index.html}CloudInit}} is an indudstry standard didtribution method for machine iniitaliazation. It can initiate provisioning based on instructions provided in various forms, but one of which is a simple script file : user-data
+
+  coreos-cloudinit is cores's implementaion of coloudinit, and it only implements a subset of the full functionality.
+
+  As far as I can tell, teh way that it works is as follows:
+
+    Vagrant injects the user-data script to a particular location on the coreOs intance as it is being provisioned.
+
+---
+  /var/lib/coreos-vagrant
+---
+
+    When the box starts for the first time, a particular service coreos-cloudinit (or one of a number of related services) runs as a one off. What this does is not at all straightforward to workout, but it is becomes aware of the file in /var/lib/coreos-vagrant and triggers a series of set-up actions including
+
+      creation of the some entries in /etc/environment
+
+      creation of some directories such as /var/lib/
+
+      and eventually moves the user-data file into a different direcory /var/lib/coreos-install/user_data
+
+    Something is watching for this files arrival, and when it does, the
+
+     and calls the /usr/bin/coreos-cloudinit executable get called. The somehow executes the contents of the user_data file and configures the box accordingly.
+
+*Initial startup.
+
+  Amended the Vagrant file to allocate more memory and cpu resources
+
+---
+  cpus --> 4
+  memory --> 4096
+---
+
+  When the box was initially provisioned, the coreos-cloudinit service failed.
+
+---
+  Container Linux by CoreOS beta (2303.2.0)
+
+  Failed Units: 1
+  coreos-cloudinit-836679022.service
+---
+
+  Examination of system journal suggested that the etcd2.service did not exist.
+
+---
+  core@localhost ~ $ journalctl  -u coreos-cloudinit-836679022
+
+  journal -xe
+
+  Dec 23 19:51:14 localhost bash[1337]: Failed to enable unit: Unit file etcd2.service does not exist.
+  Dec 23 19:51:14 localhost systemd[1]: coreos-cloudinit-836679022.service: Main process exited, code=exited, status=1/FAILURE
+  Dec 23 19:51:14 localhost systemd[1]: coreos-cloudinit-836679022.service: Failed with result 'exit-code'.
+---
+
+
+  Some research on the web indicated that the etcd2 service was no longer being provided with this version of coreos and that it had been replaced with v3 etcd, which now expects to be run in a container.
+
+  Amended the user-data file to reflect this change
+
+
+---
+  systemctl enable etcd2; systemctl start etcd2
+  -->
+  systemctl enable /usr/lib64/systemd/system/etcd-member.service; systemctl start etcd-member
+---
+
+
+  Rebuilt the machine
+
+    vagrant halt
+
+    vagrant destroy
+
+    vagrant up
+
+
+  This build seemingly succeeded. Slowly, the various container based element of kubernetes came up. It needed several minutes for this.  When complete it seemed to consist of:
+
+    approx 20 docker containers
+
+    approx 4 hyperkube processes
+
+           1 kubelet process
+
+           1 kube-dns process
+
+           1 exechealthz process
+
+
+  Allowed coreOs to automatically update itself --> beta (2303.2.0)
+
+
+
+
+
+
+*The 'Stable' stream
+
+  The tried the same thing with the 'stable' stream.
+
+  However this did not work at all. It seems that the 'stable' stream is unable to process the injected user-data file in the same way. Nothing in systemd's processing seems to be looking for its arrival...
+
+  (Bit confused by this : if this is an out-dated installation, why does Beta work BUT NOT stable? (I suspect that in this case, the Stable release is actually AHEAD of the Beta Release)
+
+  I'm not going waste anymore time on trying to get this to work... presumably at some point it will work as beta becomes 'stable' ?
+
+*Conformance test
+
+  Checked the installation out by running the conformance-test.sh script. This was not at straightforward as it might be. It does seem to be very resource intensive : had a couple of attempts at it, but it was very slow and a number of tests seemed to be failing with what looked like resource-type issues.
+
+  Attempted to address this by increasing the no of cpu's available to the VM to 4, and the memory available to 4GB.
+
+  Then kicked it off as follows:
+
+    ./conformance-test.sh | tee conformanceTest.log
+
+
+
+
+
+
 
 OK... for now lets just crack on with the remaining steps of the guide paper....
 
@@ -316,39 +504,1452 @@ Invstigating trying to get a containerized version of it running.
   Goint to leave this for now and maybe pick it up later.
 
 
-Fixing the supplied Vagrant File
-
-  I think the way that it works, is basically to set up a drive mapping within the guest os that points to a Ignition file held locally on the host o/s.  When the Guest O/S gets provisioned, the Ignition System reads the file from teh mapped drive and configures the box accordingly.
-
-  If there is no Ignition File, it will create a default one, that injects the desired user, plus public key etc.
-
-  Other wise it merges the above in fo into the Ignition file provided.
 
 
-Fixing the supplied Vagrant File
+  Vagrant CoreOS images
+
+    I THINK Vagrant CoreOs box files come with specific additions that are supposed to help provision the machine.
+
+    I THINK these are under:
+
+      /usr/share/oem
+
+    It seems to comprise a .yml file that defines 2 one off Units:
+        coreos-cloudinit-vagrant-mkdir.service
+        coreos-cloudinit-vagrant-user.path
+
+    It also installs the vagrant insecure key ---> which may explain why the 'beta' stream is loggable onto, while the
+    'stable' stream is not. ( See notes and discussion elsewhere)
+
+    It also compriseses a shell script, which seems to be monitoring /etc/envionment for particular changes and fixing it if necessary.
+
+    journalctl --identifier=coreos-cloudinit
 
 
- ---
-    https://github.com/coreos/vagrant-ignition
- ---
+
+
+    NB ignition is not supported on all platforms
 
 
 
- ---
-    config.ignition.enabled: Set to true to enable this plugin
+    Converting from Cloudinit to Ignition
 
-    config.ignition.path: Set to the path of the base ignition config (can be nil if there is no base)
-
-    config.ignition.config_obj: Set equal to config.vm.provider :virtualbox
-
-    config.ignition.drive_root: Set to desired root directory of generated config drive (optional)
-
-    config.ignition.drive_name: Set to desired filename of generated config drive (optional)
-
-    config.ignition.hostname: Set to desired hostname of the machine (optional)
-
-    config.ignition.ip: Set to desired ip of eth1 (only applies if a private network is being created)
- ---
+    {{{https://github.com/coreos/docs/blob/master/os/migrating-to-clcs.md}Migrating from Cloudinit to Ignition}}
 
 
-    Bit tricky but eventually managed it.
+
+
+     {{{./onEtcd.html}On the etcd distributed database}}
+
+     curl http://172.17.4.51:2379/v2/machines
+http://172.17.4.51:2379
+
+
+
+
+Ways of Testing everything is up and running
+
+  make sure the kubernetes API is available
+
+  On Controller...
+
+---
+  curl http://127.0.0.1:8080/version
+
+  {
+    "major": "1",
+    "minor": "5",
+    "gitVersion": "v1.5.4+coreos.0",
+    "gitCommit": "97c11b097b1a2b194f1eddca8ce5468fcc83331c",
+    "gitTreeState": "clean",
+    "buildDate": "2017-03-08T23:54:21Z",
+    "goVersion": "go1.7.4",
+    "compiler": "gc",
+    "platform": "linux/amd64"
+  }
+
+  curl -s localhost:10255/pods | jq -r '.items[].metadata.name'
+
+  kube-apiserver-172.17.4.101
+  kube-controller-manager-172.17.4.101
+  kube-proxy-172.17.4.101
+  kube-scheduler-172.17.4.101
+---
+
+
+
+  On Worker...
+
+---
+  curl -s localhost:10255/pods | jq -r '.items[].metadata.name'
+kube-proxy-172.17.4.201
+---
+
+
+
+====
+
+Step by Step Guide for setting up Kubernetes
+
+  Taken from {{{https://github.com/coreos/coreos-kubernetes/blob/master/Documentation/getting-started.md}CoreOs and Kubernetes Step By Step}}
+
+  The primary goals of this guide are:
+
+    * Configure an etcd cluster for Kubernetes to use
+
+    * Generate the required certificates for communication between Kubernetes components
+
+    * Deploy a master node
+
+    * Deploy worker nodes
+
+    * Configure kubectl to work with our cluster
+
+    * Deploy the DNS add-on
+
+    * Deploy the network policy add-on
+
+
+*Deployment Options
+
+  The following variables will be used throughout this guide. Most of the provided defaults can safely be used, however some values such as ETCD_ENDPOINTS and MASTER_HOST will need to be customised to your infrastructure.
+
+---
+  MASTER_HOST=no default
+---
+
+  The address of the master node. In most cases this will be the publicly routable IP of the node. Worker nodes must be able to reach the master node(s) via this address on port <<443>>. Additionally, <<external clients>> (such as an administrator using <<<kubectl>>>) will also need access, since this will run the Kubernetes API endpoint.
+
+  <<Consequently we will need to Forward a port from the Host to the Guest:443 port in order to access it from the macOSX host>>.
+
+  If you will be running a high-availability control-plane consisting of multiple master nodes, then MASTER_HOST will ideally be a network load balancer that sits in front of them. Alternatively, a DNS name can be configured which will resolve to the master IPs. How requests are routed to the master nodes will be an important consideration when creating the TLS certificates.
+
+---
+  ETCD_ENDPOINTS=no default
+---
+
+  List of etcd machines (http://ip:port), comma separated. If you're running a cluster of 5 machines, list them <<all>> here.
+
+  e.g ETCD_ENDPOINTS=http://<Ip1>:2379,http://<Ip2>:2379,http://Ip3>:2379,
+
+  Typically the ETCD_ENDPOINTS will be on http://<someIp>:2379. (The etcd process typically will talk to otehr etcd servers on port: 2380. Donlt get these mixed up).
+
+---
+  POD_NETWORK=10.2.0.0/16
+---
+
+  The CIDR network to use for pod IPs. Each pod launched in the cluster will be assigned an IP out of this range. This network must be routable between all hosts in the cluster. In a default installation, the <<flannel>> overlay network will provide the routing to this network.
+
+  ({{{./glossary.html#Classless Inter-Domain Routing}Classless Inter-Domain Routing (CIDR)}} wis a method for allocating a range of IP addresses, in this case 10.2.0.0 --> 10.2.254.254)
+
+---
+  SERVICE_IP_RANGE=10.3.0.0/24
+---
+
+  The {{{./glossary.html#Classless Inter-Domain Routing}CIDR}}  network to use for service cluster VIPs (Virtual IPs). Each service will be assigned a cluster IP out of this range. This must not overlap with <<any>> IP ranges assigned to the POD_NETWORK, or other existing network infrastructure. Routing to these VIPs is handled by a local <<kube-proxy>> service to each host, and are not required to be routable between hosts.
+
+---
+  K8S_SERVICE_IP=10.3.0.1
+---
+
+  The VIP (Virtual IP) address of the <<Kubernetes API Service>>. If the SERVICE_IP_RANGE is changed above, this must be set to the first IP in that range.
+
+---
+  DNS_SERVICE_IP=10.3.0.10
+---
+
+  The VIP (Virtual IP) address of the cluster DNS service. This IP <<must>> be in the range of the SERVICE_IP_RANGE and <<cannot>> be the first IP in the range. This <<same>> IP must be configured on all worker nodes to enable DNS service discovery.
+
+*Etcd Cluster Configuration
+
+  This was the trickiest part to configure, mainly because the provided scripts, documentation etc assumes etcd2 server, and the world has moved on to use etcd-member.
+
+  <<THIS WILL BE COMPLETED LATER>>
+
+
+*Generation of the SSL Certificates etc.
+
+  The control of entire kubernetes cluster is reliant on various client and server processes making calls to one another. In order to secure the integrity of the cluster, the server processes must be sure that the clients attempting to contact them are legitimate clients.
+
+  The kubernetes client has several ways of validating its clients, but use of certificate-based authentication is widely used.
+
+  There are at least 3 communication paths that need protection:
+
+    * Calls to the API Server  (here protected by apiserver.pem and apiserver-key.pem public/private keys);
+
+    * Calls to the kubelet servers on each of the Worker Nodes (here protected by <\<hostname\>>-worker.pem and <\<hostname\>>-worker-key.pem public/private keys). Note that each worker will have its own certificates.
+
+    * Calls to the Cluster Administration endpoints (here protected by admin.pem and admin-key.pem public/private keys).
+
+    []
+
+  The generation of these keys is summarised below based on the details given {{{https://github.com/coreos/coreos-kubernetes/blob/master/Documentation/openssl.md}here}}.
+
+  There are also scripts available within the coreos/kubernetes git repository that will help in this:
+
+    * {{{https://github.com/coreos/coreos-kubernetes/blob/master/lib/init-ssl}init-ssl}}
+
+    * {{{https://github.com/coreos/coreos-kubernetes/blob/master/lib/init-ssl-ca}}init-ssl-ca}}
+
+    []
+
+
+**Create a Cluster Root CA
+
+  First, we need to create a new certificate authority which will be used to sign the rest of our certificates.
+
+---
+  openssl genrsa -out ca-key.pem 2048
+
+  openssl req -x509 -new -nodes -key ca-key.pem -days 10000 -out ca.pem -subj "/CN=kube-ca"
+---
+
+**The Kubernetes API Server Keypair
+
+  This is quite a tricky configuration. You can't actually specify all the options needed via the command line, so a configuration file needs to be used to capture all the requirements.
+
+  This looks like this:
+
+---
+[req]
+  req_extensions = v3_req
+  distinguished_name = req_distinguished_name
+
+  [req_distinguished_name]
+
+  [ v3_req ]
+  basicConstraints = CA:FALSE
+  keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+  subjectAltName = @alt_names
+
+  [alt_names]
+  DNS.1 = kubernetes
+  DNS.2 = kubernetes.default
+  DNS.3 = kubernetes.default.svc
+  DNS.4 = kubernetes.default.svc.cluster.local
+  IP.1=172.17.4.101
+  IP.2=10.3.0.1
+---
+
+  Note the two IP Addresses, which are:
+
+    IP.1 = MASTER_HOST
+    IP.2 = K8S_SERVICE_IP
+
+  (I don't think there is any relevance to the numbering of the ip addresses : we just need a list of relevant ones)
+
+  If deploying multiple master nodes in an HA configuration, you may need to add more TLS subjectAltNames. Proper configuration of SANs in each certificate depends on how worker nodes and kubectl users contact the master nodes: directly by IP address, via load balancer, or by resolving a DNS name.
+
+---
+  Example:
+
+  DNS.5 = ${MASTER_DNS_NAME}
+  IP.3 = ${MASTER_IP}
+  IP.4 = ${MASTER_LOADBALANCER_IP}
+---
+
+  We can then generate the certificates themselves:
+
+---
+  openssl genrsa -out apiserver-key.pem 2048
+
+  # First the certificate signing request
+
+  openssl req -new -key apiserver-key.pem -out apiserver.csr -subj "/CN=kube-apiserver" -config openssl.cnf
+
+  #Then the certificate itself(self-signed)
+
+  openssl x509 -req -in apiserver.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out apiserver.pem -days 365 -extensions v3_req -extfile openssl.cnf
+---
+
+**Kubernetes Worker Keypairs
+
+  Remember each worker need their own key-pair. However, each can be generated using teh same configuraiton file, but substituting for the environment variable <<<$ENV::WORKER_IP>>>
+
+---
+  worker-openssl.cnf
+
+[req]
+  req_extensions = v3_req
+  distinguished_name = req_distinguished_name
+
+  [req_distinguished_name]
+
+  [ v3_req ]
+  basicConstraints = CA:FALSE
+  keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+  subjectAltName = @alt_names
+
+  [alt_names]
+  DNS.1 = kubernetes
+  DNS.2 = kubernetes.default
+  DNS.3 = kubernetes.default.svc
+  DNS.4 = kubernetes.default.svc.cluster.local
+
+  IP.1 = $ENV::WORKER_IP
+  #(e.g. 172.17.4.201)
+---
+
+  The certificates themselves can then be generated for each Worker Node. We can use the same key for each.
+
+---
+  openssl genrsa -out ${WORKER_FQDN}-worker-key.pem 2048
+---
+
+  Then for each worker node:
+
+---
+  WORKER_IP=${WORKER_IP}
+
+  # First the certificate signing request
+
+  openssl req -new -key ${WORKER_FQDN}-worker-key.pem -out ${WORKER_FQDN}-worker.csr -subj "/CN=${WORKER_FQDN}" -config worker-openssl.cnf
+
+  #Then the certificate itself(self-signed)
+
+  openssl x509 -req -in ${WORKER_FQDN}-worker.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out ${WORKER_FQDN}-worker.pem -days 365 -extensions v3_req -extfile worker-openssl.cnf
+
+---
+
+**The Cluster Administrator Key Pair
+
+  Finally, the pair of keys required for administrative access to the API server (e.g. via kubectl)
+
+---
+  openssl genrsa -out admin-key.pem 2048
+
+  # First the certificate signing request
+  openssl req -new -key admin-key.pem -out admin.csr -subj "/CN=kube-admin"
+
+  #Then the certificate itself(self-signed)
+  openssl x509 -req -in admin.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out admin.pem -days 365
+
+  ( or possibly,
+
+  openssl x509 -req -in admin.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out admin.pem -days 365 -extensions v3_req -extfile admin-req.cnf
+  )
+---
+
+
+*Configure the Controller/Master Node.
+
+  Boot a single CoreOS machine which will be used as the Kubernetes master node.  The principle scripts used to build the Controller node should be present in the installation image; you must use a CoreOS version 962.0.0+ for the /usr/lib/coreos/kubelet-wrapper script to be present. See kubelet-wrapper for more information.
+
+  The instructions below configure the required master node components using manifests stored in /etc/kubernetes/manifests. The <<kubelet>> running on the master node will watch this location for new or modified manifests and run them automatically.
+
+  High-availability is achieved by repeating these instructions for each master node. Each of the master components is safe to run on multiple nodes ( although, I believe, only one, (the <<leader>>), is active at any one time.)
+
+  The apiserver itself is stateless, but handles recording the results of leader elections to <<etcd>> on behalf of other master components. The <<controller-manager>> and <<scheduler>> use the leader election mechanism to ensure only one of each is active, leaving the inactive master components ready to assume responsibility in case of failure.
+
+
+**Install the required certificates
+
+  Create the required directory and place the keys generated previously in the following locations:
+
+---
+  sudo mkdir -p /etc/kubernetes/ssl
+
+      File: /etc/kubernetes/ssl/ca.pem
+      File: /etc/kubernetes/ssl/apiserver.pem
+      File: /etc/kubernetes/ssl/apiserver-key.pem
+---
+
+  And make sure you've set proper permission for private key:
+
+---
+  sudo chmod 600 /etc/kubernetes/ssl/*-key.pem
+
+  sudo chown root:root /etc/kubernetes/ssl/*-key.pem
+---
+
+**Network Configuration
+
+  Networking is provided by Flannel and Calico.
+
+  <<<flannel>>> provides a software-defined overlay network for routing traffic to/from the pods.
+
+  <<<calico>>> secures the overlay network by restricting traffic to/from the pods based on fine-grained network policy.
+
+
+***Flannel Service
+
+  We will configure flannel to source its local configuration from /etc/flannel/options.env and cluster-level configuration in etcd. Create this file and edit the contents:
+
+    * Replace $\{ADVERTISE_IP\} with this machine's publicly routable IP;
+
+    * Replace $\{ETCD_ENDPOINTS\}
+
+    []
+
+---
+  /etc/flannel/options.env
+
+  FLANNELD_IFACE=${ADVERTISE_IP}
+  FLANNELD_ETCD_ENDPOINTS=${ETCD_ENDPOINTS}
+
+  e.g.
+  FLANNELD_IFACE=172.17.4.101
+  FLANNELD_ETCD_ENDPOINTS=http://172.17.4.51:2379
+---
+
+  Next create a systemd drop-in, which is a method for appending or overriding parameters of a systemd unit. In this case we're appending two dependency rules. Create the following drop-in, which will use the above configuration when flannel starts:
+
+---
+  /etc/systemd/system/flanneld.service.d/40-ExecStartPre-symlink.conf
+
+  [Service]
+  ExecStartPre=/usr/bin/ln -sf /etc/flannel/options.env /run/flannel/options.env
+---
+
+***Docker Configuration for Flannel
+
+  In order for flannel to manage the pod network in the cluster, Docker needs to be configured to use it. All we need to do is require that <<flanneld>> is running prior to Docker starting.
+
+  Note: If the pod-network is being managed independently, this step can be skipped. See kubernetes networking for more detail.
+
+  Again, we will use a systemd drop-in:
+
+---
+  /etc/systemd/system/docker.service.d/40-flannel.conf
+
+  [Unit]
+  Requires=flanneld.service
+  After=flanneld.service
+  [Service]
+  EnvironmentFile=/etc/kubernetes/cni/docker_opts_cni.env
+---
+
+***Docker Container Network Interface(CNI) options
+
+  Create the Docker CNI Options file referenced in the above:
+
+---
+  /etc/kubernetes/cni/docker_opts_cni.env
+
+  DOCKER_OPT_BIP=""
+  DOCKER_OPT_IPMASQ=""
+---
+
+***Flannel Container Network Interface(CNI) options
+
+  If using Flannel for networking, setup the Flannel CNI configuration with below. If you intend to use Calico for networking, follow the guide to Set Up Calico For Network Policy instead.
+
+---
+  /etc/kubernetes/cni/net.d/10-flannel.conf
+
+  {
+      "name": "podnet",
+      "type": "flannel",
+      "delegate": {
+          "isDefaultGateway": true
+      }
+  }
+---
+
+**Create the kubelet Unit
+
+  The kubelet is the agent on each machine that starts and stops Pods and other machine-level tasks.
+
+  The kubelet itself usually runs as a container image. The container image in quay.io/coreos/hyperkube, and runs with the name /kubelet within the process tree.
+
+  Because of its central role in orchestrating containers, the kubelet requires special permissions from the host. Because of its better ability to support these special permissions, it is recommended to run the kubelet container using rkt (rather than, say, docker).
+
+  Whenever the control node is started, it is the kubelet that will start the pods making up the server's control plane (apiserver, proxy, controller-manager, scheduler - see below).
+
+  The kubelet communicates with the API server (also running on the master node) with the TLS certificates we placed on disk earlier.
+
+  On the master node, the kubelet is configured to communicate with the API server, but not register for cluster work, as shown in the <<<--register-schedulable=false>>> line in the YAML excerpt below. This prevents user pods being scheduled on the master nodes, and ensures cluster work is routed <<only>> to task-specific worker nodes.
+
+  When using Calico, the kubelet is configured to use the Container Networking Interface (CNI) standard for networking. This makes Calico aware of each pod that is created and allows it to network the pods into the flannel overlay. Both flannel and Calico communicate via CNI interfaces to ensure the correct IP range (managed by flannel) is used for each node.
+
+  Note that the kubelet running on a master node may log repeated attempts to post its status to the API server. These warnings are expected behaviour and can be ignored. Future kubernetes releases plan to handle this common deployment consideration more gracefully.
+
+  Within the following configuration file:
+
+    [[1]] Replace $\{ADVERTISE_IP\} with this node's publicly routable IP;
+
+    [[1]] Replace $\{DNS_SERVICE_IP\};
+
+    [[1]] Replace $\{K8S_VER\} This will map to: quay.io/coreos/hyperkube:$\{K8S_VER\} release, e.g. v1.5.4_coreos.0.
+
+    [[1]] If using Calico for network policy:
+
+        * replace $\{NETWORK_PLUGIN\} with cni
+
+        * Add the following to RKT_RUN_ARGS=
+
+          --volume cni-bin,kind=host,source=/opt/cni/bin \
+          --mount volume=cni-bin,target=/opt/cni/bin
+
+        * Add ExecStartPre=/usr/bin/mkdir -p /opt/cni/bin
+
+    [[1]] Decide if you will use additional features such as:
+
+        * mounting ephemeral disks;
+
+        * allow pods to mount RDB or iSCSI volumes;
+
+        * allowing access to insecure container registries;
+
+        * changing your CoreOS auto-update settings;
+
+        []
+
+  Note: Anyone with access to port 10250 on a node can execute arbitrary code in a pod on the node. Information, including logs and metadata, is also disclosed on port 10255. See securing the Kubelet API for more information.
+
+---
+  /etc/systemd/system/kubelet.service
+
+  [Service]
+  Environment=KUBELET_IMAGE_TAG=${K8S_VER}
+
+  Environment=KUBELET_IMAGE_URL=quay.io/coreos/hyperkube
+
+  Environment="RKT_RUN_ARGS=\
+    --uuid-file-save=/var/run/kubelet-pod.uuid \
+    --volume var-log,kind=host,source=/var/log \
+    --mount volume=var-log,target=/var/log \
+    --volume dns,kind=host,source=/etc/resolv.conf \
+    --mount volume=dns,target=/etc/resolv.conf"
+
+  ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
+  ExecStartPre=/usr/bin/mkdir -p /var/log/containers
+  ExecStartPre=/usr/bin/mkdir -p /opt/cni/bin
+
+  ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/run/kubelet-pod.uuid
+
+  ExecStart=/usr/lib/coreos/kubelet-wrapper \
+    --api-servers=http://127.0.0.1:8080 \
+    --register-schedulable=false \
+    --cni-conf-dir=/etc/kubernetes/cni/net.d \
+    --network-plugin=${NETWORK_PLUGIN} \
+    --container-runtime=docker \
+    --allow-privileged=true \
+    --pod-manifest-path=/etc/kubernetes/manifests \
+    --hostname-override=${ADVERTISE_IP} \
+    --cluster_dns=${DNS_SERVICE_IP} \
+    --cluster_domain=cluster.local
+
+  ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
+
+  Restart=always
+  RestartSec=10
+
+  [Install]
+  WantedBy=multi-user.target
+
+---
+  For example:
+
+---
+  [Service]
+  Environment=KUBELET_IMAGE_TAG=v1.5.4_coreos.0
+
+  Environment=KUBELET_IMAGE_URL=quay.io/coreos/hyperkube
+
+  Environment="RKT_RUN_ARGS=\
+      --uuid-file-save=/var/run/kubelet-pod.uuid \
+      --volume dns,kind=host,source=/etc/resolv.conf \
+      --mount volume=dns,target=/etc/resolv.conf \
+      --volume rkt,kind=host,source=/opt/bin/host-rkt \
+      --mount volume=rkt,target=/usr/bin/rkt \
+      --volume var-lib-rkt,kind=host,source=/var/lib/rkt \
+      --mount volume=var-lib-rkt,target=/var/lib/rkt \
+      --volume stage,kind=host,source=/tmp \
+      --mount volume=stage,target=/tmp \
+      --volume var-log,kind=host,source=/var/log \
+      --mount volume=var-log,target=/var/log"
+
+  ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
+  ExecStartPre=/usr/bin/mkdir -p /opt/cni/bin
+  ExecStartPre=/usr/bin/mkdir -p /var/log/containers
+  ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/run/kubelet-pod.uuid
+
+  ExecStart=/usr/lib/coreos/kubelet-wrapper   --api-servers=http://127.0.0.1:8080   --register-schedulable=false   --cni-conf-dir=/etc/kubernetes/cni/net.d   --network-plugin=cni   --container-runtime=docker   --rkt-path=/usr/bin/rkt   --rkt-stage1-image=coreos.com/rkt/stage1-coreos   --allow-privileged=true   --pod-manifest-path=/etc/kubernetes/manifests   --hostname-override=172.17.4.101   --cluster_dns=10.3.0.10   --cluster_domain=cluster.local
+
+  ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
+  Restart=always
+  RestartSec=10
+
+  [Install]
+  WantedBy=multi-user.target
+---
+
+**The POD Manifests
+
+  There are a number of kubernetes images that run within containers on the Control Node. These are:
+
+    * kube-apiserver
+
+    * kube-scheduler
+
+    * kube-proxy
+
+    * kube-controller-manager
+
+  Each of these containers host the <<same>> image (hyperkube). However it is invoked with different parameters, so conferring the behaviours required in each execution context.
+
+
+***Set Up the kube-apiserver Pod
+
+  The API server is where most of the magic happens. It is stateless by design and takes in API requests, processes them and stores the result in etcd if needed, and then returns the result of the request.
+
+  We're going to use a unique feature of the <<kubelet>> to launch the Pod that runs the API server. Above we configured the kubelet to watch a local directory for pods to run with the --pod-manifest-path=/etc/kubernetes/manifests flag. All we need to do is place our Pod manifest in that location, and the kubelet will make sure it stays running, just as if the Pod was submitted via the API. The cool trick here is that we don't have an API running yet, but the Pod will function the exact same way, which simplifies troubleshooting later on.
+
+  If this is your first time looking at a Pod manifest, don't worry, they aren't all this complicated. But, this shows off the power and flexibility of the Pod concept. Create /etc/kubernetes/manifests/kube-apiserver.yaml with the following settings:
+
+    Replace ${ETCD_ENDPOINTS}
+    Replace ${SERVICE_IP_RANGE}
+    Replace ${ADVERTISE_IP} with this node's publicly routable IP.
+
+---
+  /etc/kubernetes/manifests/kube-apiserver.yaml
+
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: kube-apiserver
+    namespace: kube-system
+  spec:
+    hostNetwork: true
+    containers:
+    - name: kube-apiserver
+      image: quay.io/coreos/hyperkube:v1.5.4_coreos.0
+      command:
+      - /hyperkube
+      - apiserver
+      - --bind-address=0.0.0.0
+      - --etcd-servers=${ETCD_ENDPOINTS}
+      - --allow-privileged=true
+      - --service-cluster-ip-range=${SERVICE_IP_RANGE}
+      - --secure-port=443
+      - --advertise-address=${ADVERTISE_IP}
+      - --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota
+      - --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem
+      - --tls-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
+      - --client-ca-file=/etc/kubernetes/ssl/ca.pem
+      - --service-account-key-file=/etc/kubernetes/ssl/apiserver-key.pem
+      - --runtime-config=extensions/v1beta1/networkpolicies=true
+      - --anonymous-auth=false
+      livenessProbe:
+        httpGet:
+          host: 127.0.0.1
+          port: 8080
+          path: /healthz
+        initialDelaySeconds: 15
+        timeoutSeconds: 15
+      ports:
+      - containerPort: 443
+        hostPort: 443
+        name: https
+      - containerPort: 8080
+        hostPort: 8080
+        name: local
+      volumeMounts:
+      - mountPath: /etc/kubernetes/ssl
+        name: ssl-certs-kubernetes
+        readOnly: true
+      - mountPath: /etc/ssl/certs
+        name: ssl-certs-host
+        readOnly: true
+    volumes:
+    - hostPath:
+        path: /etc/kubernetes/ssl
+      name: ssl-certs-kubernetes
+    - hostPath:
+        path: /usr/share/ca-certificates
+      name: ssl-certs-host
+---
+
+  For example:
+
+---
+
+  kind: Pod
+  metadata:
+    name: kube-apiserver
+    namespace: kube-system
+  spec:
+    hostNetwork: true
+    containers:
+    - name: kube-apiserver
+      image: quay.io/coreos/hyperkube:v1.5.4_coreos.0
+      command:
+      - /hyperkube
+      - apiserver
+      - --bind-address=0.0.0.0
+      - --etcd-servers=http://172.17.4.51:2379
+      - --allow-privileged=true
+      - --service-cluster-ip-range=10.3.0.0/24
+      - --secure-port=443
+      - --advertise-address=172.17.4.101
+      - --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota
+      - --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem
+      - --tls-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
+      - --client-ca-file=/etc/kubernetes/ssl/ca.pem
+      - --service-account-key-file=/etc/kubernetes/ssl/apiserver-key.pem
+      - --runtime-config=extensions/v1beta1/networkpolicies=true
+      - --anonymous-auth=false
+      livenessProbe:
+        httpGet:
+          host: 127.0.0.1
+          port: 8080
+          path: /healthz
+        initialDelaySeconds: 15
+        timeoutSeconds: 15
+      ports:
+      - containerPort: 443
+        hostPort: 443
+        name: https
+      - containerPort: 8080
+        hostPort: 8080
+        name: local
+      volumeMounts:
+      - mountPath: /etc/kubernetes/ssl
+        name: ssl-certs-kubernetes
+        readOnly: true
+      - mountPath: /etc/ssl/certs
+        name: ssl-certs-host
+        readOnly: true
+    volumes:
+    - hostPath:
+        path: /etc/kubernetes/ssl
+      name: ssl-certs-kubernetes
+    - hostPath:
+        path: /usr/share/ca-certificates
+      name: ssl-certs-host
+---
+
+***Set Up the kube-proxy Pod
+
+  We're going to run the proxy just like we did the API server. The proxy is responsible for directing traffic destined for specific services and pods to the correct location. The proxy communicates with the API server periodically to keep up to date.
+
+  Both the master and worker nodes in your cluster will run the proxy.
+
+  All you have to do is create /etc/kubernetes/manifests/kube-proxy.yaml, there are no settings that need to be configured.
+
+---
+  /etc/kubernetes/manifests/kube-proxy.yaml
+
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: kube-proxy
+    namespace: kube-system
+  spec:
+    hostNetwork: true
+    containers:
+    - name: kube-proxy
+      image: quay.io/coreos/hyperkube:v1.5.4_coreos.0
+      command:
+      - /hyperkube
+      - proxy
+      - --master=http://127.0.0.1:8080
+      - --cluster-cidr=10.2.0.0/16
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - mountPath: /etc/ssl/certs
+        name: ssl-certs-host
+        readOnly: true
+      - mountPath: /var/run/dbus
+        name: dbus
+        readOnly: false
+    volumes:
+    - hostPath:
+        path: /usr/share/ca-certificates
+      name: ssl-certs-host
+    - hostPath:
+        path: /var/run/dbus
+      name: dbus
+---
+
+***Set Up the kube-controller-manager Pod
+
+  The controller manager is responsible for reconciling any required actions based on changes to Replication Controllers.
+
+  For example, if you increased the replica count, the controller manager would generate a scale up event, which would cause a new Pod to get scheduled in the cluster. The controller manager communicates with the API to submit these events.
+
+  Create /etc/kubernetes/manifests/kube-controller-manager.yaml. It will use the TLS certificate placed on disk earlier.
+
+---
+  /etc/kubernetes/manifests/kube-controller-manager.yaml
+
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: kube-controller-manager
+    namespace: kube-system
+  spec:
+    hostNetwork: true
+    containers:
+    - name: kube-controller-manager
+      image: quay.io/coreos/hyperkube:v1.5.4_coreos.0
+      command:
+      - /hyperkube
+      - controller-manager
+      - --master=http://127.0.0.1:8080
+      - --leader-elect=true
+      - --service-account-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
+      - --root-ca-file=/etc/kubernetes/ssl/ca.pem
+      resources:
+        requests:
+          cpu: 200m
+      livenessProbe:
+        httpGet:
+          host: 127.0.0.1
+          path: /healthz
+          port: 10252
+        initialDelaySeconds: 15
+        timeoutSeconds: 15
+      volumeMounts:
+      - mountPath: /etc/kubernetes/ssl
+        name: ssl-certs-kubernetes
+        readOnly: true
+      - mountPath: /etc/ssl/certs
+        name: ssl-certs-host
+        readOnly: true
+    volumes:
+    - hostPath:
+        path: /etc/kubernetes/ssl
+      name: ssl-certs-kubernetes
+    - hostPath:
+        path: /usr/share/ca-certificates
+      name: ssl-certs-host
+---
+
+***Set Up the kube-scheduler Pod
+
+  The scheduler monitors the API for unscheduled pods, finds them a machine to run on, and then communicates the decision back to the API.
+
+  Create File /etc/kubernetes/manifests/kube-scheduler.yaml:
+
+---
+  /etc/kubernetes/manifests/kube-scheduler.yaml
+
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: kube-scheduler
+    namespace: kube-system
+  spec:
+    hostNetwork: true
+    containers:
+    - name: kube-scheduler
+      image: quay.io/coreos/hyperkube:v1.5.4_coreos.0
+      command:
+      - /hyperkube
+      - scheduler
+      - --master=http://127.0.0.1:8080
+      - --leader-elect=true
+      resources:
+        requests:
+          cpu: 100m
+      livenessProbe:
+        httpGet:
+          host: 127.0.0.1
+          path: /healthz
+          port: 10251
+        initialDelaySeconds: 15
+        timeoutSeconds: 15
+---
+
+**Set Up Calico For Network Policy (optional)
+
+  This step can be skipped if you do not wish to provide network policy to your cluster using Calico.
+
+  Details can be found {{{https://github.com/coreos/coreos-kubernetes/blob/master/Documentation/deploy-master.md}here}} if needed.
+
+
+*Start Controller Node Services
+
+  Now that we've defined all of our units and written our TLS certificates to disk, we're ready to start the master components.
+
+  Load Changed Units
+
+  First, we need to tell systemd that we've changed units on disk and it needs to rescan everything:
+
+---
+  sudo systemctl daemon-reload
+---
+
+**Write the flannel network configuration to etcd.
+
+  Earlier it was mentioned that flannel stores cluster-level configuration in etcd. We need to configure our Pod network IP range within it now:
+
+    * Replace $POD_NETWORK;
+
+    * Replace $ETCD_SERVER with one url (http://ip:port) from $ETCD_ENDPOINTS;
+
+    []
+
+---
+  curl -X PUT -d "value={\"Network\":\"$POD_NETWORK\",\"Backend\":{\"Type\":\"vxlan\"}}" "$ETCD_SERVER/v2/keys/coreos.com/network/config"
+---
+
+**Restart the flannel service
+
+  After configuring flannel, we should restart it for our changes to take effect. Note that this will also restart the docker daemon and could impact running containers.
+
+---
+  sudo systemctl start flanneld
+
+  sudo systemctl enable flanneld
+---
+
+**Start the kubelet service
+
+  Now that everything is configured, we can start the kubelet, which will also start the Pod manifests for the API server, the controller manager, proxy and scheduler.
+
+---
+  sudo systemctl start kubelet
+---
+
+  Ensure that the kubelet will start after a reboot:
+
+---
+  sudo systemctl enable kubelet
+---
+
+*Basic Controller Health Checks
+
+  Theoretically, our control node is now fully built and active. we can make some basic checks to it as follows:
+
+  First, we need to make sure the Kubernetes API is available (this could take a few minutes after starting the kubelet.service)
+
+---
+  curl http://127.0.0.1:8080/version
+---
+
+  A successful response should look something like:
+
+---
+  {
+    "major": "1",
+    "minor": "4",
+    "gitVersion": "v1.5.2+coreos.0",
+    "gitCommit": "ec2b52fabadf824a42b66b6729fe4cff2c62af8c",
+    "gitTreeState": "clean",
+    "buildDate": "2016-11-14T19:42:00Z",
+    "goVersion": "go1.6.3",
+    "compiler": "gc",
+    "platform": "linux/amd64"
+  }
+---
+
+  To check the health of the kubelet systemd unit that we created,
+
+---
+  systemctl status kubelet.service.
+---
+
+  Our Pods should now be starting up, downloading their containers. Once the kubelet has started, you can check that  it has created its pods via the metadata api:
+
+---
+  curl -s localhost:10255/pods | jq -r '.items[].metadata.name'
+
+  kube-scheduler-$node
+  kube-apiserver-$node
+  kube-controller-$node
+  kube-proxy-$node
+---
+
+  curl -s localhost:10255/pods | jq
+
+======
+
+*Configure the Worker Nodes
+
+  Boot one or more CoreOS nodes which will be used as Kubernetes Workers. The principle scripts used to set up the Worker node shouls already be present in the installation; though you must use a CoreOS version 962.0.0+ for the /usr/lib/coreos/kubelet-wrapper script to be present. See kubelet-wrapper for more information.
+
+
+**Install the required certificates.
+
+  Place the TLS keypairs generated above in the following locations. Note that each keypair is unique to the worker and should be installed on the worker node it was specifically generated for:
+
+---
+    File: /etc/kubernetes/ssl/ca.pem
+    File: /etc/kubernetes/ssl/${WORKER_FQDN}-worker.pem
+    File: /etc/kubernetes/ssl/${WORKER_FQDN}-worker-key.pem
+---
+
+    And make sure you've set proper permission for private key:
+
+---
+  sudo chmod 600 /etc/kubernetes/ssl/*-key.pem
+  sudo chown root:root /etc/kubernetes/ssl/*-key.pem
+---
+
+  Create symlinks to the worker-specific certificate and key so that the remaining configurations on the workers do not have to be unique per worker.
+
+---
+  cd /etc/kubernetes/ssl/
+
+  sudo ln -s ${WORKER_FQDN}-worker.pem worker.pem
+
+  sudo ln -s ${WORKER_FQDN}-worker-key.pem worker-key.pem
+---
+
+**Networking Configuration
+
+***Flannel Service
+
+  Just like earlier, create the /etc/flannel/options.env and modify these values:
+
+    * Replace ${ADVERTISE_IP} with this node's publicly routable IP.
+
+    * Replace ${ETCD_ENDPOINTS}
+
+    []
+
+---
+  /etc/flannel/options.env
+
+  FLANNELD_IFACE=${ADVERTISE_IP}
+  FLANNELD_ETCD_ENDPOINTS=${ETCD_ENDPOINTS}
+---
+
+  e.g.
+
+---
+  FLANNELD_IFACE=172.17.4.201
+  FLANNELD_ETCD_ENDPOINTS=http://172.17.4.51:2379
+---
+
+  Next create a systemd drop-in, which will use the above configuration when flannel starts
+
+---
+  /etc/systemd/system/flanneld.service.d/40-ExecStartPre-symlink.conf
+
+  [Service]
+  ExecStartPre=/usr/bin/ln -sf /etc/flannel/options.env /run/flannel/options.env
+---
+
+***Docker Configuration for Flannel
+
+  We need to 'require' that flanneld is running prior to Docker start.
+
+  Create /etc/systemd/system/docker.service.d/40-flannel.conf
+
+---
+  /etc/systemd/system/docker.service.d/40-flannel.conf
+
+  [Unit]
+  Requires=flanneld.service
+  After=flanneld.service
+  [Service]
+  EnvironmentFile=/etc/kubernetes/cni/docker_opts_cni.env
+---
+
+***Docker Container Network Interface(CNI) options
+
+  Create the Docker CNI Options file referenced in the above:
+
+---
+  /etc/kubernetes/cni/docker_opts_cni.env
+
+  DOCKER_OPT_BIP=""
+  DOCKER_OPT_IPMASQ=""
+---
+
+  Setup the Flannel CNI configuration with below. If you intend to use Calico for networking, setup using Set Up the CNI config (optional) instead.
+
+---
+  /etc/kubernetes/cni/net.d/10-flannel.conf
+
+  {
+      "name": "podnet",
+      "type": "flannel",
+      "delegate": {
+          "isDefaultGateway": true
+      }
+  }
+---
+
+**Create the kubelet Unit
+
+  The kubelet is the agent on each machine that starts and stops Pods and other machine-level tasks.
+
+  The kubelet itself usually runs as a container image. The container image in quay.io/coreos/hyperkube, and runs with the name /kubelet within the process tree.
+
+  Because of its central role in orchestrating containers, the kubelet requires special permissions from the host. Because of its better ability to support these special permissions, it is recommended to run the kubelet container using rkt (rather than, say, docker).
+
+  When the worker node is started, it is the kubelet that will start the control plane components on the worker.
+
+  Create /etc/systemd/system/kubelet.service and substitute the following variables:
+
+      * Replace $/{MASTER_HOST/};
+
+      * Replace $/{ADVERTISE_IP/} with this node's publicly routable IP;
+
+      * Replace $/{DNS_SERVICE_IP/};
+
+      * Replace $/{K8S_VER/} This will map to: quay.io/coreos/hyperkube:$/{K8S_VER/} release, e.g. v1.5.4_coreos.0;
+
+      * If using Calico for network policy:
+
+        * Replace $/{NETWORK_PLUGIN/} with cni;
+
+        * Add the following to RKT_RUN_ARGS=\
+              --volume cni-bin,kind=host,source=/opt/cni/bin \
+              --mount volume=cni-bin,target=/opt/cni/bin
+
+        * Add ExecStartPre=/usr/bin/mkdir -p /opt/cni/bin
+
+        []
+
+      * Decide if you will use additional features such as:
+
+        * mounting ephemeral disks;
+
+        * allow pods to mount RDB or iSCSI volumes;
+
+        * allowing access to insecure container registries;
+
+        * changing your CoreOS auto-update settings;
+
+        []
+      []
+
+  Note: Anyone with access to port 10250 on a node can execute arbitrary code in a pod on the node. Information, including logs and metadata, is also disclosed on port 10255. See securing the Kubelet API for more information.
+
+---
+  /etc/systemd/system/kubelet.service
+
+  [Service]
+  Environment=KUBELET_IMAGE_TAG=${K8S_VER}
+  Environment=KUBELET_IMAGE_URL=quay.io/coreos/hyperkube
+
+  Environment=\
+    "RKT_RUN_ARGS=--uuid-file-save=/var/run/kubelet-pod.uuid   \
+      --volume dns,kind=host,source=/etc/resolv.conf   \
+      --mount volume=dns,target=/etc/resolv.conf   \
+      --volume rkt,kind=host,source=/opt/bin/host-rkt   \
+      --mount volume=rkt,target=/usr/bin/rkt   \
+      --volume var-lib-rkt,kind=host,source=/var/lib/rkt   \
+      --mount volume=var-lib-rkt,target=/var/lib/rkt   \
+      --volume stage,kind=host,source=/tmp   \
+      --mount volume=stage,target=/tmp   \
+      --volume var-log,kind=host,source=/var/log   \
+      --mount volume=var-log,target=/var/log"
+
+  ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
+  ExecStartPre=/usr/bin/mkdir -p /var/log/containers
+  ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/run/kubelet-pod.uuid
+
+  ExecStart=/usr/lib/coreos/kubelet-wrapper \
+    --api-servers=https://${MASTER_HOST} \
+    --cni-conf-dir=/etc/kubernetes/cni/net.d \
+    --network-plugin=${NETWORK_PLUGIN} \
+    --container-runtime=docker \
+    --rkt-path=/usr/bin/rkt   \
+    --rkt-stage1-image=coreos.com/rkt/stage1-coreos   \
+    --register-node=true \
+    --allow-privileged=true \
+    --pod-manifest-path=/etc/kubernetes/manifests \
+    --hostname-override=${ADVERTISE_IP} \
+    --cluster_dns=${DNS_SERVICE_IP} \
+    --cluster_domain=cluster.local \
+    --kubeconfig=/etc/kubernetes/worker-kubeconfig.yaml \
+    --tls-cert-file=/etc/kubernetes/ssl/worker.pem \
+    --tls-private-key-file=/etc/kubernetes/ssl/worker-key.pem
+
+  ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
+  Restart=always
+  RestartSec=10
+
+  [Install]
+  WantedBy=multi-user.target
+---
+
+  For example,
+
+---
+  [Service]
+  Environment=KUBELET_IMAGE_TAG=v1.5.4_coreos.0
+  Environment=KUBELET_IMAGE_URL=quay.io/coreos/hyperkube
+  Environment="RKT_RUN_ARGS=--uuid-file-save=/var/run/kubelet-pod.uuid   --volume dns,kind=host,source=/etc/resolv.conf   --mount volume=dns,target=/etc/resolv.conf   --volume rkt,kind=host,source=/opt/bin/host-rkt   --mount volume=rkt,target=/usr/bin/rkt   --volume var-lib-rkt,kind=host,source=/var/lib/rkt   --mount volume=var-lib-rkt,target=/var/lib/rkt   --volume stage,kind=host,source=/tmp   --mount volume=stage,target=/tmp   --volume var-log,kind=host,source=/var/log   --mount volume=var-log,target=/var/log   "
+  ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
+  ExecStartPre=/usr/bin/mkdir -p /var/log/containers
+  ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/run/kubelet-pod.uuid
+  ExecStartPre=/usr/bin/mkdir -p /opt/cni/bin
+  ExecStart=/usr/lib/coreos/kubelet-wrapper   --api-servers=http://172.17.4.101:443   --cni-conf-dir=/etc/kubernetes/cni/net.d   --network-plugin=cni   --container-runtime=docker   --rkt-path=/usr/bin/rkt   --rkt-stage1-image=coreos.com/rkt/stage1-coreos   --register-node=true   --allow-privileged=true   --pod-manifest-path=/etc/kubernetes/manifests   --hostname-override=172.17.4.201   --cluster_dns=10.3.0.10   --cluster_domain=cluster.local   --kubeconfig=/etc/kubernetes/worker-kubeconfig.yaml   --tls-cert-file=/etc/kubernetes/ssl/worker.pem   --tls-private-key-file=/etc/kubernetes/ssl/worker-key.pem
+  ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
+  Restart=always
+  RestartSec=10
+
+  [Install]
+  WantedBy=multi-user.target
+---
+
+**The POD Manifest
+
+  The worker node runs just one controll plane pod:
+
+    * kube-proxy
+
+  As with the Controller node, this runs the hyperkube image with suitable parameters to modify its behaviour.
+
+
+***Set Up the kube-proxy Pod
+
+  Create /etc/kubernetes/manifests/kube-proxy.yaml:
+
+    Replace $\{MASTER_HOST\}
+
+---
+  /etc/kubernetes/manifests/kube-proxy.yaml
+
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: kube-proxy
+    namespace: kube-system
+    annotations:
+      rkt.alpha.kubernetes.io/stage1-name-override: coreos.com/rkt/stage1-fly
+  spec:
+    hostNetwork: true
+    containers:
+    - name: kube-proxy
+      image: quay.io/coreos/hyperkube:v1.5.4_coreos.0
+      command:
+      - /hyperkube
+      - proxy
+      - --master=${MASTER_HOST}
+      - --cluster-cidr=10.2.0.0/16
+      - --kubeconfig=/etc/kubernetes/worker-kubeconfig.yaml
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - mountPath: /etc/ssl/certs
+        name: "ssl-certs"
+      - mountPath: /etc/kubernetes/worker-kubeconfig.yaml
+        name: "kubeconfig"
+        readOnly: true
+      - mountPath: /etc/kubernetes/ssl
+        name: "etc-kube-ssl"
+        readOnly: true
+      - mountPath: /var/run/dbus
+        name: dbus
+        readOnly: false
+    volumes:
+    - name: "ssl-certs"
+      hostPath:
+        path: "/usr/share/ca-certificates"
+    - name: "kubeconfig"
+      hostPath:
+        path: "/etc/kubernetes/worker-kubeconfig.yaml"
+    - name: "etc-kube-ssl"
+      hostPath:
+        path: "/etc/kubernetes/ssl"
+    - hostPath:
+        path: /var/run/dbus
+      name: dbus
+---
+
+  For example:
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+name: kube-proxy
+namespace: kube-system
+annotations:
+  rkt.alpha.kubernetes.io/stage1-name-override: coreos.com/rkt/stage1-fly
+spec:
+hostNetwork: true
+containers:
+- name: kube-proxy
+  image: quay.io/coreos/hyperkube:v1.5.4_coreos.0
+  command:
+  - /hyperkube
+  - proxy
+  - --master=http://172.17.4.101:443
+  - --cluster-cidr=10.2.0.0/16
+  - --kubeconfig=/etc/kubernetes/worker-kubeconfig.yaml
+  securityContext:
+    privileged: true
+  volumeMounts:
+  - mountPath: /etc/ssl/certs
+    name: "ssl-certs"
+  - mountPath: /etc/kubernetes/worker-kubeconfig.yaml
+    name: "kubeconfig"
+    readOnly: true
+  - mountPath: /etc/kubernetes/ssl
+    name: "etc-kube-ssl"
+    readOnly: true
+  - mountPath: /var/run/dbus
+    name: dbus
+    readOnly: false
+volumes:
+- name: "ssl-certs"
+  hostPath:
+    path: "/usr/share/ca-certificates"
+- name: "kubeconfig"
+  hostPath:
+    path: "/etc/kubernetes/worker-kubeconfig.yaml"
+- name: "etc-kube-ssl"
+  hostPath:
+    path: "/etc/kubernetes/ssl"
+- hostPath:
+    path: /var/run/dbus
+  name: dbus
+---
+
+**Set up kubeconfig
+
+  In order to facilitate secure communication between Node components and Master components, the kubeconfig file can be used to define authentication settings. In this case, the kubelet and proxy pod will reading this configuration to communicate with the API on the Controller.
+
+  Create /etc/kubernetes/worker-kubeconfig.yaml:
+
+---
+  /etc/kubernetes/worker-kubeconfig.yaml
+
+  apiVersion: v1
+  kind: Config
+  clusters:
+  - name: local
+    cluster:
+      certificate-authority: /etc/kubernetes/ssl/ca.pem
+  users:
+  - name: kubelet
+    user:
+      client-certificate: /etc/kubernetes/ssl/worker.pem
+      client-key: /etc/kubernetes/ssl/worker-key.pem
+  contexts:
+  - context:
+      cluster: local
+      user: kubelet
+    name: kubelet-context
+  current-context: kubelet-context
+---
+
+**Start Services
+
+  We are now in a position to start the Worker services.
+
+  Tell systemd to rescan the units on disk:
+
+---
+  sudo systemctl daemon-reload
+---
+
+***Start kubelet and flannel services
+
+  Start the flannel and kubelet services (which will, in turn, start the proxy pod).
+
+---
+  sudo systemctl start flanneld
+
+  sudo systemctl start kubelet
+---
+
+  Ensure that the services start on each boot:
+
+---
+  sudo systemctl enable flanneld
+
+  sudo systemctl enable kubelet
+---
+
+**Basic Worker Health Checks
+
+  To check the health of the kubelet systemd unit that we created
+
+---
+  systemctl status kubelet.service
+---
+
+
+
+*kubectl
+
+  kubectl is the command line tool used for accessing/manipulating a running kubernetes cluster.
+
+  Its basic usage is described in the {{{https://kubernetes.io/docs/reference/kubectl/overview/}kubectl overview}} pages.
+
+  Executables are available for both linux and osx, and for most scenarios executing from the client osx machine would seem like the natural choice.
+
+  For osx, kubectl can be installed either via brew:
+
+    brew install kubectl
+
+  or via curl
+
+    curl -O https://storage.googleapis.com/kubernetes-release/release/v1.6.1/bin/darwin/amd64/kubectl
+
+
+  Instinctively, the brew route seemed to be the way to go. However, this did cause difficulties ( see below).
+
+    Basically that version 1.17 does not work with server 1.5.4 which seems to be installed with this version of coreOs (beta 2303.2.0)
+
+quay.io/coreos/hyperkube:v1.5.4_coreos.0
+
+
+export KUBECONFIG="$(pwd)/kubeconfig"
+
+
+---
+  apiVersion: v1
+  clusters:
+  - cluster:
+      certificate-authority: ssl/ca.pem
+      server: https://172.17.4.101:443
+    name: vagrant-multi-cluster
+  contexts:
+  - context:
+      cluster: vagrant-multi-cluster
+      namespace: default
+      user: vagrant-multi-admin
+    name: vagrant-multi
+  current-context: vagrant-multi
+  kind: Config
+  preferences: {}
+  users:
+  - name: vagrant-multi-admin
+    user:
+      client-certificate: ssl/admin.pem
+      client-key: ssl/admin-key.pem
+---
+
+configuring via a command set
+
+kubectl config set-credentials vagrant-multi-admin \
+     --certificate-authority=${PWD}/ssl/ca.pem \
+     --client-key=${PWD}/ssl/admin-key.pem \
+     --client-certificate=${PWD}/ssl/admin.pem
+
+User "vagrant-multi-admin" set.
+
+
+kubectl config set-context vagrant-multi  \
+     --cluster=vagrant-multi-cluster \
+     --user=vagrant-multi-admin
+
+Context "vagrant-multi" created.
+
+
+kubectl config use-context vagrant-multi
+
+Switched to context "vagrant-multi".
+
+
+
+  kubectl get nodes
+
+  kubectl cluster-info dump
+
+
+  Install the demo application...
+
+LOTS MORE TO DO HERE...
+
+Still need to writeup the building of the etcd server!!!
+
+
+Clashing with Jenkins to sort out!!!
+
+Think I've got it sort of working when booting to 'stable' stream on etcd server but 'beta' stream on controller and worker nodes.
+
+Increase the memory on the c1 server and try and get teh build to complete!.

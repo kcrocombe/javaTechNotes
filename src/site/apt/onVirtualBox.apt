@@ -45,9 +45,9 @@ On Virtual box
 
 * The Vagrant Ignition Plugin
 
-  A plugin to vagrant (Vagrant::Ignition) exist, whose purpose is to inject Ignition json scripts inot the virtual server tht it is intending to build.
+  A plugin to vagrant (Vagrant::Ignition) exist, whose purpose is to inject Ignition json scripts inot the virtual server that it is intending to build.
 
-  Rather than provide the scripts as command line paramters to the installer, the plugin generates  images of gpts formatted drives and places the json files it generates on that. It directs the guest os to mount the drives, and so the files become available to the guest os in a location where it knows where to look for them.
+  Rather than provide the scripts as command line parameters to the installer, the plugin generates  images of gpts formatted drives and places the json files it generates on that. It directs the guest os to mount the drives, and so the files become available to the guest os in a location where it knows where to look for them.
 
   Vagrant is cabable of generating Ignition scripts in accordance with directives in the Vagrant configuration file. Any specific ignition scripts that the user wishes to add is merged into the default before it is presented.
 
@@ -191,6 +191,26 @@ On Virtual box
   VBoxManage start vm <vm>
 
 
+
+*Troubleshooting
+
+** UUID mismatches
+
+  Especially when using vagrant, an occasional error seems to be thrown when starting up a virtualBox instance:
+
+---
+  There was an error while executing `VBoxManage`, a CLI used by Vagrant
+  for controlling VirtualBox. The command and stderr is shown below.
+
+  Command: ["startvm", "4ba3db26-dcbe-4a24-8b2a-7875e9981b1e", "--type", "headless"]
+
+  Stderr: VBoxManage: error: UUID {b55130c6-5492-4200-aa9a-08c16ecb1f0c} of the medium '/Users/kevin/dvl/gitReps/coreos-kubernetes/multi-node/vagrant/IgnitionVirtualDisks/configDskEtcd1.vmdk' does not match the value {2535bdf5-b50a-4028-817c-716ebd7ebae3} stored in the media registry ('/Users/kevin/Library/VirtualBox/VirtualBox.xml')
+  VBoxManage: error: Details: code NS_ERROR_FAILURE (0x80004005), component MediumWrap, interface IMedium
+---
+
+  The vmdk files are textual metadata files, and the UUID in question can clearly be seen in (in this case) configDskEtcd1.vmdk. The reference to the media registry is mis-leading. The clashing uuid is actually in the .vmdk file describing the virtualBox instance ( in this case in /Volumes/media/virtualBox/vagrant_e1_1577363503410_62081/coreos_production_vagrant_image.vmdk). Have been unable to discover why this happens sometimes.
+
+  However it does seem to be fixable by editing the configDskEtcd1.vmdk and substituting the correct UUID. (It does not seem to work if you edit the coreos_production_vagrant_image.vmdk file: it just seems to think the instance has become corrupted.
 
 
   ==========================================

@@ -3,11 +3,11 @@ Fedora-coreos - the future development of CoreOs
 
 *Introduction
 
-  Fedora CoreOs is, or will be,  the upstream community version of {{{./onContainerLinux.html}Container Linux}} (formerly coreos). Currently it is only available on a 'testing' stream (in contrast to the stable, beta, alpha streams of Container Linux).
+  Fedora CoreOs is, or will be,  the upstream community version of {{{./onContainerLinux.html}Container Linux}} (formerly coreOs). Currently it is only available on a 'testing' stream (in contrast to the stable, beta, alpha streams of Container Linux).
 
   My experience to date, as summarised within this page, is that it still requires a bit more work before you would want to base a project on it: bits of it, particularly Ignition configuration, are not yet fully developed. However, since it is likely to be the future it is worth keeping an eye on.
 
-  This page describes my experience building a Fedora-Coreos machine form a raw-image (both from cdrom and pxe installs), creating a custom vagrant-ignition plugin in order to support it, and packaging it a vagrant Box file.
+  This page describes my experience building a Fedora-CoreOs machine form a raw-image (both from cdrom and pxe installs), creating a custom vagrant-ignition plugin in order to support it, and packaging it a vagrant Box file.
 
 ===
 
@@ -39,7 +39,7 @@ Fedora-coreos - the future development of CoreOs
 
     * etcd;
 
-    * kubernnetes.
+    * kubernetes.
 
     []
 
@@ -155,7 +155,7 @@ Fedora-coreos - the future development of CoreOs
   Note: in order to make repeated installs easier, a copy of this script was also placed on <<</private/tftpboot>>>. It was pulled over as required using curl
 
 ---
-      curl --get http://192.168.0.17:8000/install.sh > tmp.sh
+  curl --get http://192.168.0.17:8000/install.sh > tmp.sh
 ---
 
   Note that although the original intention was to use tftp, it was discovered that http was MUCH faster. In fact, for a file the size of the raw install image, tftp was too slow to be workable. So, instead the simple python webserver was run over the <<</private/tftboot>>> directory.
@@ -201,13 +201,13 @@ Fedora-coreos - the future development of CoreOs
   It is recommended that this should be installed as a docker image on the server.
 
 ---
-    docker pull quay.io/coreos/fcct:v0.2.0
+  docker pull quay.io/coreos/fcct:v0.2.0
 
-    # Run fcct using standard in and standard out
-    docker run -i --rm quay.io/coreos/fcct:v0.2.0 -pretty -strict < your_config.fcc > transpiled_config.ign
+  # Run fcct using standard in and standard out
+  docker run -i --rm quay.io/coreos/fcct:v0.2.0 -pretty -strict < your_config.fcc > transpiled_config.ign
 
-    # Run fcct using files.
-    docker run --rm -v /path/to/your_config.fcc:/config.fcc:z quay.io/coreos/fcct:v0.2.0 -pretty -strict -input /config.fcc > transpiled_config.ign
+  # Run fcct using files.
+  docker run --rm -v /path/to/your_config.fcc:/config.fcc:z quay.io/coreos/fcct:v0.2.0 -pretty -strict -input /config.fcc > transpiled_config.ign
 ---
 
 
@@ -223,8 +223,8 @@ Fedora-coreos - the future development of CoreOs
   Messages of the form:
 
 ---
-      dc: stack empty
-      43583897600%
+  dc: stack empty
+  43583897600%
 ---
 
   were streamed constantly to the console. I suspect the dc line is the number of bytes: at a guess I'd says its doing some checksum verification before proceeding...
@@ -255,11 +255,11 @@ Fedora-coreos - the future development of CoreOs
 
     []
 
-    Some of these advantages are eroded, however, since the install is only an emulated PXE install rather than a proper PXE install. The emulated PXE install REQUIRES the kernel and rootfs images to be copied to the <<<~/Library/VirtualBox/TFTP>>> directory.
+  Some of these advantages are eroded, however, since the install is only an emulated PXE install rather than a proper PXE install. The emulated PXE install REQUIRES the kernel and rootfs images to be copied to the <<<~/Library/VirtualBox/TFTP>>> directory.
 
   And also loading of these biggish images is pretty slow...
 
-  However the kernel and rootfs images were down loaded from here.
+  However, the kernel and rootfs images were down loaded from here.
 
     {{https://builds.coreos.fedoraproject.org/prod/streams/testing/builds/30.20191014.0/x86_64/fedora-coreos-30.20191014.0-installer-kernel-x86_64}}
 
@@ -374,7 +374,7 @@ Fedora-coreos - the future development of CoreOs
 
     * when I tried a v3.0.0 script then that seemed to work ok
 
-    Examples of working Ignition scripts were found {{{https://github.com/coreos/ignition/blob/master/doc/examples.md} here}} and the script which finally worked for me is indicated below.
+  Examples of working Ignition scripts were found {{{https://github.com/coreos/ignition/blob/master/doc/examples.md} here}} and the script which finally worked for me is indicated below.
 
 ---
   {
@@ -409,7 +409,6 @@ Fedora-coreos - the future development of CoreOs
 ---
 
 ===
-
 
 *Packaging the fedora-coreos install for Vagrant.
 
@@ -452,7 +451,7 @@ Fedora-coreos - the future development of CoreOs
   [[1]] If necessary, put in place a port-forwarding rule and then ssh onto the box using the id installed via Ignition
 
 ---
-    ssh 127.0.0.1 -p 2222 -i /volumes/media/vagrant/.vagrant.d/insecure_private_key -l vagrant
+  ssh 127.0.0.1 -p 2222 -i /volumes/media/vagrant/.vagrant.d/insecure_private_key -l vagrant
 ---
 
   The port forwarding rule lets us address a local port (2222 in above), but have that be forwarded on to the actual port on the virtual server (22)
@@ -460,13 +459,13 @@ Fedora-coreos - the future development of CoreOs
   [[1]] Some say that it helps the compression algorithm if we fill the unused space on the virtual disk with zeros and then compress it, so:
 
 ---
-      dd if=/dev/zero of=/sysroot/empty.dat bs=1M
+  dd if=/dev/zero of=/sysroot/empty.dat bs=1M
 ---
 
   When space runs out, remove the file
 
 ---
-      rm /sysroot/empty.dat
+  rm /sysroot/empty.dat
 ---
 
   [[1]] Prepare a default <<<Vagrantfile>>> for inclusion with the box, along with any include files that that file may need. This <<<Vagrantfile>>> will be merged into the project <<<Vagrantfile>>>, so represents, in a sense, a default setting.
@@ -497,7 +496,7 @@ Fedora-coreos - the future development of CoreOs
   [[1]] The package is now available for use. In theory, it can be uploaded to a shared repository at this stage ({{https://app.vagrantup.com}}). However, it is probably a good idea to test it first, since the box-file will rarely be correct first time around.
 
 ---
-    vagrant init pegortech-fedora-coreos.box
+  vagrant init pegortech-fedora-coreos.box
 ---
 
   This will create a base VirtualBox file that you can edit as you please.
@@ -581,20 +580,20 @@ Fedora-coreos - the future development of CoreOs
 
   However, once this is packaged up into a gem file, it does not seem to want to install as a plugin.
 
-  ---
-       gem build  pegortech-vagrant-ignition.gemspec
+---
+  gem build  pegortech-vagrant-ignition.gemspec
 
-       vagrant plugin install
-  ---
+  vagrant plugin install
+---
 
   By naming the plugin <<<pegortech-vagrant-ignition>>>, this seemed to imply that the packaged gem was expecting a particular internal directory structure ( basically the - character implies a subdirectory). Consequently, the files packaged into the gem should have been in:
 
 ---
-        lib/pegortech/vagrant/ignition
+  lib/pegortech/vagrant/ignition
 
-        or
+  or
 
-        lib/pegortech-vagrant-ignition
+  lib/pegortech-vagrant-ignition
 ---
 
   with the former being the preferred.
@@ -605,14 +604,15 @@ Fedora-coreos - the future development of CoreOs
 ***Problem 4.
 
   Even with the gem correctly re-coded, I initially struggled to get vagrant to take notice of it. Uninstalling and reinstalling did not seem to do the trick.
-  ---
-   plugin uninstall vagrant-ignition
 
-   Uninstalling the 'vagrant-ignition' plugin...
-   Vagrant failed to properly resolve required dependencies. These
-   errors can commonly be caused by misconfigured plugin installations
-   or transient network issues. The reported error is:
-  ---
+---
+  plugin uninstall vagrant-ignition
+
+  Uninstalling the 'vagrant-ignition' plugin...
+  Vagrant failed to properly resolve required dependencies. These
+  errors can commonly be caused by misconfigured plugin installations
+  or transient network issues. The reported error is:
+---
 
   However plugin does seem to have been deinstalled...
 
@@ -636,13 +636,13 @@ Fedora-coreos - the future development of CoreOs
   However, when the plugin was built:
 
 ---
-      gem build  pegortech-vagrant-ignition.gemspec
+  gem build  pegortech-vagrant-ignition.gemspec
 ---
 
   and installed:
 
 ---
-      vagrant plugin install
+  vagrant plugin install
 ---
 
   The changes to the version did not seem to be being picked up: the config.ign.marged file was still indicating use of Version2 ignition.

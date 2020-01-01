@@ -45,7 +45,7 @@ Java Technologies : Documentation
 
     []
 
-  Web Hosting Stuff:
+  Microservices and Web Hosting Stuff:
 
     * {{{./onWebHostingOfferings.html}On Web Hosting Offerings}}
 
@@ -58,6 +58,12 @@ Java Technologies : Documentation
     * {{{./onContainerLinux.html}On Container Linux (CoreOS) and Vagrant}}
 
     * {{{./onFedoraCoreOs.html}On Fedora-CoreOS and Vagrant}}
+
+    * {{{./onEtcd.html}On the etcd distributed database}}
+
+    * {{{./onFlannel.html}On flannel (a network fabric provider)}}
+
+    * {{{./onKubernetes.html}Notes on Kubernetes}}
 
     []
 
@@ -74,6 +80,8 @@ Java Technologies : Documentation
     * {{{./onDocker.html}On Docker}}
 
     []
+
+
 
   Spring Stuff:
 

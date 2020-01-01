@@ -1,11 +1,10 @@
 Container Linux (CoreOS)
 
-
 * Introduction
 
   Container Linux (CoreOS) is a distribution of Linux specifically geared to supporting Container based application. It is stripped down to the bare essentials, and shipped as an integral unit.
 
-  It was originally package by CoreOS company, and supplied in both community (CoreOS) and commercial (Tectonic) forms. As of December 2018, CoreOS have merged, or entered into some form of deal, with RedHat with the view to create an new distribution. Once again there will be 2 packagings : Fedora CoreOS (FCOS) as the community edition and Red Hat Linux CoreOS (RHCOS). As of now, Fedora Coreos is only available from a 'Testing' stream. My {{{./onFedoraCoreOs.html}experience playing with Fedora CoreOS}} has been documented.
+  It was originally package by CoreOS company, and supplied in both community (CoreOS) and commercial (Tectonic) forms. As of December 2018, CoreOS have merged, or entered into some form of deal, with RedHat with the view to create an new distribution. Once again there will be 2 packagings : Fedora CoreOS (FCOS) as the community edition and Red Hat Linux CoreOS (RHCOS). As of now, Fedora CoreOS is only available from a 'Testing' stream. My {{{./onFedoraCoreOs.html}experience playing with Fedora CoreOS}} has been documented.
 
   Decent documentation on Container Linux is available {{{https://coreos.com/os/docs/latest/}here}}.
 
@@ -34,7 +33,7 @@ Container Linux (CoreOS)
 
 **Containers
 
-  A central part of the philosophy of Coreos is that all software running on the platform does so within Containers.
+  A central part of the philosophy of CoreOs is that all software running on the platform does so within Containers.
 
   Containers are means of achieving virtualisation : from the perspective of the application appears as if it was running on its own customised and dedicated machine; whereas in actual fact it is just running as one process on a host machine.
 
@@ -53,7 +52,7 @@ Container Linux (CoreOS)
 
     * etcd - provides cluster distributed key-value storage  and is the backing data store for kubernetes
 
-    * flannel - provides a software defined networkin layer for kubernetes clusters
+    * flannel - provides a software defined networking layer for kubernetes clusters
 
     * docker.
 
@@ -72,7 +71,15 @@ Container Linux (CoreOS)
 
     * OpenStack;
 
+    * Vagrant/Virtual Box
+
+    * Vagrant/VMWare
+
+    * Raw Metal (For install direct to a Hypervisor)
+
     []
+
+  There are specific images available to each of these. (Although not all stream mays be available for each image)
 
 ====
 
@@ -98,7 +105,7 @@ Container Linux (CoreOS)
   These links are maintained by the <<<systemctl>>> process. For instance, the command:
 
 ---
-    systemctl enable foo.service
+  systemctl enable foo.service
 ---
 
   will scan the foo unit configuraton file <<</etc/systemd/system/foo.service>>>. One of the fields within this file will be the <WantedBy=multi-user.target>. <<<systemctl>>> will read this and create/amend the links in the target directory accordingly.
@@ -144,6 +151,7 @@ Container Linux (CoreOS)
 
 ***status
 
+---
   systemctl  is-active <unit>
 
   systemctl  is-enabled <unit>
@@ -158,50 +166,61 @@ Container Linux (CoreOS)
           - disabled ( i.e. will not be brought at boot time)
           - enabled ( i.e. will come up at boot time.)
           - masked ( A masked unit has been linked to /dev/null, making it un-enableable/unstartable)
+---
 
 ***Information
 
+---
   systemctl  cat <unit>
 
   systemctl  show <unit>
 
   systemctl  list-dependencies
+---
 
 ***Deleting a service
 
+---
   systemctl stop <unit>
 
   systemctl disable <unit>
+---
 
     This will remove the symbolic links in etc/systemd/system/<target>.target.wants
 
-
+---
   systemctl daemon-reload <unit>
 
   systemctl reset-failed <unit>
+---
 
 
 ***Restarting a Service
 
+---
   systemctl restart <unit>
 
   systemctl reload <unit>
 
   systemctl reload-or-restart <unit>
+---
 
-***masking a service
+***Masking a service
 
-  Masking a service makes it unstartable and un-enableable until it is unmasked. It works by essentially creating links to /dev/null
+  Masking a service makes it unstartable and un-enable-able until it is unmasked. It works by essentially creating links to /dev/null
 
+---
   systemctl mask <unit>
 
   systemctl unmask <unit>
+---
 
 
 ***Enabling and Starting Services
 
   Systemd will start a Unit at boot time if the Unit is enabled. When a Unit is enabled, the symbolic links will be created within /etc/systemd/system/<target>.target.wants
 
+---
   systemctl enable  <unit>
 
 
@@ -212,25 +231,35 @@ Container Linux (CoreOS)
   systemctl load <unit>
 
   systemctl status <unit>
+---
 
 
 ***System Boot State/Run ignore_log
 
-    systemctl multi-user
+---
+  systemctl multi-user
 
-    systemctl rescue
+  systemctl rescue
 
-    systemctl halt
+  systemctl halt
 
-    systemctl poweroff
+  systemctl poweroff
 
-    systemctl reboot
+  systemctl reboot
+---
 
 
 ====
 
-*Operating System Updates.
+*The Error messaging System.
 
+journalctl -u coreos-cloudinit-658653359
+
+...to be continued.
+
+
+
+*Operating System Updates.
 
 **Streams
 
@@ -244,7 +273,9 @@ Container Linux (CoreOS)
 
     []
 
-  Each installation ofd the OS is aware of the particular stream on which it is based and will update itself reliably in order to keep itself in step it.
+  Each installation of the OS is aware of the particular stream on which it is based and will update itself reliably in order to keep itself in step it.
+
+  Note that each release may not be available on all streams: I have found that the Beta stream is occasionally not available. (I suspect this happens when Beta moves to Stable, and Alpha is not yet ready to move to Beta.)
 
   To see the operating system release that the system is running at any particular moment:
 
@@ -264,16 +295,16 @@ Container Linux (CoreOS)
   To support this, coreOs use a very particular partition layout on their disks:
 
 ---
-      Number 	Label 	Description 	Partition Type
-        1 	EFI-SYSTEM 	Contains the bootloader 	FAT32
-        2 	BIOS-BOOT 	Contains the second stages of GRUB for use when booting from BIOS 	grub core.img
-        3 	USR-A 	One of two active/passive partitions holding Container Linux 	EXT4
-        4 	USR-B 	One of two active/passive partitions holding Container Linux 	(empty on first boot)
-        5 	ROOT-C 	This partition is reserved for future use 	(none)
-        6 	OEM 	Stores configuration data specific to an OEM platform 	EXT4
-        7 	OEM-CONFIG 	Optional storage for an OEM 	(defined by OEM)
-        8 	(unused) 	This partition is reserved for future use 	(none)
-        9 	ROOT 	Stateful partition for storing persistent data 	EXT4, BTRFS, or XFS
+  Number 	Label 	Description 	Partition Type
+    1 	EFI-SYSTEM 	Contains the bootloader 	FAT32
+    2 	BIOS-BOOT 	Contains the second stages of GRUB for use when booting from BIOS 	grub core.img
+    3 	USR-A 	One of two active/passive partitions holding Container Linux 	EXT4
+    4 	USR-B 	One of two active/passive partitions holding Container Linux 	(empty on first boot)
+    5 	ROOT-C 	This partition is reserved for future use 	(none)
+    6 	OEM 	Stores configuration data specific to an OEM platform 	EXT4
+    7 	OEM-CONFIG 	Optional storage for an OEM 	(defined by OEM)
+    8 	(unused) 	This partition is reserved for future use 	(none)
+    9 	ROOT 	Stateful partition for storing persistent data 	EXT4, BTRFS, or XFS
 ---
 
     <NB: Not sure how this squares up with any partition scheme you might inject at boot time, however...>
@@ -417,11 +448,9 @@ Container Linux (CoreOS)
 
   NB. If necessary, it is possible to force a downgrade to a differnt channel, or lower revision. However, once again, this is NOT a practise recommended by coreos. It is documented in the manuals however.
 
-
 ====
 
 *Provisioning with Ignition
-
 
 **Introduction
 
@@ -584,17 +613,17 @@ Container Linux (CoreOS)
   When using the VirtualBox provider for Vagrant, Ignition is used to provision the machine via a special plugin to vagrant (vagrant-ignition). This is available in the default vagrant repository, so can be manually installed as
   follows:
 
-  ---
+---
   vagrant plugin install vagrant-ignition
-  ---
+---
 
   Quite often, this will be coded in the <<<Vagrantfile>>> so that the plugin will be installed as a vagrant virtual server is built. This is what happens with the <<<coreos-vagrant>>> package described above.
 
   The supplied provision works pretty well out of the box. Should further configuration be required, the ct utility should be used
 
-  ---
+---
   ct --platform=vagrant-virtualbox < cl.conf > config.ign
-  ---
+---
 
 
 ***Some ct Examples
@@ -641,3 +670,24 @@ Container Linux (CoreOS)
 **Networking
 
   Container Linux comes preconfigured with networking customised for each platform. Additional networking can be configured via Ignition if so desired.
+
+
+**Firewall
+
+  Container Linux uses iptables as a firewall.
+
+***Disabling
+
+---
+  iptables -F
+  iptables -X
+
+  iptables -t nat -F
+  iptables -t nat -X
+
+  iptables -t mangle -F
+  iptables -t mangle -X
+
+  iptables -P INPUT ACCEPT
+  iptables -P OUTPUT ACCEPT
+---

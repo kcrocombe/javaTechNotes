@@ -12,10 +12,40 @@ Technology Glossary
 
 	[Spring Roo] - Springs Rapid Application Development Tool.
 
-	[Kotlin] - An alternative to jave. Will interoperate, and run on the same JVM, I think. Need to find out more.
+	[Kotlin] - An alternative to java. Will interoperate, and run on the same JVM, I think. Need to find out more.
 
 	[Docker] - dfsdf
 
 	[Jenkins] - sdfds
 
 	[Kubernetes] - ssdfds
+
+	[Classless Inter-Domain Routing] - Classless Inter-Domain Routing (CIDR) is a method for allocating IP addresses. Traditionally, an ip-address consisted of 2-parts:
+
+		* a subnet address (identifying the network or subnetwork that the host belongs to), and
+
+		* a host identifier ( identifying the host interface within that network).
+
+	Historically, subnets/hosts were split on one of the 8-bit boundaries, e.g.
+
+		<<xxx.xxx.xxx.>><xxx>  (ie a subnet mask of 255.255.255.0) allowing 256 interfaces on a subnet)
+
+		<<xxx.xxx>><xxx.xxx> (i.e a subnet mask of 255.255.0.0 allowing 65,536 interfaces on a subnet)
+
+	The problem with this is that 256 is too small for most organisations, and 65,536 is too big.
+
+
+	CIDR allows subnet and host to be split at arbitary bit positions. For example, the notation:
+
+		<<<192.168.100.14/24>>>
+
+	indicates the first 24 bits is the routing prefix (192.168.100.0), while the remaining 8 bit is the host identifier
+
+	A block of IP Addresses can similarily be specified:
+
+		<<<192.168.100.0/22>>>
+
+	indicating the range 192.168.100.0 --> 192.168.103.255
+
+	[Some more Stuff] - sdfsdf sd
+	
