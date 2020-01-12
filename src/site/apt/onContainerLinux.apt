@@ -253,10 +253,49 @@ Container Linux (CoreOS)
 
 *The Error messaging System.
 
+---
 journalctl -u coreos-cloudinit-658653359
 
-...to be continued.
+Reverse chronologic order
+journalctl -r
 
+journalctl --since "1 min ago"
+journalctl --since "1 hr ago"
+journalctl --since "1 day ago"
+
+
+journalctl --list-boots
+
+Messages just from the current boot ( or previous -n boot as specified)
+journalctl --boot
+
+journalctl --boot 0
+journalctl --boot -1
+
+The last 50 lines:
+
+journalctl -n 50
+journalctl --lines 50
+
+
+kernel messages only
+journalctl --dmesg
+journalctl -k
+
+Follow
+journalctl -f
+
+journalctl --priority
+journalctl -p <level>
+    0: emerg
+    1: alert
+    2: crit
+    3: err
+    4: warning
+    5: notice
+    6: info
+    7: debug
+---
 
 
 *Operating System Updates.
@@ -267,7 +306,7 @@ journalctl -u coreos-cloudinit-658653359
 
     * stable;
 
-    * belta;
+    * beta;
 
     * alpha;
 

@@ -61,7 +61,9 @@ Basic Setup of a Cluster of Servers.
 
   In order to get a cluster of servers running, we basically need to tell each server where all the other servers in the cluster are.
 
-  We can do this eitehr manually, or via a discovery service.
+  We can do this either manually, or via a discovery service.
+
+  Note that during initial setup, the etcd service will not come up until <<ALL>> initial members of the cluster are are available. This is because until all members are available, an initial leader cannot be elected.
 
 *Manually
 
@@ -169,7 +171,7 @@ etcd --data-dir=data.etcd --name ${THIS_NAME} \
   	--initial-cluster-state ${CLUSTER_STATE} --initial-cluster-token ${TOKEN}
 ---
 
-  Note that once a cluster is up and running, other machines can add themselves dynamically. This does not use the discovery service.
+  Note that once a cluster is up and running, other machines can add themselves dynamically. This adding of additional machines does not use the discovery service.
 
 
 Using etcd

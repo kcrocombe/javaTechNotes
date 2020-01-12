@@ -316,3 +316,42 @@ Vagrant ssh
    The  username is often vagrant, but could be 'core' (if coreOs) or anything really.
 
    The Guest host is usually contactable via a port on the LOCAL machine that gets mapped to the GUEST OS.
+
+
+
+*Vagrant Curiosity on coreOS
+
+  As far as I can make out, vagrant performs a certain amount of post-boot configuration following its first boot ( and possibly on every successive boot too.) This is not part of the provisioning process (that does only happen once), but involves stuff like:
+
+    * setting the hostname
+
+    * configuring the network card
+
+  It seems to do this by ssh'ing onto the box using the core user, as soon as it becomes available at first boot,
+  and performing a certain amount of command line based configuraiton
+
+  However, it SEEMS as if it it does not ALWAYS do this in exactly the same way. For instance, sometimes it performs network configuration by uploading .yaml files to /var/tmp
+
+---
+    /var/tmp/networks.yml
+
+    /var/tmp/hostname.yml
+---
+
+  These then get picked up by the coreos-cloudinit service and the network configured (by writing a /etc/systemd/network/50-vagrant1.network) and also writes the IP addresses to an envionment file.
+
+  However sometimes it DOESN'T do this at all.
+
+  The beta stream (version no reuired) seems to work ok.
+
+  However the stable stream (2303.3) seems inconsistent. Usually it does not write the yaml files, but occasionally it does.
+
+  When it doesn't the scripts to set up kubernetes fail (because /etc/environment is not configured)
+
+
+  By running vagrant up --debug we can see in more detail what it is doing. It appears to interrogate CoreOs for its capablities before deciding on a config method.
+
+
+  (Note: if these scripts fail to get written, it has no noticeable affect on the network connectivity: it still all seems to work ok.)
+
+  Is it that vagrant is choosing to configure the box in a different manner in these circumstances?

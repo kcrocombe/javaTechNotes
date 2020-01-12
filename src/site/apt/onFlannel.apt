@@ -2,10 +2,132 @@ Notes on Flannel
 
   Flannel is a simple and easy way to configure a network fabric designed for Kubernetes.
 
-  It run a small binary agent on each host making up the cluster and is responsible for allocating a sunet lease to each host out of a larger address space.
+  It run a small binary agent on each host making up the cluster and is responsible for allocating a subnet lease to each host out of a larger address space.
 
   Flannel uses etcd to store the network configuration.
 
   Platforms like Kubernetes assume that each container (pod) has a unique, routable IP inside the cluster. The advantage of this model is that it removes the port mapping complexities that come from sharing a single host IP.
 
   Flannel is responsible for providing a layer 3 IPv4 network between multiple nodes in a cluster. Flannel does not control how containers are networked to the host, only how the traffic is transported between hosts.
+
+
+
+  With Docker, each container is assigned an IP address that can be used to communicate with other containers on the same host. For communicating over a network, containers are tied to the IP addresses of the host machines and must rely on port-mapping to reach the desired container. This makes it difficult for applications running inside containers to advertise their external IP and port as that information is not available to them.
+
+  flannel solves the problem by giving each container an IP that can be used for container-to-container communication. It uses packet encapsulation to create a virtual overlay network that spans the whole cluster. More specifically, flannel gives each host an IP subnet (/24 by default) from which the Docker daemon is able to allocate IPs to the individual containers.
+
+  flannel uses etcd to store mappings between the virtual IP and host addresses. A flanneld daemon runs on each host and is responsible for watching information in etcd and routing the packets.
+
+Documentation
+
+https://coreos.com/flannel/docs/latest/flannel-config.html
+
+https://coreos.com/flannel/docs/latest/building.html
+
+
+Source
+ https://quay.io/repository/coreos/flannel-git
+
+
+Configuration
+
+  flannel looks up its configuration in etcd. Therefore the first step to getting started with flannel is to publish the configuration to etcd
+  By default, flannel looks up its configuration in /coreos.com/network/config. At the bare minimum, you must tell flannel an IP range (subnet) that it should use for the overlay. Here is an example of the minimum flannel configuration:
+
+  { "Network": "10.1.0.0/16" }
+
+  Use etcdctl utility to publish the config:
+
+  $ etcdctl set /coreos.com/network/config '{ "Network": "10.1.0.0/16" }'
+
+---
+  # This config is meant to be consumed by the config transpiler, which will
+  # generate the corresponding Ignition config. Do not pass this config directly
+  # to instances of Container Linux.
+
+  systemd:
+    units:
+      - name: flanneld.service
+        dropins:
+          - name: 50-network-config.conf
+            contents: |
+              [Service]
+              ExecStartPre=/usr/bin/etcdctl set /coreos.com/network/config '{ "Network": "10.1.0.0/16" }'
+---
+
+Firewall Considerations
+
+  flannel uses UDP port 8285 for sending encapsulated IP packets. Make sure to enable this traffic to pass between the hosts. If you find that you can't ping containers across hosts, this port is probably not open.
+
+Enabling Flannel
+
+  The last step is to enable flanneld.service by creating the flannel section in our Container Linux Config. Options for flannel can be specified in this section.
+
+---
+  # This config is meant to be consumed by the config transpiler, which will
+  # generate the corresponding Ignition config. Do not pass this config directly
+  # to instances of Container Linux.
+
+  flannel: ~
+---
+
+ Other units that will run in containers, including those scheduled via fleet, should include Requires=flanneld.service, After=flanneld.service, and Restart=always|on-failure directives. These directive are necessary because flanneld.service may fail due to etcd not being available yet. It will keep restarting and it is important for Docker based services to also keep trying until flannel is up.
+
+Under the hood
+
+ To reduce the Container Linux image size, flannel daemon is stored in CoreOS Enterprise Registry as an ACI and not shipped in the Container Linux image. For those users wishing not to use flannel, it helps to keep their installation minimal. When flanneld.service is started, it pulls the flannel ACI from the registry.
+
+ Here is the sequence of events that happens when flanneld.service is started followed by a service that runs a Docker container (e.g. redis server):
+
+     [[1]] flanneld.service gets started and executes /usr/bin/rkt run --net=host quay.io/coreos/flannel:$FLANNEL_VER (the actual invocation is slightly more complex; the full version can be seen here or by running systemctl cat flanneld.service, which also includes any drop in units).
+
+     [[1]] flanneld starts and writes out /run/flannel/subnet.env with the acquired IP subnet information.
+     ExecStartPost in flanneld.service converts information in /run/flannel/subnet.env into Docker daemon command line args (such as --bip and --mtu), storing them in /run/flannel/flannel_docker_opts.env.
+
+     [[1]] redis.service gets started which invokes docker run ..., triggering socket activation of docker.service.
+     docker.service sources in /run/flannel/flannel_docker_opts.env which contains env variables with command line options and starts the Docker with them.
+
+     [[1]] redis.service runs Docker redis container.
+
+
+Running on Vagrant
+
+     Vagrant has a tendency to give the default interface (one with the default route) a non-unique IP (often 10.0.2.15).
+
+     This causes flannel to register multiple nodes with the same IP.
+
+     To work around this issue, use --iface option to specify the interface that has a unique IP.
+
+     If you're running on CoreOS, use cloud-config to set coreos.flannel.interface to $public_ipv4.
+
+
+ Once you have pushed configuration JSON to etcd, you can start flanneld. If you published your config at the default location, you can start flanneld with no arguments.
+
+ e.g.
+
+---
+  curl -X PUT -d "value={\"Network\":\"10.2.0.0/16\",\"Backend\":{\"Type\":\"vxlan\"}}" "172.17.4.51:2379/v2/keys/coreos.com/network/config"
+---
+
+  Once you have pushed configuration JSON to etcd, you can start flanneld. If you published your config at the default location, you can start flanneld with no arguments.
+
+
+  Flannel will acquire a subnet lease, configure its routes based on other leases in the overlay network and start routing packets.
+
+  It will also monitor etcd for new members of the network and adjust the routes accordingly.
+
+  After flannel has acquired the subnet and configured backend, it will write out an environment variable file (/run/flannel/subnet.env by default) with subnet address and MTU that it supports.
+
+Docker integration
+
+  Docker daemon accepts --bip argument to configure the subnet of the docker0 bridge. It also accepts --mtu to set the MTU for docker0 and veth devices that it will be creating.
+
+
+Docker integration
+
+  Because flannel writes out the acquired subnet and MTU values into a file, the script starting Docker can source in the values and pass them to Docker daemon:
+
+  source /run/flannel/subnet.env
+  docker daemon --bip=${FLANNEL_SUBNET} --mtu=${FLANNEL_MTU} &
+
+  Systemd users can use EnvironmentFile directive in the .service file to pull in /run/flannel/subnet.env
