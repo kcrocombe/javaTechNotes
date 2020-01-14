@@ -1320,6 +1320,14 @@ authoritative focal point for collaborative development.
 	git config --global credential.helper 'osxkeychain'
 ---
 
+	This requires the presence of a git helper application git-credential-osxkeychain. This will form part of the git installation if it was installed via <<<brew>>>
+
+	You can verify it is installed by issuing:
+
+---
+	git credential-osxkeychain
+---
+
 
 	Then create a keychain entry (Internet password) for https://github.comp
 
@@ -1354,6 +1362,22 @@ authoritative focal point for collaborative development.
 			* repo ( Control of Private Repositories)
 
 			* delete_rep ( Ability to delete repositories )
+
+		Assuming that you have already configured git to use the credential manager
+
+---
+	git config --global credential.helper 'osxkeychain'
+---
+		the first time that you use the token, it will be automatically cached within the keychain.
+
+---
+	git push
+
+	Username for 'https://github.com': kcrocombe
+	Password for 'https://kcrocombe@github.com': <theTokenCopiedFromGitHub>
+---
+
+	This will then appear in your keychain with a type 'Internet Password' and with Access-Control referencing git-credential-osxkeychain.
 
 
 ===
