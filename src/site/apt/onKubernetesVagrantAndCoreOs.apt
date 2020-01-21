@@ -659,8 +659,11 @@ Multi-vagrant
     curl -sS https://storage.googleapis.com/kubernetes-release/release/stable.txt
 
 
-      gcr.io/google_containers/hyperkube-{ARCH}:{K8S_VERSION}
+      docker://gcr.io/google_containers/hyperkube-{ARCH}:{K8S_VERSION}
 
+    (Note the docker protocol has to be stated explicitly.)
+
+    Also necessaary to specify the --insecure-options=image parameter
 
 
 *Step by Step Guide for setting up Kubernetes
@@ -2747,6 +2750,35 @@ Running the Conformance Tests
 
 
 The AddOns
+
+  Add-Ons exted the functionalirty of kubernetes
+
+
+  Heapster - is (was) a Cluster Monitoring and Analysis Tool for kubernetes. It collected resource usage, lifecycle evenets etc. It became deprecated over versions v.1.11 --> v.13
+
+  It replacement is metrics-server
+
+
+  KubeDNS - this exposes DNS services within the cluster. KubeDNS was the recommended add-on  up to about v1.12.
+
+  From v1.12 onwards, CoreDNS has become then recommended DNS..
+
+
+  Dashboard - is a web based Kubernetes user interface.
+
+  ou can access Dashboard using the kubectl command-line tool by running the following command:
+
+    kubectl proxy
+
+    Kubectl will make Dashboard available at:
+
+    https://172.17.4.101:443/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy
+
+
+    The addons are distributed with the controllerCt files (/srv/kerbetes/*yaml) and need to be maintained in line with the core application.
+
+    
+
 that happen late in the build!
 
 What are these services all about
@@ -2754,3 +2786,48 @@ What are these services all about
   Heapster is running at https://172.17.4.101:443/api/v1/namespaces/kube-system/services/heapster/proxy
   KubeDNS is running at https://172.17.4.101:443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
   Jkubernetes-dashboard is running at https://172.17.4.101:443/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy
+
+
+
+Switching to using the new image repository
+
+  When using rkt to download and run images taken from the gcr.io site, is necessary to tell rkt explicitly
+  that these are docker images in the URL:
+
+  docker://gcr.io/google_containers/hyperkube-{ARCH}:{K8S_VERSION}
+
+  However, when we want docker to run the same images, we have to specifiy it without the docker:// protocol
+  specified
+
+  gcr.io/google_containers/hyperkube-{ARCH}:{K8S_VERSION}
+
+
+  (Note the docker protocol has to be stated explicitly.)
+
+  Also necessaary to specify the --insecure-options=image parameter
+
+
+There is still some nonsense goin on around certificates!
+
+New version seems to be much slowe than the quay.io verion? Memory ?? Not distributing to the worer node?
+
+Need to stop the certificates from constantly regenerating!
+
+
+
+Trying to get kunernetes running in virtual environemnt across 2 physical machines.
+
+  By vagrant/coreos-kubernetes installation, as originally defined, creates its 3 virtual machines on a vagrant 'private network'.
+
+  A vagrant private network allows you to access the guest machines ONLY from the host machine itself. It can be set up in a couple of ways:
+
+    either using dhcp to assing ip -addresses
+
+      config.vm.network "private_network", type: "dhcp"
+
+    or explicitly assigning an ip-address
+
+      config.vm.network "private_network", ip: "192.168.50.4"
+
+
+  It will lead to the configuration of a VirtualBox HOST_ONLY Network Adapter on the Host.A

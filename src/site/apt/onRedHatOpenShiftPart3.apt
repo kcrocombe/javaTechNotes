@@ -94,9 +94,9 @@ Red Hat Openshift
 
 *Installation of Local OKD/Openshift enironments
 
-  There are several ways to install a OKD type environemnt
+  There are several ways to install a OKD type environment
 
-  * minishift. This is a tool that lets you run OKD locally in a sinngle-node cluser inside a VM such as vitualbox.
+  * minishift. This is a tool that lets you run OKD locally in a single-node cluster inside a VM such as virtualbox.
 
   * Installing OKD Server as a Virtual Machine;
 
@@ -116,7 +116,7 @@ Red Hat Openshift
 
     * 2Gb of persistent storage
 
-    * resources sleep after 30 mins of activity, and meust sleep for 18hrs in 72hr period.
+    * resources sleep after 30 mins of activity, and must sleep for 18hrs in 72hr period.
 
     * offers no scheduled jobs.
 
@@ -187,7 +187,7 @@ Red Hat Openshift
 
 	If you don't have a token and don't want to logon to the console for some reason, then a valid token can be dispensed  via the {{{https://oauth-openshift.apps.us-east-2.starter.openshift-online.com/oauth/token/request} oath site}} . (I don't quite understand why this doesn't prompt you for a username password: there must be some cookie somewhere?)
 
-  If you want interogate the API directly, then a bearer token to allow you to do this is alos provided:
+  If you want interogate the API directly, then a bearer token to allow you to do this is also provided:
 
 ---
   curl -H "Authorization: Bearer kR39plrNgSWAG1Q7u4JMN63SZL3RzcIMFNWU-pU4sco" "https://api.us-east-2.starter.openshift-online.com:6443/apis/user.openshift.io/v1/users/~"
@@ -207,12 +207,12 @@ Red Hat Openshift
 
   Image - is a binary, and holds a set of s/w ready to run
   Container - is a running instance of a container image
-  ImageStream - provides a way of storing different versions of the same basic image. The differnt versions are represented by differnt tags on the same image name
+  ImageStream - provides a way of storing different versions of the same basic image. The different versions are represented by different tags on the same image name
 
-  Images can be built extgernally, via the docker cli or other tool, but the Container platform also supplies its own builder to create images from its components
+  Images can be built externally, via the docker cli or other tool, but the Container platform also supplies its own builder to create images from its components
 
 
-  Image Registry - contains a collection of one or more image repositories. Need to distinuish between:
+  Image Registry - contains a collection of one or more image repositories. Need to distinguish between:
 
     * the redhat public registry at registry.redhat.io
 
@@ -234,7 +234,7 @@ Red Hat Openshift
 
   * OpenShift Container Platforms Internal Registry
 
-  * An external, public/provate registry ( e.g. docker Hub, registry.redhat.io etc.)
+  * An external, public/private registry ( e.g. docker Hub, registry.redhat.io etc.)
 
   * Other imagestreams in the Openshift Container Platform cluster.
 
@@ -363,14 +363,14 @@ Images can be either Built externally or by the OKS/OPenshift platform itself
 
     Flexible - It injects application code into almost any Docker formatted container image. As long as teh container image can process tarred content then this is a possible build strategy.
 
-    Limited Build Vocabulary - Using a arbitary Dcoker file exposes the host to the arbitary root escalation. S2I restricts operations that performaed by root.
+    Limited Build Vocabulary - Using a arbitrary Docker file exposes the host to the arbitrary root escalation. S2I restricts operations that performed by root.
 
 
 **Custom Builds
 
-  The Custom build strategy allows developers to define a specific builder image responsible for the entire build process. The Custom build image is a plain Docker image, with builder and build logic embeddded within it.
+  The Custom build strategy allows developers to define a specific builder image responsible for the entire build process. The Custom build image is a plain Docker image, with builder and build logic embedded within it.
 
-  Custom builds run with high levels of priviledge, so are not recommended oin security grounds.
+  Custom builds run with high levels of privilege, so are not recommended on security grounds.
 
 
 **Pipeline Builds
@@ -380,7 +380,7 @@ Images can be either Built externally or by the OKS/OPenshift platform itself
 
 *BuildConfigs
 
-  A build configuraton describes
+  A build configuration describes
 
       * a set of triggers for when a new build is created;
 
@@ -438,7 +438,7 @@ Images can be either Built externally or by the OKS/OPenshift platform itself
 ---
 
 
-* Build Output
+*Build Output
 
   Builds that use the Docker or Source-to-Image (S2I) strategy result in the creation of a new container image. The image is then pushed to the container image registry specified in the output section of the Build specification. Normally this will be the internal registry, where it becomes available for deployment.
 
@@ -559,7 +559,7 @@ Running Builds
 
 Automatically Triggered Builds
 
-    Git Webhooks - The OpenShift container platform has an API endpoint that your Git Repository can use to inform the platform when a commit etc has taken place on a repository. When such notification is received, a new build can be triggered based on the changed repository.
+    Git Webhooks - The OpenShift container platform has an <<<API endpoint>>> that your Git Repository can use to inform the platform when a commit etc has taken place on a repository. When such notification is received, a new build can be triggered based on the changed repository.
 
     Image Change Triggers - For images hosted in remote registries, the platform can monitor those images for any changes and trigger a new build accordingly.
 
@@ -584,7 +584,7 @@ Images
 
   Image Repository - is a collection of related container images and tag. A tag is a label applied to ta container image that distinguishes a specific image within an image stream. Typically it will be aversion no of some sort.
 
-  Imagestream - is an abstraction for referencing container images from within the platform. It allows you to see what images are available. They DO NOT contain the image data, but present a single virtual view of related images. In Athis regard, tehy arew simailra to a repository. Builds and Deployments can monitor imagestreams for changes and perform automatic rebuilds/deployments, if that is what is wnated.
+  Imagestream - is an abstraction for referencing container images from within the platform. It allows you to see what images are available. They DO NOT contain the image data, but present a single virtual view of related images. In this regard, they are similar to a repository. Builds and Deployments can monitor imagestreams for changes and perform automatic rebuilds/deployments, if that is what is wanted.
 
 
 
@@ -649,16 +649,16 @@ Applications
 ---
 
 
-  Detecting a build strategyi for the Build Contoller...
+  Detecting a build strategy for the Build Controller...
 
-      if a jenkinsfile is present in the top direcory
+      if a jenkinsfile is present in the top directory
         BuildStrategy --> pipeline
       else
         BuildStrategy --> source
 
   can be overridden by setting the ---source=pipeline|source on the commend line
 
-  For, source build strategy, new-app tries to determin what builder to use based on the presence of certain files in the root dir:
+  For, source build strategy, new-app tries to determine what builder to use based on the presence of certain files in the root dir:
 
       pom.xml   -->   jee
       cpanfile  -->   perl
@@ -672,7 +672,7 @@ Applications
   error: No language matched the source repository
 ---
 
-  likewise if there are many matches, it will report the situation so that you can chhose the best one
+  likewise if there are many matches, it will report the situation so that you can choose the best one
 
 ---
   error: multiple images or templates matched "jee"
@@ -688,7 +688,7 @@ Applications
   ...
 ---
 
-  You can supply, or override, the builder to use via the '~' seperator
+  You can supply, or override, the builder to use via the '~' separator
 
 ---
     oc new-app --dry-run=true openshift/wildfly:13.0~.
@@ -716,7 +716,7 @@ Applications
 ---
 
 
-  Creating an Applicaiotn from an existing Image
+  Creating an Application from an existing Image
 
     In these cases, there is no build for the platform to perform: that will have been performed elsewhere ( possibly by docker itself). Consequently it is just a matter of telling the the application where to find it. The image can be:
 
@@ -751,11 +751,11 @@ Applications
 
     Dry-Run
 
-      It is useful to dry run an applicaiton build. THe --dry-run will show the consequences oif running a particular commend, withoutactually doing it.
+      It is useful to dry run an application build. THe --dry-run will show the consequences of running a particular commend, without actually doing it.
 
-    Also the --output flag, will just generate the json/yaml without posting it to the server. This can be capturesd to a file, and possibly edited if necessy.
+    Also the --output flag, will just generate the json/yaml without posting it to the server. This can be captured to a file, and possibly edited if necessary.
 
-    It can then be submitted to teh server as follows
+    It can then be submitted to the server as follows
 
 
 ---
@@ -795,7 +795,7 @@ Deployments
 
     []
 
-  So by editing the deployment configuratoin, you can manually startup and shutdown pods!
+  So by editing the deployment configuration, you can manually startup and shutdown pods!
 
 ---
   oc edit dc/tester31
@@ -874,10 +874,10 @@ Deployments
 ---
 
 
-  Copying files from a local direcory onto a running pod.
+  Copying files from a local directory onto a running pod.
 
 ---
-  oc rync <someLocalDir> <podName>:<destDir>
+  oc rsync <someLocalDir> <podName>:<destDir>
 ---
 
     This will recursively copy files/directories
@@ -886,7 +886,7 @@ Deployments
 
 Deployment Triggers
 
-  A deploymentConfig can contain triggers which will drivce teh creation of a new deployment in response to event inside the cluster. These cn bes:
+  A deploymentConfig can contain triggers which will drivce the creation of a new deployment in response to event inside the cluster. These can be:
 
 
     * A ConfigChange trigger: results in a new Replication controller whenever configuration changes are detected in eh pod template
@@ -978,7 +978,7 @@ Route based Deployment Strategies.
 
 *Deploying an application with the oc tool
 
-  As a way of getting to understand some of the ways we can deploy an application onto OpeShift, chose to use the collection of static that make up the javaTechNotes project (of which this page forms part), and tried various ways to dempoy it to OpenShift along with an Apache webserver.
+  As a way of getting to understand some of the ways we can deploy an application onto OpenShift, chose to use the collection of static pages that make up the javaTechNotes project (of which this page forms part), and tried various ways to deploy it to OpenShift along with an Apache webserver.
 
   To simplify things, a copy of the target/site directory was created in a working directory (Apache), to work with for the purposes of this exercise.
 
@@ -988,9 +988,9 @@ Route based Deployment Strategies.
 
 **Build and Deployment using the Docker Strategy.
 
-  The S2I build processes, which are often cited as the easiest way off perforeming a build/deployement has the disadvantage of constraining the choice of images you have in terms of base images. If you want to retain full control, then a Docker build strategy is more appropriate.
+  The S2I build processes, which are often cited as the easiest way off performing a build/deployment has the disadvantage of constraining the choice of images you have in terms of base images. If you want to retain full control, then a Docker build strategy is more appropriate.
 
-  As part of the process of getting to understand {{{./onDocker.html}Docker}}, a simple Docker image had been produced which combined an Apache Webserver sourced from the Docker Registry with the static webcontent of the javaTechNotes project (of which this page forms part).
+  As part of the process of getting to understand {{{./onDocker.html}Docker}}, a simple Docker image had been produced which combined an Apache Webserver sourced from the Docker Registry with the static content of the javaTechNotes project (of which this page forms part).
 
   The resultant image could be spun-up successfully on a local docker platform and served pages as expected.
 
@@ -1053,9 +1053,9 @@ Route based Deployment Strategies.
 
 **PreBuild the Docker Image Externally and Deploy to OpenShift
 
-  Given that the cluster policy on our test platform is forbidding Docker builds, we need to use a differesnt strategy if we want to retain full control of the images and process used to construct out container.
+  Given that the cluster policy on our test platform is forbidding Docker builds, we need to use a different strategy if we want to retain full control of the images and process used to construct out container.
 
-  Here we will build our Docker image Externally to the OpenShift Platform and then upload it directly to the platform's internal registry. The uploaded image will then be available for deployment.
+  Here we will build our Docker image Externally to the OpenShift Platform and then upload it directly to the platform's <<internal>> registry. The uploaded image will then be available for deployment.
 
   In this case, our Docker installation is on a vagrant virtual environment.
 
@@ -1097,7 +1097,7 @@ Route based Deployment Strategies.
 
   [[1]] Spin this up locally and see whether it works. This runs it as a detached image, but will allow us to attach to the image if we want to.
 
-  Remember our base image for this package is http:latest, which will have its own EXEC statement built into it, which we have not overridden in out own image.
+  Remember our base image for this package is http:latest, which will have its own EXEC statement built into it, which we have not overridden in our own image.
 
 ---
   docker run -dit --name javatechnotes -p8080:80 javatechnotes
@@ -1105,9 +1105,9 @@ Route based Deployment Strategies.
   docker exec -it javatechnotes /bin/sh
 ---
 
-  Fired up a webwroswer and confirmed website was available on http://localhost:8080
+  Fired up a web-browser and confirmed website was available on http://localhost:8080
 
-  [[1]] Decided to run this in differnt project within OpenShift. Unfortunately we are only allowed one project in teh paltform, so deleted and recrteated the project. Note that as it turned out, this caused problems later on...
+  [[1]] Decided to run this in different project within OpenShift. Unfortunately we are only allowed one project in teh platform, so deleted and recreated the project. Note that as it turned out, this caused problems later on...
 
 ---
     oc delete project javatechnotes

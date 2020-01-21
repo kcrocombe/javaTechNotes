@@ -1,5 +1,9 @@
 On Virtual box
 
+*SMP Issue
+
+  At the time of writing, the OSX version Virtual Box <<CANNOT>> make use of multiple cpu. If you try and start an instance specifying more than 1 cpu the box will hang as it comes up. For the time being, specify only 1 cpu per virtual server.
+
 *Mouse capture
 
   The mouse can often get captured by the guest system, rendering it useless to the host os until it is released. If the guest has hung for any rason this cn be a pain.
@@ -43,7 +47,7 @@ On Virtual box
     Secondly, on the VirtualBox conole, enable the corresponding serial port (Port1 for tty0), set the mode to 'RawFile' and reedirect its path to an apporpriate file.
 
 
-* The Vagrant Ignition Plugin
+*The Vagrant Ignition Plugin
 
   A plugin to vagrant (Vagrant::Ignition) exist, whose purpose is to inject Ignition json scripts inot the virtual server that it is intending to build.
 
@@ -184,7 +188,7 @@ On Virtual box
 ===
 
 
-* Useful command line stuff
+*Useful command line stuff
 
   VBoxManage list vms
 
@@ -194,7 +198,7 @@ On Virtual box
 
 *Troubleshooting
 
-** UUID mismatches
+**UUID mismatches
 
   Especially when using vagrant, an occasional error seems to be thrown when starting up a virtualBox instance:
 
@@ -214,3 +218,163 @@ On Virtual box
 
 
   ==========================================
+
+
+[./images/virtualBoxNetworking.png]
+  
+*Network Address Translation (NAT)
+
+  Network Address Translation (NAT) is the simplest way of accessing an external network from a virtual machine. Usually, it does not require any configuration on the host network and guest system. For this reason, it is the default networking mode in Oracle VM VirtualBox.
+
+  NAT acts much like having a <<router>> embedded within Host machine. The router, in this case, is the VirtualBox networking engine, which maps traffic from and to the virtual machine transparently. In VirtualBox this router is placed between each virtual machine and the host. This separation maximizes security since by default virtual machines cannot talk to each other.
+
+  The disadvantage of NAT mode is that, much like a private network behind a router, the virtual machine is invisible and unreachable from the outside internet. You cannot make services available to the outside world from a virtual machine unless you set up {{port forwarding}}.
+
+  The network frames sent out by the <<guest>> operating system are received by VirtualBox's NAT engine, which extracts the TCP/IP data and resends it using the <<host>> operating system. To an application on the host, or to another computer on the same network as the host, it looks like the data was sent by the VirtualBox application on the host, using an IP address belonging to the host.
+
+  VirtualBox listens for replies to the packages sent, and repacks and resends them to the guest machine on its private network.
+
+**The Router as a DHCP server
+
+  The virtual machine receives its network address and configuration on the private network from a DHCP server integrated into VirtualBox internal router.
+
+  The IP address thus assigned to the virtual machine is usually on a completely different network than that of the host. As more than one 'card' of a virtual machine can be set up to use NAT, the first NAT card connected to the private network is usaully 10.0.2.X, the second NAT card to the network 10.0.3.X and so on.
+
+**Configuring Port Forwarding with NAT
+
+  As the virtual machine is connected to a private network internal to VirtualBox and invisible to the host, network services on the guest are not accessible to the host machine or to other computers on the same network.
+
+  However, like a physical router, VirtualBox can make selected services available to the world outside the guest through <<port forwarding>>. This means that VirtualBox listens to certain ports on the host and resends all packets which arrive there to the guest, on the same or a different port.
+
+  To an application on the host or other machine on the network, it looks as though the service being proxied is actually running on the host.
+
+*Host Only Adapter
+
+  Host Adapter communication is restricted to the Host machine and any other Guest VM which may be present.
+
+  A HOST_ONLY adapter  is virtual adapter which sits alongside the physical host adapter (i.e.network card). However, communication over the HOST-ONLY adapter <<does not>> use the physical host adapter at all, and so consequently, virtual machines that have JUST a HOST-ONLY adapter installed can't talk to the anything outside of the Host machine.
+
+  (If that is desired,  a second virtual Host adapter (such as NAT) can be configured alongside the HostOnly, and external communication routed through that).
+
+  Within the host, the adapter will typically be named vboxnetX and will carry an ip address XXX.XXX.XXX.1 (e.g.172.14.4.1).  The ip addresses of the gues vm's attached to theis device can be assigned statically, or alternatively, the adapter can act as a dhcp server, doling out ip addresses for guest os's as required.
+
+  Setting up a Host Adapter within VirtualBox will configure:
+
+**On the Guest
+
+  A network interface (eth1 in the below)...
+
+---
+  ifconfig
+
+  eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+          inet 10.0.2.15  netmask 255.255.255.0  broadcast 10.0.2.255
+          inet6 fe80::a00:27ff:feb1:8f2d  prefixlen 64  scopeid 0x20<link>
+          ether 08:00:27:b1:8f:2d  txqueuelen 1000  (Ethernet)
+
+  eth1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+          inet 172.17.4.51  netmask 255.255.0.0  broadcast 172.17.255.255
+          inet6 fe80::a00:27ff:fe1e:b954  prefixlen 64  scopeid 0x20<link>
+          ether 08:00:27:1e:b9:54  txqueuelen 1000  (Ethernet)
+---
+  ...and some routing rules.
+---
+    Destination     Gateway         Genmask         Flags   MSS Window  irtt Iface
+    172.17.0.0      0.0.0.0         255.255.0.0     U         0 0          0 eth1
+---
+    Basically anything destined for the 17.17.*.* gets routed through the eth1 interface (which is the HostOnly adapter when viewed for the guest side).
+
+**On the Host
+
+  A network interface (vboxnet4 in the below)...
+
+---
+  ifconfig
+
+  en0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+  	ether 1c:6f:65:90:63:17
+  	inet6 fe80::1827:7ed6:bcec:c1b8%en0 prefixlen 64 secured scopeid 0xc
+  	inet 192.168.0.17 netmask 0xffffff00 broadcast 192.168.0.255
+
+  vboxnet4: flags=8943<UP,BROADCAST,RUNNING,PROMISC,SIMPLEX,MULTICAST> mtu 1500
+  	ether 0a:00:27:00:00:04
+  	inet 172.17.4.1 netmask 0xffffff00 broadcast 172.17.4.255
+---
+  ...with routing tables
+---
+    netstat -r
+
+    Destination        Gateway            Flags        Refs      Use   Netif Expire
+    172.17.4/24        link#19            UC              2        0 vboxnet
+    172.17.4.255       ff:ff:ff:ff:ff:ff  UHLWbI          0        9 vboxnet
+---
+    Basically anything destined for the 17.17.4/25 gets routed through the vboxnet ( which is the H/A adapter on the Host side).
+
+
+*Bridging
+
+  Bridged Networking allows full communication between any virtual machine and any other machine (or virtual machine) in the entire network.
+
+  With bridged networking, VirtualBox uses a device driver on your host system that filters data from your physical network adapter. This driver is therefore called a net filter driver. This enables VirtualBox to:
+
+    * intercept data from the physical network, and
+
+    * inject data into it.
+
+  This effectively creating a new network interface in software. When a guest is using such a new software interface, it looks to the host system as though the guest were physically connected to the interface using a network cable.
+
+  The host can send data to the guest through that interface and receive data from it. This means that you can set up routing or bridging between the guest and the rest of your network.
+
+  Setting up a Host Adapter within VirtualBox will configure:
+
+**On the host
+
+  No new interfaces. The bridge works by filtering stuff out from the existing en0 interface
+
+---
+  ifconfig
+
+  en0: flags=8963<UP,BROADCAST,SMART,RUNNING,PROMISC,SIMPLEX,MULTICAST> mtu 1500
+  	ether 1c:6f:65:90:63:17
+  	inet6 fe80::1827:7ed6:bcec:c1b8%en0 prefixlen 64 secured scopeid 0xc
+  	inet 192.168.0.17 netmask 0xffffff00 broadcast 192.168.0.255
+
+---
+  and also some routing rules
+
+---
+  netstat -r
+
+  Internet:
+  Destination        Gateway            Flags        Refs      Use   Netif Expire
+  172.17.8/24        link#18            UC              3        0 vboxnet
+  172.17.8.101       8:0:27:5:5c:88     UHLWIi          3       22 vboxnet   1180
+  172.17.8.255       ff:ff:ff:ff:ff:ff  UHLWbI          0        4 vboxnet
+---
+    (172.17.8.101 is the ip address of one of the guest o/s, 8:0:27:5:5c:88 is the address of the h/a vboxnet3)
+
+**On the guest
+
+  A network interface (eth1 in the below)...
+
+---
+  eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+          inet 10.0.2.15  netmask 255.255.255.0  broadcast 10.0.2.255
+          inet6 fe80::a00:27ff:feb1:8f2d  prefixlen 64  scopeid 0x20<link>
+          ether 08:00:27:b1:8f:2d  txqueuelen 1000  (Ethernet)
+
+  eth1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+          inet 172.17.8.101  netmask 255.255.0.0  broadcast 172.17.255.255
+          inet6 fe80::a00:27ff:fe05:5c88  prefixlen 64  scopeid 0x20<link>
+          ether 08:00:27:05:5c:88  txqueuelen 1000  (Ethernet)
+---
+
+  and also some routing rules....
+
+---
+  netstat -r
+
+    Kernel IP routing table
+    Destination     Gateway         Genmask         Flags   MSS Window  irtt Iface
+    172.17.0.0      0.0.0.0         255.255.0.0     U         0 0          0 eth1
+---

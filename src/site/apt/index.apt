@@ -110,6 +110,8 @@ Java Technologies : Documentation
 
   {{{./onOSX.html}on misc OSX tips and tricks}}
 
+  {{{./onCertificatesAndKeyPairs.html}On SSL, TLS, Certificates and Cryptological Keys}}
+
   {{{./glossary.html}Glossary}}
 
 +-----+
