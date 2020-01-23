@@ -219,9 +219,10 @@ On Virtual box
 
   ==========================================
 
+Networking with VirtualBox
 
 [./images/virtualBoxNetworking.png]
-  
+
 *Network Address Translation (NAT)
 
   Network Address Translation (NAT) is the simplest way of accessing an external network from a virtual machine. Usually, it does not require any configuration on the host network and guest system. For this reason, it is the default networking mode in Oracle VM VirtualBox.

@@ -2675,6 +2675,10 @@ Consequently attempt to apply the test cases below failed with mesages sucj like
 
 Installation of the the GuestBook test applicaion.
 
+
+  {{{https://kubernetes.io/docs/tutorials/stateless-application/guestbook}source is here}}
+
+
   Finding out how to access the exposed service:
 
 ---
@@ -2690,7 +2694,756 @@ Installation of the the GuestBook test applicaion.
 
   But not on port 80 however....
 
-  Need to understand this more.
+  Need to understand this more.i
+
+
+
+Creating a Local Deployment of a simple Application.
+
+  Now that we have a Kubernetes Cluster that is seemingly functional, let us go through the steps of deploying our own application using entirely local infrastructure.
+
+  We already have:
+
+    * a Kubernetes Cluster, put together as described on this page;
+
+    * an in-house application that we can use to test deploy - a website of simple static web pages. This is the thing we used when we were playing araound with {{{./onRedHatOpenShiftPart3.html#PreBuild the Docker Image Externally and Deploy to OpenShift}Open Shift}};
+
+    * A local Docker Registry that we can push/pull our images to {{{./onDocker.html#Deploying a local Registry Server.}described here}}
+
+
+  This is the process.
+
+
+  [[1]] Log onto out virtual environment ( core-01 ). We need to use a linux environment here as we are unable to run docker direcly on OSX>
+
+---
+    cd dvl/gitClones/coreos-vagrant
+
+    vagrant up
+
+    vagrant ssh core-01
+---
+
+  [[1]] Build our Docker Image locally. We are using the same source as above...
+
+---
+    cd /home/kevin/apache
+
+    cat Dockerfile
+
+      FROM httpd:latest
+      EXPOSE 8080
+      COPY ./httpd.conf /usr/local/apache2/conf/
+      COPY ./site/* /usr/local/apache2/htdocs/
+      RUN chmod 777 /usr/local/apache2/logs
+
+
+    docker build -t javatechnotes .
+
+      Sending build context to Docker daemon  7.373MB
+      Step 1/3 : FROM httpd:latest
+      ---> 2ae34abc2ed0
+      Step 2/3 : COPY ./site/* /usr/local/apache2/htdocs/
+      ---> dc5108416fae
+      Successfully built dc5108416fae
+      Successfully tagged javatechnotes:latest
+---
+
+---
+  docker images
+
+    REPOSITORY            TAG                 IMAGE ID            CREATED             SIZE
+    javatechnotes         latest              dc5108416fae        55 seconds ago      172MB
+    ...
+---
+  [[1]] Tag the image with the Repository we wish to send it to. Note that we have to use the local IP address of the NAT connected host.:
+
+---
+  docker tag dc5108416fae  10.0.2.15:6443/kevin/javatechnotes
+---
+  [[1]] Push our application to out local Docker Registry.
+
+---
+  docker push 10.0.2.15:6443/kevin/javatechnotes
+---
+
+  [[1]] We now have a copy of our application in a registry available to out Kubernetes Cluster, which ought to be deployable directly from that Registry.
+
+
+*Deploying to the Kubernetes Cluster
+
+  All of the manipulation of the cluster will be performed remotely from the Cluster. i.e. directly from the VirtualBox HOST machine (OSX): there should be no need to log on to any of the machines in the cluster.
+
+  [[1]] Set up the environment, so that the correct version of <<<kubectl>>> is picked up and that it used the correct
+
+---
+  cd /Users/kevin/dvl/gitReps/coreos-kubernetes/multi-node/vagrant/localKubectl
+
+  . ./kubectl.env
+---
+
+  [[1]] Confirm the versions of the client and server match sufficiently (the client should not be behind the server by more than a version or two). Here we are using v1.10 (which is a bit behind)
+
+---
+  kubectl version
+
+  Client Version: version.Info{Major:"1", Minor:"10", GitVersion:"v1.10.13", GitCommit:"954ff68d59e9dc62fa8252ffa9023a90ff8a358c", GitTreeState:"clean", BuildDate:"2019-02-13T11:15:10Z", GoVersion:"go1.9.3", Compiler:"gc", Platform:"darwin/amd64"}
+
+  Server Version: version.Info{Major:"1", Minor:"10", GitVersion:"v1.10.13", GitCommit:"954ff68d59e9dc62fa8252ffa9023a90ff8a358c", GitTreeState:"clean", BuildDate:"2019-02-13T11:03:32Z", GoVersion:"go1.9.3", Compiler:"gc", Platform:"linux/amd64"}
+---
+
+  [[1]] Check out the status of the node machines in the cluster. At the moment, we have only one node in the cluster up and running, which is fine for our purposes.
+
+---
+  kubectl get nodes
+
+    NAME           STATUS     ROLES     AGE       VERSION
+    172.17.4.101   Ready      <none>    6d        v1.10.13
+    172.17.4.201   NotReady   <none>    6d        v1.10.13
+---
+
+  [[1]] Create an actual deployment.  There seems to be a couple of ways to do this: either to use the <<<kubectl create deployment>>> command, or use the <<<kubectl apply>>> command to apply a YAML file (either a local file or delivered via HTTP).
+
+---
+  kubectl create deployment javatechnotes --image=192.168.0.17:6443/kevin/javatechnotes
+
+    deployment.extensions "javatechnotes" created
+---
+
+  Under the bonnet, this will create a deployment object, with suitable attributes. We can see what that looks like by using the --output option, e.g.:
+
+---
+  kubectl create deployment javatechnotes --image=192.168.0.17:6443/kevin/javatechnotes --dry-run --output yaml
+
+    apiVersion: extensions/v1beta1
+    kind: Deployment
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: javatechnotes
+      name: javatechnotes
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: javatechnotes
+      strategy: {}
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            app: javatechnotes
+        spec:
+          containers:
+          - image: 192.168.0.17:6443/kevin/javatechnotes
+            name: javatechnotes
+            resources: {}
+    status: {}
+---
+
+  This can be captured to a file, edited and then the resultant file applied via the <<<kubectl apply>>> command.
+
+  Note also, the all command can be <<<--dry-run>>>'ed'
+
+  The <<<create deployment>>> command will attempt to create 3 kubernetes resources:
+
+    * a <<<deployment>>> - basically describing the image that is to be run;
+
+    * a <<<replicaset>>> - basically describing the number of replicas of an image that will be maintained in terms of maximum, desirable, restart policy etc.;
+
+    * a <<<pod>>> - basically describing the set of containers to run in the pod, the node it has been scheduled to run on etc, the replica-set it belongs to.
+
+    []
+
+
+
+  [[1]] We can confirm that we have created these various objects, and examine the details of how they are created via two commands:
+
+    * <<<kubectl get <resource> -o wide>>>
+
+    * <<<kubectl describe <resource> >>>
+
+    []
+
+  This is shown below for our initial application:
+
+    [[a]] <<The deployment resource>>
+
+---
+  kubectl get deployments -o wide
+
+    NAME            DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE       CONTAINERS      IMAGES                                  SELECTOR
+    javatechnotes   1         1         1            1           11m       javatechnotes   192.168.0.17:6443/kevin/javatechnotes   app=javatechnotes
+---
+
+    <<<READY>>> shows the ratio of CURRENT to DESIRED replicas
+
+    <<<CURRENT>>> is the number of replicas running now
+
+    <<<DESIRED>>> is the configured number of replicas to run.
+
+    <<<UP-TO-DATE>>> is the number of replicas that were updated to match the desired (configured) state. Basically if the configuration of a <<<replicaset>>> is changed, this will gradually propagate through the replicas.
+
+    <<<AVAILABLE>>> state shows how many replicas are actually AVAILABLE to the users
+
+
+---
+  kubectl describe deployment javatechnotes
+
+     Name:                   javatechnotes
+     Namespace:              default
+     CreationTimestamp:      Thu, 23 Jan 2020 12:24:51 +0000
+     Labels:                 app=javatechnotes
+     Annotations:            deployment.kubernetes.io/revision=1
+     Selector:               app=javatechnotes
+     Replicas:               1 desired | 1 updated | 1 total | 1 available | 0 unavailable
+     StrategyType:           RollingUpdate
+     MinReadySeconds:        0
+     RollingUpdateStrategy:  1 max unavailable, 1 max surge
+     Pod Template:
+       Labels:  app=javatechnotes
+       Containers:
+        javatechnotes:
+         Image:        192.168.0.17:6443/kevin/javatechnotes
+         Port:         <none>
+         Host Port:    <none>
+         Environment:  <none>
+         Mounts:       <none>
+       Volumes:        <none>
+     Conditions:
+       Type           Status  Reason
+       ----           ------  ------
+       Available      True    MinimumReplicasAvailable
+       Progressing    True    NewReplicaSetAvailable
+     OldReplicaSets:  <none>
+     NewReplicaSet:   javatechnotes-85d6d67f9c (1/1 replicas created)
+     Events:
+       Type    Reason             Age   From                   Message
+       ----    ------             ----  ----                   -------
+       Normal  ScalingReplicaSet  2m    deployment-controller  Scaled up replica set javatechnotes-85d6d67f9c to 1
+---
+
+
+    [[a]] <<The replicaset resource>>
+
+---
+  kubectl get replicaset -o wide
+
+    NAME                       DESIRED   CURRENT   READY     AGE       CONTAINERS      IMAGES                                  SELECTOR
+    javatechnotes-85d6d67f9c   1         1         1         48m       javatechnotes   192.168.0.17:6443/kevin/javatechnotes   app=javatechnotes,pod-template-hash=4182823957
+
+
+  kubectl describe replicaset javatechnotes-85d6d67f9c
+
+    Name:           javatechnotes-85d6d67f9c
+    Namespace:      default
+    Selector:       app=javatechnotes,pod-template-hash=4182823957
+    Labels:         app=javatechnotes
+                    pod-template-hash=4182823957
+    Annotations:    deployment.kubernetes.io/desired-replicas=1
+                    deployment.kubernetes.io/max-replicas=2
+                    deployment.kubernetes.io/revision=1
+    Controlled By:  Deployment/javatechnotes
+    Replicas:       1 current / 1 desired
+    Pods Status:    1 Running / 0 Waiting / 0 Succeeded / 0 Failed
+    Pod Template:
+      Labels:  app=javatechnotes
+               pod-template-hash=4182823957
+      Containers:
+       javatechnotes:
+        Image:        192.168.0.17:6443/kevin/javatechnotes
+        Port:         <none>
+        Host Port:    <none>
+        Environment:  <none>
+        Mounts:       <none>
+      Volumes:        <none>
+    Events:
+      Type    Reason            Age   From                   Message
+      ----    ------            ----  ----                   -------
+      Normal  SuccessfulCreate  48m   replicaset-controller  Created pod: javatechnotes-85d6d67f9c-9r27s
+---
+
+
+    [[a]] <<The pod resource>>
+
+---
+  kubectl get pods -o wide
+
+    NAME                             READY     STATUS    RESTARTS   AGE       IP           NODE
+    javatechnotes-85d6d67f9c-9r27s   1/1       Running   0          13m       10.2.52.11   172.17.4.101
+
+
+  kubectl describe pod javatechnotes-85d6d67f9c-9r27s
+
+    Name:           javatechnotes-85d6d67f9c-9r27s
+    Namespace:      default
+    Node:           172.17.4.101/172.17.4.101
+    Start Time:     Thu, 23 Jan 2020 12:24:51 +0000
+    Labels:         app=javatechnotes
+                    pod-template-hash=4182823957
+    Annotations:    <none>
+    Status:         Running
+    IP:             10.2.52.11
+    Controlled By:  ReplicaSet/javatechnotes-85d6d67f9c
+    Containers:
+      javatechnotes:
+        Container ID:   docker://80711f2a15d911a932a104365d7f7b9f57420115019d6c8326d178f753ec5171
+        Image:          192.168.0.17:6443/kevin/javatechnotes
+        Image ID:       docker-pullable://192.168.0.17:6443/kevin/javatechnotes@sha256:5f3d5efaa7c54849f9b7c407895132c20d732a3d3caad10c765e19b666ca2dde
+        Port:           <none>
+        Host Port:      <none>
+        State:          Running
+          Started:      Thu, 23 Jan 2020 12:24:54 +0000
+        Ready:          True
+        Restart Count:  0
+        Environment:    <none>
+        Mounts:
+          /var/run/secrets/kubernetes.io/serviceaccount from default-token-mbkqf (ro)
+    Conditions:
+      Type           Status
+      Initialized    True
+      Ready          True
+      PodScheduled   True
+    Volumes:
+      default-token-mbkqf:
+        Type:        Secret (a volume populated by a Secret)
+        SecretName:  default-token-mbkqf
+        Optional:    false
+    QoS Class:       BestEffort
+    Node-Selectors:  <none>
+    Tolerations:     <none>
+    Events:
+      Type    Reason                 Age   From                   Message
+      ----    ------                 ----  ----                   -------
+      Normal  Scheduled              19m   default-scheduler      Successfully assigned javatechnotes-85d6d67f9c-9r27s to 172.17.4.101
+      Normal  SuccessfulMountVolume  19m   kubelet, 172.17.4.101  MountVolume.SetUp succeeded for volume "default-token-mbkqf"
+      Normal  Pulling                19m   kubelet, 172.17.4.101  pulling image "192.168.0.17:6443/kevin/javatechnotes"
+      Normal  Pulled                 19m   kubelet, 172.17.4.101  Successfully pulled image "192.168.0.17:6443/kevin/javatechnotes"
+      Normal  Created                19m   kubelet, 172.17.4.101  Created container
+      Normal  Started                19m   kubelet, 172.17.4.101  Started container
+---
+
+  [[1]] We can also check any logs generated by the pods as they have been running
+
+---
+  kubectl logs javatechnotes-85d6d67f9c-9r27s
+
+  AH00558: httpd: Could not reliably determine the server's fully qualified domain name, using 10.2.52.11. Set the 'ServerName' directive globally to suppress this message
+  AH00558: httpd: Could not reliably determine the server's fully qualified domain name, using 10.2.52.11. Set the 'ServerName' directive globally to suppress this message
+  [Thu Jan 23 12:24:55.383635 2020] [mpm_event:notice] [pid 1:tid 139889036530816] AH00489: Apache/2.4.41 (Unix) configured -- resuming normal operations
+  [Thu Jan 23 12:24:55.430362 2020] [core:notice] [pid 1:tid 139889036530816] AH00094: Command line: 'httpd -D FOREGROUND'
+---
+
+
+
+  [[1]] Once a pod is up and running we can interact with it, pretty much like you would a remote server. For example:
+
+    You can run a command on it
+
+---
+    kubectl exec javatechnotes-85d6d67f9c-9r27s env
+    PATH=/usr/local/apache2/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    HOSTNAME=javatechnotes-85d6d67f9c-9r27s
+    JAVATECHNOTES_SERVICE_HOST=10.3.0.79
+    JAVATECHNOTES_SERVICE_PORT=8080
+    JAVATECHNOTES_PORT=tcp://10.3.0.79:8080
+    JAVATECHNOTES_PORT_8080_TCP_PROTO=tcp
+    KUBERNETES_SERVICE_HOST=10.3.0.1
+    KUBERNETES_SERVICE_PORT_HTTPS=443
+    KUBERNETES_PORT_443_TCP=tcp://10.3.0.1:443
+    JAVATECHNOTES_PORT_8080_TCP_PORT=8080
+    JAVATECHNOTES_PORT_8080_TCP_ADDR=10.3.0.79
+    KUBERNETES_SERVICE_PORT=443
+    KUBERNETES_PORT_443_TCP_PROTO=tcp
+    KUBERNETES_PORT_443_TCP_PORT=443
+    KUBERNETES_PORT=tcp://10.3.0.1:443
+    KUBERNETES_PORT_443_TCP_ADDR=10.3.0.1
+    JAVATECHNOTES_PORT_8080_TCP=tcp://10.3.0.79:8080
+    HTTPD_PREFIX=/usr/local/apache2
+    HTTPD_VERSION=2.4.41
+    HTTPD_SHA256=133d48298fe5315ae9366a0ec66282fa4040efa5d566174481077ade7d18ea40
+    HTTPD_PATCHES=
+    HOME=/root
+---
+
+  and, providing it contains a suitable interactive shell, logon to it. Note you have to specify the --interactive and ---tty flags in order to connect the shell properly to your terminal.
+
+---
+  kubectl exec -ti javatechnotes-85d6d67f9c-twzfd bash
+
+    root@javatechnotes-85d6d67f9c-9r27s:/usr/local/apache2# pwd
+    /usr/local/apache2
+
+    root@javatechnotes-85d6d67f9c-9r27s:/usr/local/apache2# ls
+    bin  build  cgi-bin  conf  error  htdocs  icons  include  logs	modules
+
+    root@javatechnotes-85d6d67f9c-9r27s:/usr/local/apache2# ls /
+    bin  boot  dev	etc  home  lib	lib64  media  mnt  opt	proc  root  run  sbin  srv  sys  tmp  usr  var
+
+    root@javatechnotes-85d6d67f9c-9r27s:/usr/local/apache2# pwd
+    /usr/local/apache2
+
+    root@javatechnotes-85d6d67f9c-9r27s:/usr/local/apache2# exit
+---
+
+  [[1]] Using the application deployed in pod.
+
+  In order to work properly with the application hosted in the pod we need to expose its endpoints to the outside world. One quick way we can do this, for investigative or testing purposes is to run a proxy service which will set up a tunnel through to the ports on the container.
+
+---
+  kubectl proxy &
+
+  curl 127.0.0.1:8080/api/v1/namespaces/default/pods/javatechnotes-85d6d67f9c-9r27s/proxy
+---
+
+  In the real world, however, the application will be exposed to the outside world via a service. A service is a logical set of pods, and a policy by which to access them. The service exposes the Pod IP address at a port on the node or cluster.
+
+  Services can be exposed in several ways:
+
+  * ClusterIP (default) - Exposes the Service on an internal IP in the cluster. This type makes the Service only reachable from within the cluster.
+
+  * NodePort - Exposes the Service on the same port of each selected Node in the cluster using NAT. Makes a Service accessible from outside the cluster using <NodeIP>:<NodePort>. Superset of ClusterIP.
+
+  * LoadBalancer - Creates an external load balancer in the current cloud (if supported) and assigns a fixed, external IP to the Service. Superset of NodePort.
+
+  * ExternalName - Exposes the Service using an arbitrary name (specified by externalName in the spec) by returning a CNAME record with the name. No proxy is used. This type requires v1.7 or higher of kube-dns.
+
+
+  To make the port available from outside we use the expose command
+
+---
+  kubectl expose deployment/javatechnotes --type="NodePort" --port 8080
+
+    service "javatechnotes" exposed
+---
+
+  <<NB - we need to expose the PORT that we stipulated the application would use in the DockerFile.>>
+
+---
+  kubectl get services -o wide
+
+    NAME            TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)          AGE       SELECTOR
+    javatechnotes   NodePort    10.3.0.160   <none>        8080:31127/TCP   6m        app=javatechnotes
+    kubernetes      ClusterIP   10.3.0.1     <none>        443/TCP          7d        <none>
+
+
+  kubectl get services
+
+    NAME            TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)          AGE
+    javatechnotes   NodePort    10.3.0.160   <none>        8080:31127/TCP   42s
+    kubernetes      ClusterIP   10.3.0.1     <none>        443/TCP          7d
+---
+
+  This shows that the port that eh applicaion is using within the container (8080) has been exposed on port 31127 of the NodeIp (in this case the virtualBox 172.17.4.101). Note this makes the application available on a port on the <<Virtual Server>> NOT the Host.
+
+---
+  kubectl describe service javatechnotes
+
+    Name:                     javatechnotes
+    Namespace:                default
+    Labels:                   app=javatechnotes
+    Annotations:              <none>
+    Selector:                 app=javatechnotes
+    Type:                     NodePort
+    IP:                       10.3.0.160
+    Port:                     <unset>  8080/TCP
+    TargetPort:               8080/TCP
+    NodePort:                 <unset>  31127/TCP
+    Endpoints:                10.2.52.11:8080
+    Session Affinity:         None
+    External Traffic Policy:  Cluster
+    Events:                   <none>
+---
+
+  I THINK THE IP Addresses listed above are CONTAINER and POD addresses. They are not Node addresses.
+
+  We can address the application.
+
+---
+  curl 172.17.4.101:31896
+
+    <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+    <html><head>
+    <title>501 Not Implemented</title>
+    </head><body>
+    <h1>Not Implemented</h1>
+    <p>get  not supported for current URL.<br />
+    </p>
+    </body></html>
+    iMac:javaTechNotes kevin$ curl http://172.17.4.101:31127
+    <!DOCTYPE html>
+    <!--
+     | Generated by Apache Maven Doxia Site Renderer 1.8.1 from src/site/apt/index.apt at 2019-12-07
+     | Rendered using Apache Maven Fluido Skin 1.7
+    -->
+---
+
+
+Scaling up and Down
+
+  The application can be scaled to handle higher incoming loads by increasing the number of replicas running the application. In other words, by scaling the application up, we launch more pods.
+
+---
+  kubectl scale deployments/javatechnotes --replicas=4
+
+    deployment.extensions "javatechnotes" scaled
+---
+
+  If we now examine the configuration of the application, we can see that the configuration has been changed and more pods launched as a result.
+
+---
+  kubectl get deployment javatechnotes
+
+    NAME            DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+    javatechnotes   4         4         4            4           3h
+
+
+  kubectl get pods -o wide
+
+    NAME                             READY     STATUS    RESTARTS   AGE       IP           NODE
+    javatechnotes-85d6d67f9c-4rtbp   1/1       Running   0          1m        10.2.52.14   172.17.4.101
+    javatechnotes-85d6d67f9c-9r27s   1/1       Running   0          3h        10.2.52.11   172.17.4.201
+    javatechnotes-85d6d67f9c-p7j5n   1/1       Running   0          1m        10.2.52.13   172.17.4.101
+    javatechnotes-85d6d67f9c-wdw5x   1/1       Running   0          1m        10.2.52.12   172.17.4.201
+---
+
+  We now have 4 replica in 4 pods, and the scheduler has distributed them over 2 hosts. Additionally incoming work will now be load balanced across each of these 4 replicas.
+
+  Similarly the number of nodes can be scaled back:
+
+---
+  kubectl scale deployments/javatechnotes --replicas=2
+---
+
+Viewing Load on the nodes and pods
+
+  The following commands can be used to view how the workload is being distributed about the cluster.
+  This command requires Heapster to be correctly configured and working on the server.
+
+---
+  kubectl top node
+
+    NAME           CPU(cores)   CPU%      MEMORY(bytes)   MEMORY%
+    172.17.4.101   221m         22%       1090Mi          57%
+    172.17.4.201   65m          6%        459Mi           24%
+
+  kubectl top pod
+
+    NAME                             CPU(cores)   MEMORY(bytes)
+    javatechnotes-66b5769ff7-lmm8s   0m           23Mi
+    javatechnotes-66b5769ff7-nsjtb   0m           15Mi
+---
+
+
+Performing a Rollout of an update of the application
+
+  For the purposes of the is exercise, we wish to demonstrate how easily new versions of an application can be rolled out without downtime.
+
+  [[1]] A new cut of the source we were using for the test app was cut, as follows:
+
+    from within a git working directory:
+
+---
+    git archive -o /tmp/javaTechNotes.tar HEAD
+---
+
+    This was untarred to the region of the OSX host where the docker image was  being prepared.
+
+    On the OS HOST...
+
+---
+  cd /Users/kevin/dvl/vagrantMounts/core-01
+
+  tar -xvf /tmp/javaTechNotes.jar
+---
+
+  [[1]] The application was then built. Once again from the OSX Host..
+
+---
+  mvn site
+---
+
+  This builds the HTML pages from which our application is constructed
+
+
+  [[1]] We now need to create a new Docker Image.
+
+    From within the coreos-vagrant machine core-01, run the docker build
+
+---
+    cd /home/kevin/apache
+
+    docker build --tag javatechnotes:2 .
+
+      Sending build context to Docker daemon  29.48MB
+      Step 1/5 : FROM httpd:latest
+       ---> c2aa7e16edd8
+      Step 2/5 : EXPOSE 8080
+       ---> Using cache
+       ---> 64c9421fac1f
+      Step 3/5 : COPY ./httpd.conf /usr/local/apache2/conf/
+       ---> Using cache
+       ---> 567864f3c8a3
+      Step 4/5 : COPY ./site/* /usr/local/apache2/htdocs/
+       ---> 9fde8dfc2771
+      Step 5/5 : RUN chmod 777 /usr/local/apache2/logs
+       ---> Running in 27ffc7ce518c
+      Removing intermediate container 27ffc7ce518c
+       ---> 13f48b3f39fb
+      Successfully built 13f48b3f39fb
+      Successfully tagged javatechnotes:2
+
+
+    docker images
+
+      REPOSITORY                           TAG                 IMAGE ID            CREATED             SIZE
+      javatechnotes                        2                   13f48b3f39fb        32 seconds ago      174MB
+      10.0.2.15:6443/kevin/javatechnotes   latest              a301efdd8b0b        28 hours ago        174MB
+      javatechnotes                        latest              a301efdd8b0b        28 hours ago        174MB
+      localhost:443/dockerfile_git         latest              f95a58bca8bf        5 days ago          186MB
+      localhost:5000/dockerfile_git        latest              f95a58bca8bf        5 days ago          186MB
+      10.0.2.15:6443/ubuntu2               latest              ccc6e87d482b        7 days ago          64.2MB
+      10.0.2.15/my-ubuntu                  latest              ccc6e87d482b        7 days ago          64.2MB
+      httpd                                latest              c2aa7e16edd8        3 weeks ago         165MB
+      registry                             2                   f32a97de94e1        10 months ago       25.8MB
+---
+
+    [[1]] We can now Tag this as part of our own repository, and then push it up
+
+---
+    docker tag 13f48b3f39fb 10.0.2.15:6443/kevin/javatechnotes:v2
+
+    docker push 10.0.2.15:6443/kevin/javatechnotes:v2
+
+      The push refers to repository [10.0.2.15:6443/kevin/javatechnotes]
+      64c9977d54cf: Layer already exists
+      3eb9690a35b8: Pushed
+      b6faca65460e: Layer already exists
+      61286bfc1560: Layer already exists
+      6f0982f743c3: Layer already exists
+      8032b0dc1204: Layer already exists
+      525297c1b6d2: Layer already exists
+      556c5fb0d91b: Layer already exists
+      v2: digest: sha256:a21a72e743d182f0ac46c2a2b031b6639330e98c9d3a740f736063980f2934a0 size: 1993
+---
+
+    [[1]] Set the image for the <<<javatechnotes>>> deployment our new image...
+
+---
+  kubectl set image deployments/javatechnotes javatechnotes=192.168.0.17:6443/kevin/javatechnotes:v2
+---
+
+      We can see the deployment has taken the new image....
+
+---
+  get deployments -o wide
+
+    NAME            DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE       CONTAINERS      IMAGES                                     SELECTOR
+    javatechnotes   4         4         4            4           7h        javatechnotes   192.168.0.17:6443/kevin/javatechnotes:v2   app=javatechnotes
+---
+
+  There are temporarily 2 ReplicaSets: one controlling the pods hosting the new image, and one controlling the pods hosting the old image.
+
+---
+  kubectl get replicasets -o wide
+
+    NAME                       DESIRED   CURRENT   READY     AGE       CONTAINERS      IMAGES                                     SELECTOR
+    javatechnotes-66b5769ff7   0         0         0         1h        javatechnotes   192.168.0.17:6443/kevin/javatechnotes:v2   app=javatechnotes,pod-template-hash=2261325993
+    javatechnotes-85d6d67f9c   4         4         4         7h        javatechnotes   192.168.0.17:6443/kevin/javatechnotes      app=javatechnotes,pod-template-hash=4182823957
+---
+
+  Here we see the old pods still running the old image, while the new pods are struggling slightly to spin up...
+
+---
+  kubectl get pods -o wide
+
+    NAME                             READY     STATUS             RESTARTS   AGE       IP           NODE
+    javatechnotes-66b5769ff7-kkkbv   1/1       Running            0          34m       10.2.99.6    172.17.4.201
+    javatechnotes-66b5769ff7-lmm8s   1/1       Running            0          1h        10.2.52.23   172.17.4.101
+    javatechnotes-66b5769ff7-nsjtb   1/1       Running            0          1h        10.2.52.24   172.17.4.101
+    javatechnotes-85d6d67f9c-g9cth   0/1       ImagePullBackOff   0          5m        10.2.99.9    172.17.4.201
+    javatechnotes-85d6d67f9c-r62xx   0/1       ImagePullBackOff   0          5m        10.2.99.8    172.17.4.201
+---
+
+  ..but have now succeeded. The pods running the old images are gone.
+---
+
+  kubectl get pods -o wide
+
+    NAME                             READY     STATUS    RESTARTS   AGE       IP           NODE
+    javatechnotes-85d6d67f9c-7m9zt   1/1       Running   0          1m        10.2.99.10   172.17.4.201
+    javatechnotes-85d6d67f9c-g9cth   1/1       Running   0          7m        10.2.99.9    172.17.4.201
+    javatechnotes-85d6d67f9c-r62xx   1/1       Running   0          7m        10.2.99.8    172.17.4.201
+    javatechnotes-85d6d67f9c-skz8g   1/1       Running   0          1m        10.2.99.11   172.17.4.201
+---
+
+  ...and the old <<<replicaset>>> is now still present, but nothing is now using it.
+
+---
+  kubectl get replicasets -o wide
+
+    NAME                       DESIRED   CURRENT   READY     AGE       CONTAINERS      IMAGES                                     SELECTOR
+    javatechnotes-66b5769ff7   4         4         4         2h        javatechnotes   192.168.0.17:6443/kevin/javatechnotes:v2   app=javatechnotes,pod-template-hash=2261325993
+    javatechnotes-85d6d67f9c   0         0         0         8h        javatechnotes   192.168.0.17:6443/kevin/javatechnotes      app=javatechnotes,pod-template-hash=4182823957
+---
+
+  The rollout history is maintained online...
+
+---
+  kubectl rollout history deployment/javatechnotes
+
+    deployments "javatechnotes"
+    REVISION  CHANGE-CAUSE
+    5         <none>
+    6         <none>
+---
+
+  ...and can be queried in detail
+
+---
+  kubectl rollout history deployment/javatechnotes --revision=6
+
+    deployments "javatechnotes" with revision #6
+    Pod Template:
+      Labels:	app=javatechnotes
+    	pod-template-hash=2261325993
+      Containers:
+       javatechnotes:
+        Image:	192.168.0.17:6443/kevin/javatechnotes:v2
+        Port:	<none>
+        Host Port:	<none>
+        Environment:	<none>
+        Mounts:	<none>
+      Volumes:	<none>
+
+
+
+  kubectl rollout history deployment/javatechnotes --revision=5
+
+    deployments "javatechnotes" with revision #5
+    Pod Template:
+      Labels:	app=javatechnotes
+    	pod-template-hash=4182823957
+      Containers:
+       javatechnotes:
+        Image:	192.168.0.17:6443/kevin/javatechnotes
+        Port:	<none>
+        Host Port:	<none>
+        Environment:	<none>
+        Mounts:	<none>
+      Volumes:	<none>
+---
+
+  Should it be necessary, the rollout can be backed out...
+
+---
+    kubectl rollout undo deployment/javatechnotes
+
+    or
+
+    kubectl rollout undo deployment/javatechnotes --revision=6
+---
+
 
 
 
@@ -2777,7 +3530,7 @@ The AddOns
 
     The addons are distributed with the controllerCt files (/srv/kerbetes/*yaml) and need to be maintained in line with the core application.
 
-    
+
 
 that happen late in the build!
 

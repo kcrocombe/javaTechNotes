@@ -1,6 +1,6 @@
 Notes on Docker
 
-* Introduction
+*Introduction
 
   Docker is an open platform for developing, shipping, and running applications as Containers. A container is a packaged, self-contained, runnable instance of an image that is largely isolated from other other such containers that might be running on that same host. In general, they just use the kernel of the host machine - everything else is within the container.  Because they are packaged and self-contained, they can be lifted and dropped into another environment as a single unit: and they can be guaranteed to run exactly as they did in the original environment.
 
@@ -10,7 +10,7 @@ Notes on Docker
 
   This has many similarities to that of a Virtual Machine, however it is much more lightweight: there is none of the extra load that running an operating system on a hypervisor imposes. Instead, they run directly on the <<hosts machine kernel>> as a single process, and also can run with the native speed of the underlying host. This also means that they be started and shutdown extremely quickly (in contrast to a virtual machine).
 
-  For example, a newly created container built from an existing image may only take an additional 12 kilobytes of disk space.  On the other hand, a new virtual machine created from a golden image might require hundreds or thousands of megabytes.
+  For example, a newly created container built from an existing image may only take an additional 12 kilobytes of disk space. On the other hand, a new virtual machine created from a golden image might require hundreds or thousands of megabytes.
 
   Containers will run on any x64 Linux Kernel that supports:
 
@@ -19,6 +19,8 @@ Notes on Docker
     * Control groups;
 
     * overlaying filesystems (such as AUFS - Another Union File System).
+
+    []
 
   (There are also workarounds that will allow Docker to run on Windows, Mac etc.)
 
@@ -30,10 +32,14 @@ Notes on Docker
 
     * a deployment framework.
 
+    []
+
 
   Containers are best used for applications that are stateless, or where the state has been externalised to a database, or other datastore, web front ends, back-end apis, short running tasks like maintenance scripts.
 
   And whilst it is harder to deploy things such as database server, it is still possible.
+
+====
 
 *Docker and Dev Ops
 
@@ -45,13 +51,13 @@ Notes on Docker
 
     [[1]] Developers build the Docker image and ship it to the registry.
 
-    [1]] Operations engineers provide configuration details to the container and provision resources.
+    [[1]] Operations engineers provide configuration details to the container and provision resources.
 
     [[1]] Developers trigger deployment.
 
-    This is possible because Docker allows all of the dependency issues to be discovered during the development and test cycles. By the time the application is ready for first deployment, that work is done.
+  This is possible because Docker allows all of the dependency issues to be discovered during the development and test cycles. By the time the application is ready for first deployment, that work is done.
 
-
+====
 
 *Basic Architecture
 
@@ -63,11 +69,11 @@ Notes on Docker
 
 **The Docker daemon
 
-  The Docker daemon (dockerd) listens for Docker API requests and manages Docker objects such as images, containers, networks, and volumes. A daemon can also communicate with other daemons to manage Docker services.
+  The Docker daemon (<<<dockerd>>>) listens for Docker API requests and manages Docker objects such as images, containers, networks, and volumes. A daemon can also communicate with other daemons to manage Docker services.
 
 **The Docker client
 
-  The Docker client (docker) is the primary way that many Docker users interact with Docker. When you use commands such as docker run, the client sends these commands to dockerd, which carries them out. The docker command uses the Docker API. The Docker client can communicate with more than one daemon.
+  The Docker client (<<<docker>>>) is the primary way that many Docker users interact with Docker. When you use commands such as docker run, the client sends these commands to <<<dockerd>>>, which carries them out. The docker command uses the Docker API. The Docker client can communicate with more than one daemon.
 
 **Docker registries
 
@@ -81,24 +87,28 @@ Notes on Docker
 
   Note: 'local' in this context means a disk area managed by the Docker server. It is perfectly possible for a remote registry to be a served by a Registry Server which is located on the same machine as the docker server.
 
+====
+
 *The underlying technology
 
-  Docker is written in Go and takes advantage of particular features of the Linux kernel to deliver its functionality:
+  Docker is written in the Go language and takes advantage of particular features of the Linux kernel to deliver its functionality:
 
-    * Namespaces
+    * Namespaces;
 
-    * Control Groups
+    * Control Groups;
 
-    * Union File Systems
+    * Union File Systems;
 
-    * Container Foramts.
+    * Container Formats.
+
+    []
 
   These are described below.
 
 
 **Namespaces
 
-  Docker uses a technology called namespaces to provide the isolated workspace called the container. When you run a container, Docker creates a set of namespaces for that container.
+  Docker uses a technology called <<<namespaces>>> to provide the isolated workspace called the container. When you run a container, Docker creates a set of namespaces for that container.
 
   These namespaces provide a layer of isolation. Each aspect of a container runs in a separate namespace and its access is limited to that namespace.
 
@@ -129,6 +139,7 @@ Notes on Docker
 
   Docker Engine combines the namespaces, control groups, and UnionFS into a wrapper called <<a container format>>. The default container format is libcontainer. In the future, Docker may support other container formats by integrating with technologies such as BSD Jails or Solaris Zones.
 
+====
 
 *The Building Blocks of Docker
 
@@ -138,18 +149,15 @@ Notes on Docker
 
   Every Docker Container will be based on an <<image>>.
 
-  Every Docker image consists of one or
-more filesystem layers that generally have a direct one-to-one mapping to each indi
-vidual
-build step used to create that image
+  Every Docker image consists of one or more filesystem layers that generally have a direct one-to-one mapping to each individual build step used to create that image.
 
-  In general, they will be composite objects: often, an image is based on another image, with some additional customization. For example, you may build an image which is based on the ubuntu image, but then installs the Apache web server and then your application, and the configuration details needed to make your application run.
+  In general, they will be composite objects: often, an image is based on another image, with some additional customisation. For example, you may build an image which is based on the ubuntu image, but then installs the Apache web server and then your application, and the configuration details needed to make your application run.
 
   You might create your own images or you might only use those created by others and published in a registry.
 
   To build your own image, you create a <<Dockerfile>> with a simple syntax for defining the steps needed to create the image and then run it. Each instruction in a Dockerfile creates a filesystem layer in the image.
 
-  When you change the Dockerfile and rebuild the image, only those layers which have changed need to rebuilt. This is part of what makes images so lightweight, small, and fast, when compared to other virtualization technologies.
+  When you change the Dockerfile and rebuild the image, only those layers which have changed need to rebuilt. This is part of what makes images so lightweight, small, and fast, when compared to other virtualisation technologies.
 
   Images ultimately are actual files. Consider the following:
 
@@ -163,8 +171,11 @@ build step used to create that image
 
   This shows the two images currently available on the local machine:
 
-    ubuntu:latest
-    registry:2
+    * ubuntu:latest
+
+    * registry:2
+
+    []
 
   Ultimately these labels are just a convenience notation for the actual image file, which are:
 
@@ -174,9 +185,7 @@ build step used to create that image
     sha256:f32a97de94e13d29835a19851acd6cbc7979d1d50f703725541e44bb89a1ce91
 ---
 
-  respectively. Note that these are ACTUAL filenames.
-
-  The files themselves can be viewed on the machine to which they have been downloaded.
+  respectively. Note that these are ACTUAL filenames. The files themselves can be viewed on the machine to which they have been downloaded.
 
 ---
     /var/lib/docker/image/overlay2/imagedb/content/sha256/ccc6e87d482b79dd1645affd958479139486e47191dfe7a997c862d89cd8b4c0
@@ -184,14 +193,13 @@ build step used to create that image
     /var/lib/docker/image/overlay2/imagedb/content/sha256/f32a97de94e13d29835a19851acd6cbc7979d1d50f703725541e44bb89a1ce91
 ---
 
-
   When they are viewed, they are just simple json formatted text files.
 
   The files are named according to the SHA-256 hash of their actual contents. This can be easily demonstrated using the sha256sum utility:
 
 ---
   sha256sum /var/lib/docker/image/overlay2/imagedb/content/sha256/ccc6e87d482b79dd1645affd958479139486e47191dfe7a997c862d89cd8b4c0
-ccc6e87d482b79dd1645affd958479139486e47191dfe7a997c862d89cd8b4c0  ccc6e87d482b79dd1645affd958479139486e47191dfe7a997c862d89cd8b4c0
+  ccc6e87d482b79dd1645affd958479139486e47191dfe7a997c862d89cd8b4c0  ccc6e87d482b79dd1645affd958479139486e47191dfe7a997c862d89cd8b4c0
 ---
 
   These files are known as manifests, and contain all the metadata necessary for the container to construct and run. Because the image filename is based on a hash of its content, 2 files bearing the same name can be guaranteed to hold the same content. To all intents and purposes, image Ids are globally unique.
@@ -202,15 +210,18 @@ ccc6e87d482b79dd1645affd958479139486e47191dfe7a997c862d89cd8b4c0  ccc6e87d482b79
 
     * an ordered list of image layers from which this image is built.
 
+    []
+
   This list of layers is also specified in terms of a set of files names after the sha256 hash of their contents, e.g.:
 
-    "sha256:96eda0f553ba9988a216cea7cf016d18d5f036677d411883b642c4c8c70e301b",
-    "sha256:bd95983a8d99e89ec7c7558839a72a79e92ce8c5a6697ad704e341d0d3c43cd5",
-    "sha256:293b479c17a5448de0814a3c614ac15a0d192a7c2c56f53478f6e3d5cc5cb345",
-    "sha256:fa1693d66d0b743e6ef621392026f411dad99750ec16926ffd78104a82a123e7"
+---
+  "sha256:96eda0f553ba9988a216cea7cf016d18d5f036677d411883b642c4c8c70e301b",
+  "sha256:bd95983a8d99e89ec7c7558839a72a79e92ce8c5a6697ad704e341d0d3c43cd5",
+  "sha256:293b479c17a5448de0814a3c614ac15a0d192a7c2c56f53478f6e3d5cc5cb345",
+  "sha256:fa1693d66d0b743e6ef621392026f411dad99750ec16926ffd78104a82a123e7"
+---
 
   These files are also digests, and may reference further images. Eventually however they will resolve to the sha256 hash of a gzipped tar file that constitute the actual layer.
-
 
   Every image id is globally unique.
 
@@ -235,8 +246,6 @@ ccc6e87d482b79dd1645affd958479139486e47191dfe7a997c862d89cd8b4c0  ccc6e87d482b79
           ---> 07c0f84777ef....
 
 
-
-
   Each repository contains at least one tag that points to a specific layer identifier and thus the image definition
 
 
@@ -250,13 +259,9 @@ ccc6e87d482b79dd1645affd958479139486e47191dfe7a997c862d89cd8b4c0  ccc6e87d482b79
 
     []
 
-  You can do that with the command. docker tag
+  You can do that with the command <<<docker tag>>>
 
-   Every repository contains a “latest” tag by default
-
-
-
-
+  Every repository contains a “latest” tag by default
 
 
 **Registry
@@ -266,7 +271,7 @@ ccc6e87d482b79dd1645affd958479139486e47191dfe7a997c862d89cd8b4c0  ccc6e87d482b79
 
 **Containers
 
-  Container (previously Jail) has now become the preferred term to describe a modified runtime environment for a program which prevents said program from accessing protected resources.  i.e. think containment.
+  'Container' (previously Jail) has now become the preferred term to describe a modified runtime environment for a program which prevents said program from accessing protected resources.  i.e. think containment.
 
   “A container is a self-contained execution environment that shares the kernel of the host system and which is (optionally) isolated from other containers in the system.”
 
@@ -274,14 +279,11 @@ ccc6e87d482b79dd1645affd958479139486e47191dfe7a997c862d89cd8b4c0  ccc6e87d482b79
 
   When a process is running inside a container, there is only a very little shim that sits inside the kernel rather than potentially calling up into a whole second kernel while bouncing in and out of privileged mode on the processor.
 
-
   You can think of each of your Docker containers as behaving on the network like a host on a private network. The Docker server acts as a virtual bridge and the containers behave like clients behind it. (A bridge is just a network device that repeats traffic from one side to another).
 
   Each container has its own virtual Ethernet interface connected to the Docker bridge and its own IP address
 
-
-
-  Typically, containers are created  using either the run or create command:
+  Typically, containers are created using either the run or create command:
 
 ---
   docker run -i -t ubuntu /bin/bash
@@ -306,15 +308,16 @@ ccc6e87d482b79dd1645affd958479139486e47191dfe7a997c862d89cd8b4c0  ccc6e87d482b79
 [./images/containerAndImageLifecycle.png]
 
 
+====
 
-Building Images
+*Building Images
 
   There are two general ways that can be used to create new images. Both use an existing image (often a 'Base' image) and supplement it with additional files or configuration in order to produce a more specialised one. The two methods follow the same principles. The first constructs the new image via a series of manual build steps; the second uses a build configuration file and tool support to automate the same basic steps.
 
 
-*ImageTypes
+**ImageTypes
 
-**Base Images
+***Base Images
 
   It the vast majority of cases, images will be built from base images. Often these will be little more than useful collections of linux shell commands and utilities. The object is often to keep them as small as possible: there is little point including software that won't get used in your software. Commonly used base images, all available from the Docker Hub registry include:
 
@@ -328,20 +331,23 @@ Building Images
 
     * Scratch - a special 'empty' image fro building images from nothing.
 
+    []
+
 
   Other base images may be larger and more specialised in nature, for example:
 
-    * java
+    * java;
 
-    * apache webserver
+    * apache webserver;
 
+    []
 
-**Statically linked executables.
+***Statically linked executables.
 
   Occasionally a base image can consist of just one file. An example might be a statically-linked executable. Such a executable has no externally dependedncies (libraries etc). Consequently it can execute directly on the kernel itself.
 
 
-*Manual building of a new image.
+**Manual building of a new image.
 
   There are 3 basic steps to creating a new image:
 
@@ -352,7 +358,7 @@ Building Images
  [[1]] Commit the changes that you have made. Once committed, new containers can be created from the resulting image.
 
 
-**Creating a container holding out base image
+***Creating a container holding our base image
 
   To begin we need to have our base image running in a container in a way that we can connect to it and manipulate it. Here we are using a ubuntu image and are interacting with it via the bash shell.
 
@@ -360,7 +366,7 @@ Building Images
   docker run -it --name baseImage ubuntu:latest /bin/bash
 ---
 
-**Customize the base image
+***Customize the base image
 
   Here, we shall just install git on top of our base image...
 
@@ -411,12 +417,12 @@ Building Images
   However we can create new containers with these changes and once the container is deleted, they will be gone for good. To persist those change, we commit them to a new image.
 
 
-**Committing Changes to form a new image.
+***Committing Changes to form a new image.
 
   The commit statement will create a new image. Here we we give it a repository name of gitimage, and add various elements of metadata.
 
 ---
-docker commit --author "KJC" --message "git Added" baseImage gitimage
+  docker commit --author "KJC" --message "git Added" baseImage gitimage
 
   sha256:ab3fee460a49557acbaf061b65bbef6f703a5c47bd3ab0f125a7326ad0cc6386
 ---
@@ -429,7 +435,7 @@ docker commit --author "KJC" --message "git Added" baseImage gitimage
     gitimage                   latest              ab3fee460a49        40 seconds ago      186MB
     ubuntu                     latest              ccc6e87d482b        2 days ago          64.2MB
 ---
-*The Commit
+**The Commit
 
   When you use <<commit>>, you create a new layer to a docker image, and identify it in some meaningful way. As well as the filesystem, the commit also includes:
 
@@ -445,6 +451,8 @@ docker commit --author "KJC" --message "git Added" baseImage gitimage
 
     * Command and arguments
 
+    []
+
   If these values weren’t specifically set for the container, the values will be inherited from the original image.
 
   We can now create a new container based on out new image.
@@ -458,9 +466,9 @@ docker commit --author "KJC" --message "git Added" baseImage gitimage
 
   An <<entrypoint>> is the program that will be executed when the container starts. Note how the entry point has been retained from the original image.
 
-  If we want to change the entry point, say, to run git, we need to create yet another layer. (We could have done theis all in the previous step, if we had chaose to).
+  If we want to change the entry point, say, to run git, we need to create yet another layer. (We could have done this all in the previous step, if we had chose to).
 
-  Once again, create a container, but this time stating our entry point explicity....
+  Once again, create a container, but this time stating our entry point explicitly....
 
 ---
   docker run -it --name cmd-git --entrypoint git  gitimage
@@ -470,7 +478,7 @@ docker commit --author "KJC" --message "git Added" baseImage gitimage
            [-p | --paginate | --no-pager] [--no-replace-objects] [--bare]
            [--git-dir=<path>] [--work-tree=<path>] [--namespace=<name>]
            <command> [<args>]
-...
+  ...
 ---
   ...and once again commit our changes to a new image (gitimage)
 
@@ -492,7 +500,7 @@ docker commit --author "KJC" --message "git Added" baseImage gitimage
              <command> [<args>
 ---
 
-  We can see the steps that have gone into makig up an image with the <<<docker history>>> command.
+  We can see the steps that have gone into making up an image with the <<<docker history>>> command.
 
 ---
   docker history cmdimage
@@ -507,18 +515,16 @@ docker commit --author "KJC" --message "git Added" baseImage gitimage
     <missing>           2 days ago          /bin/sh -c #(nop) ADD file:08e718ed0796013f5…   63.2MB
 ---
 
-
-
-
+====
 *Building Images with DockerFiles
 
-  Rather than manually crafting the new image files as described above, it is usually better to make use of the <<<docker builder>>> facility. This utility takes a <<<Dockerfile>>> and procesess it to build a new image in a predicatable and reproducable way.
+  Rather than manually crafting the new image files as described above, it is usually better to make use of the <<<docker builder>>> facility. This utility takes a <<<Dockerfile>>> and processes it to build a new image in a predictable and reproducible way.
 
   Docker files are a simply text files containing a set of instructions using a particular syntax in order to construct an image.
 
   Each line in a Dockerfile represent a new commit point, and each commit point will create an intermediate image. These intermediate images will eventually layer up into the final image which is the overall build target of the Dockerfile.
 
-  The intermediate images remain as images in their own right. Conseqently, should one of the intermediate images need to be changed, it acn effcetively be swapped out and replaces WITHOUT having to build the layers on top or underneath.
+  The intermediate images remain as images in their own right. Consequently, should one of the intermediate images need to be changed, it can effectively be swapped out and replaces WITHOUT having to build the layers on top or underneath.
 
 **Anatomy of a Dockerfile
 
@@ -532,17 +538,18 @@ docker commit --author "KJC" --message "git Added" baseImage gitimage
 
     * any Environment variables to be set
 
-    * Commands to be executed ( including, commands that will install additional packages ( e.g. apt-get, rpm, youm, dnf))
+    * Commands to be executed ( including, commands that will install additional packages ( e.g. apt-get, rpm, yum, dnf))
 
     * various Metadata items, such a s Maintainer, Labels etc
+
+    []
 
 
 **Dockerfile in the build process
 
   The <<<Dockerfile>>> is a simple text file making it amenable to version control. Maintaining multiple versions of an image is as simple as maintaining multiple Dockerfiles. It is usual that the Dockerfile used to build an image be maintained alongside the application's source code.
 
-  The application build process would then make use of that Dockerfile producing the Docker image as the final build artifact.
-
+  The application build process would then make use of that Dockerfile producing the Docker image as the final build artefact.
 
 **A simple DockerFile
 
@@ -559,14 +566,14 @@ docker commit --author "KJC" --message "git Added" baseImage gitimage
 
   The first instruction MUST be a FROM class (specifying the base image ( or 'scratch') if there is no base.) By default, the builder looks in the Docker server registry for the image. If not found there, they will be pulled from the Docker Hub (or other registry).
 
-  The RUN statment is a command run on the current image (not the host machine) - fedora:latest in this case
+  The RUN statement is a command run on the current image (not the host machine) - fedora:latest in this case
 
   Each subsequent instruction implies a 'commit' and generates an intermediate image.
 
 
 **Basic Dockerfile commands
 
-  The following is a brief description of teh most commonly used Dockerfile commnads:
+  The following is a brief description of the most commonly used Dockerfile commands:
 
     The RUN instruction will execute any commands in a new layer on top of the current image and commit the results.
 
@@ -588,15 +595,12 @@ docker commit --author "KJC" --message "git Added" baseImage gitimage
 
     The WORKDIR instruction sets the working directory for any RUN, CMD, ENTRYPOINT, COPY and ADD instructions that follow it in the Dockerfile
 
-
   For a fuller description of the options available, see the {{{https://docs.docker.com/engine/reference/builder/}Docker File Reference}}
 
 
 **Invocation
 
-
-
-  docker build .
+  A docker build is initiated by "pointing" the process at the relevant build directory. The process expects to find a file, <<<Dockerfile>>>, that contains the required instructions to perform the build.
 
 ---
   docker build .
@@ -664,29 +668,31 @@ docker commit --author "KJC" --message "git Added" baseImage gitimage
 
     Successfully built aba0c3d70a7d
 ---
+  We can see the downloaded base image and the newly crated image in the Dockers local registry, as follows. Note the image has no tag.
 
-  We can see the downloaded base image and the newly crated image in the Dockers local registry. Note the image has no tag.
-
+---
   docker images
+
   REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
   <none>              <none>              aba0c3d70a7d        7 minutes ago       186MB
   ubuntu              latest              ccc6e87d482b        2 days ago          64.2MB
+---
+  We can tag the image explicitly
 
-    We can tag the image expliicity
+---
+  docker tag aba0c3d70a7d dockerfile_git:1
+---
+  ...but it could have been tagged at the build stage
 
-      docker tag aba0c3d70a7d dockerfile_git:1
-
-    ...but it could have been tagged at the build stage
-
+---
   docker build --tag dockerfile_git:1 .
 
   docker build -t example/docker-node-hello:latest .
+---
 
 **Dockerfile Best Practises
 
   {{https://docs.docker.com/engine/reference/builder/}}
-
-
 
 
 Union File Systems
@@ -1021,3 +1027,619 @@ Deploying a local Registry Server.
     Digest: sha256:e60a002052d1a073f3212f3732cff8abc7997939c731850e6960eb94a244c406
     Status: Downloaded newer image for localhost:5000/my-ubuntu:latest
 ---
+
+*Running Docker Registry Securely.
+
+  Running a registry only on localhost has only very limited usefulness. Normally the registry has to be accessible to external hosts. To do this, it must be secured using TLS, the successor protocol to SSL. (It does seem that the docker client executable will attempt communication on the http port 5000 when LOCAL, but use the https SECURE port 443, when attempting to contact remote machines.)
+
+  The note {{{./onCertificatesAndKeyPairs.html}onCertificatesAndKeyPairs}} describes some of the background to TLS and how Keys and Certificates work within it.
+
+  The steps to establish the necessary key and certificates are described below.
+
+
+**Certificates needed to protect the Registry ports.
+
+  [[1]] Generate a private key for use by our Docker Registry
+
+---
+  openssl genrsa -out ./serverKey.pem 2048
+
+    Generating RSA private key, 2048 bit long modulus
+    ......................................................................................................................................................+++++
+    ...........+++++
+    e is 65537 (0x10001)
+---
+  [[1]] Examine the contents of the certificate so generated and ensure all is on order:
+
+---
+  openssl rsa -text -in serverKey.pem
+
+    Private-Key: (2048 bit)
+    modulus:
+        00:ba:2d:51:89:06:ba:1a:68:a5:6a:95:ca:0a:e8:
+        32:9d:3d:06:77:8d:dd:c7:e0:99:c0:83:81:6f:33:
+        e7:16:f4:5e:25:b6:58:80:56:fa:a3:2b:d9:b2:f1:
+        0a:8b:54:c2:f4:6b:1f:7f:eb:5e:c5:d1:08:38:95:
+        f5:7a:88:f9:de:3e:c6:7a:e0:67:0b:97:a1:76:46:
+        82:45:24:01:63:e9:5b:e7:0c:7d:00:4f:bd:72:56:
+        c3:c4:7a:0a:31:d2:b6:46:16:24:36:45:b6:27:73:
+        2a:58:af:3e:d6:82:b7:42:20:7e:1a:22:86:9e:32:
+        d5:f5:8e:cf:fa:89:b8:f9:9a:49:87:d6:f9:f3:3c:
+        8b:4e:a5:98:82:e4:a9:a0:cf:37:8d:30:14:62:22:
+        7f:d7:7b:d7:c5:85:7c:b9:bd:43:cb:5c:4e:dc:91:
+        5b:dd:20:5e:5d:b3:0c:36:fa:c7:69:ed:f3:33:ce:
+        f7:1d:85:22:1c:dc:d8:fb:53:c7:72:ae:00:75:1c:
+        3f:73:ae:33:b2:17:63:40:3c:66:a5:aa:79:7d:bf:
+        f0:86:b4:ff:5f:5b:26:88:56:32:ff:07:5d:cb:48:
+        4e:c3:52:ea:6b:ce:d8:3e:f2:91:ad:d4:e7:d1:0f:
+        ef:12:85:7a:01:50:87:01:67:bb:31:74:4e:80:b0:
+        4a:2b
+    publicExponent: 65537 (0x10001)
+    privateExponent:
+        58:fa:b3:cf:43:91:ca:71:5d:2d:95:ad:5c:8d:21:
+        33:99:28:f0:16:b3:7a:85:d3:b5:f8:a3:f1:db:e2:
+        84:4c:02:7b:0f:ad:38:99:59:6c:86:d6:a2:f9:24:
+        ca:f6:95:be:6f:3c:3c:cc:e7:1c:b0:0c:b7:ce:a3:
+        e6:0e:75:2d:4c:df:5b:76:c8:88:f7:cd:49:53:e5:
+        8a:d9:ec:78:2d:dd:a8:8d:85:68:92:b3:be:63:cd:
+        68:a7:d3:1b:80:d3:70:a7:c0:62:d7:ea:78:ec:47:
+        be:de:f2:af:5f:05:ea:ea:d0:99:f9:0a:51:ad:86:
+        28:b8:3a:9a:49:1c:48:de:2d:ac:21:7c:aa:51:11:
+        8a:a8:68:94:e5:99:19:33:52:24:fa:ab:af:0b:c9:
+        01:2e:d5:42:ed:ef:f0:09:6a:be:9c:fc:7d:25:8e:
+        81:58:b7:3d:ab:b7:50:4b:0e:42:49:f7:1e:fe:ca:
+        71:98:e9:5f:92:57:bd:e1:15:51:4a:f2:43:f8:35:
+        c3:9f:a0:dc:30:87:a3:37:e7:69:f4:73:13:86:87:
+        44:e4:24:0e:4a:82:78:6c:d3:18:9b:fe:14:1e:11:
+        81:4c:d7:30:74:f6:7a:df:84:c2:be:5b:d7:78:5c:
+        92:cb:d7:91:ba:09:48:99:92:48:53:8f:48:58:61:
+        61
+    prime1:
+        00:df:b8:7c:61:80:85:03:ca:13:22:a1:a4:37:fc:
+        0e:25:fd:d0:73:db:93:56:ec:0d:68:68:2a:ca:f1:
+        57:df:7b:68:62:5f:77:ff:0c:86:8a:be:d8:76:0e:
+        a1:fe:95:e1:d5:8e:25:ec:c5:65:af:7d:f8:de:2a:
+        25:03:e7:70:66:83:d5:25:38:35:55:c6:7b:04:7c:
+        d6:75:c3:05:7c:67:fc:9e:36:54:cc:c6:83:f6:aa:
+        2e:6a:35:a8:29:09:70:99:a0:b2:2e:91:ee:2a:7f:
+        5a:f8:a8:3b:81:48:89:fc:86:d0:49:6c:89:9b:42:
+        57:ea:d5:63:1f:55:d5:88:03
+    prime2:
+        00:d5:0a:17:d8:ce:24:e7:64:30:bf:8e:fa:a9:54:
+        3a:8b:28:73:49:49:9b:aa:14:9b:f0:89:0d:f9:58:
+        e7:28:b6:9c:2a:ea:0c:0b:0b:07:70:bd:05:78:a7:
+        02:f6:31:db:6c:c5:9a:0e:2e:b4:dc:97:0b:ef:91:
+        ab:9f:ad:4d:e2:ca:66:fa:e1:a3:3b:8d:bd:21:30:
+        4d:1f:3e:a4:8e:20:53:70:d2:2b:a7:1c:36:22:fa:
+        af:7e:db:53:df:58:c0:34:61:5c:be:d0:c5:80:e1:
+        09:6b:97:df:9a:6f:2f:4b:8e:f5:11:7a:44:39:41:
+        66:86:25:e9:ba:35:cb:00:b9
+    exponent1:
+        2f:df:82:7e:3a:ca:3b:ed:59:fa:e7:2c:04:ee:e2:
+        f8:2e:40:15:0a:bf:94:b2:1e:8c:60:fe:07:3f:6d:
+        d6:5c:ca:11:82:ec:62:9f:83:8a:dd:1b:e4:e7:6c:
+        b2:d5:cf:e5:aa:ed:62:a5:3b:05:3a:a7:ae:a2:c6:
+        18:f7:c5:8d:aa:58:4a:06:a5:23:1d:bd:e5:4f:f1:
+        74:71:af:12:d8:0d:ae:ad:61:a8:10:32:dc:ed:bd:
+        d0:ec:7a:77:8d:95:92:ca:58:56:ae:d3:90:34:80:
+        7b:05:44:f6:7d:57:49:ba:6f:87:c6:ba:0b:87:3e:
+        d8:f9:a0:a4:6b:f1:ad:91
+    exponent2:
+        00:99:26:25:58:85:71:40:2a:e5:64:80:1b:b0:68:
+        cd:a1:46:56:02:64:79:14:3e:b6:8f:a7:67:35:4e:
+        74:f6:ee:b7:bb:9d:ff:44:5d:0c:5f:3e:73:55:75:
+        f2:8a:1b:f3:5a:f1:7e:bb:1d:56:85:91:cc:51:cf:
+        cd:a9:ff:83:13:3b:5f:e6:91:18:b0:72:47:79:39:
+        68:e7:c2:37:b7:b8:83:63:82:a3:41:01:e5:e5:25:
+        83:cd:d5:4c:29:2e:7b:15:ec:bc:28:ac:9a:9e:f8:
+        a7:b6:02:3b:0b:a1:4c:45:ac:22:7f:0a:ff:4a:8d:
+        ba:6f:4b:88:07:86:2e:46:79
+    coefficient:
+        7a:be:52:1e:08:37:90:0f:3b:12:62:0c:76:86:90:
+        ed:d1:d2:62:07:d9:6d:cf:8f:79:e7:45:da:51:15:
+        9d:3f:9b:7f:e9:61:30:77:b6:e6:4a:49:f7:1e:e7:
+        2a:2d:41:dd:2d:f2:ba:53:3a:71:b4:87:5a:2b:e3:
+        c4:ad:3a:1d:a6:05:68:ae:ed:91:57:0b:cd:b2:0e:
+        4d:81:77:ba:43:4d:c5:e1:7d:b1:c7:fc:17:24:12:
+        1d:7e:10:e1:57:96:29:86:2c:c7:2e:7b:fb:6e:9b:
+        7b:d7:25:cb:72:2c:b3:62:55:8e:4b:a4:4f:8d:21:
+        83:e0:45:a9:f4:32:a1:66
+    writing RSA key
+    -----BEGIN RSA PRIVATE KEY-----
+    MIIEowIBAAKCAQEAui1RiQa6GmilapXKCugynT0Gd43dx+CZwIOBbzPnFvReJbZY
+    gFb6oyvZsvEKi1TC9Gsff+texdEIOJX1eoj53j7GeuBnC5ehdkaCRSQBY+lb5wx9
+    AE+9clbDxHoKMdK2RhYkNkW2J3MqWK8+1oK3QiB+GiKGnjLV9Y7P+om4+ZpJh9b5
+    8zyLTqWYguSpoM83jTAUYiJ/13vXxYV8ub1Dy1xO3JFb3SBeXbMMNvrHae3zM873
+    HYUiHNzY+1PHcq4AdRw/c64zshdjQDxmpap5fb/whrT/X1smiFYy/wddy0hOw1Lq
+    a87YPvKRrdTn0Q/vEoV6AVCHAWe7MXROgLBKKwIDAQABAoIBAFj6s89DkcpxXS2V
+    rVyNITOZKPAWs3qF07X4o/Hb4oRMAnsPrTiZWWyG1qL5JMr2lb5vPDzM5xywDLfO
+    o+YOdS1M31t2yIj3zUlT5YrZ7Hgt3aiNhWiSs75jzWin0xuA03CnwGLX6njsR77e
+    8q9fBerq0Jn5ClGthii4OppJHEjeLawhfKpREYqoaJTlmRkzUiT6q68LyQEu1ULt
+    7/AJar6c/H0ljoFYtz2rt1BLDkJJ9x7+ynGY6V+SV73hFVFK8kP4NcOfoNwwh6M3
+    52n0cxOGh0TkJA5Kgnhs0xib/hQeEYFM1zB09nrfhMK+W9d4XJLL15G6CUiZkkhT
+    j0hYYWECgYEA37h8YYCFA8oTIqGkN/wOJf3Qc9uTVuwNaGgqyvFX33toYl93/wyG
+    ir7Ydg6h/pXh1Y4l7MVlr3343iolA+dwZoPVJTg1VcZ7BHzWdcMFfGf8njZUzMaD
+    9qouajWoKQlwmaCyLpHuKn9a+Kg7gUiJ/IbQSWyJm0JX6tVjH1XViAMCgYEA1QoX
+    2M4k52Qwv476qVQ6iyhzSUmbqhSb8IkN+VjnKLacKuoMCwsHcL0FeKcC9jHbbMWa
+    Di603JcL75Grn61N4spm+uGjO429ITBNHz6kjiBTcNIrpxw2IvqvfttT31jANGFc
+    vtDFgOEJa5ffmm8vS471EXpEOUFmhiXpujXLALkCgYAv34J+Oso77Vn65ywE7uL4
+    LkAVCr+Ush6MYP4HP23WXMoRguxin4OK3Rvk52yy1c/lqu1ipTsFOqeuosYY98WN
+    qlhKBqUjHb3lT/F0ca8S2A2urWGoEDLc7b3Q7Hp3jZWSylhWrtOQNIB7BUT2fVdJ
+    um+HxroLhz7Y+aCka/GtkQKBgQCZJiVYhXFAKuVkgBuwaM2hRlYCZHkUPraPp2c1
+    TnT27re7nf9EXQxfPnNVdfKKG/Na8X67HVaFkcxRz82p/4MTO1/mkRiwckd5OWjn
+    wje3uINjgqNBAeXlJYPN1UwpLnsV7LworJqe+Ke2AjsLoUxFrCJ/Cv9KjbpvS4gH
+    hi5GeQKBgHq+Uh4IN5APOxJiDHaGkO3R0mIH2W3Pj3nnRdpRFZ0/m3/pYTB3tuZK
+    Sfce5yotQd0t8rpTOnG0h1or48StOh2mBWiu7ZFXC82yDk2Bd7pDTcXhfbHH/Bck
+    Eh1+EOFXlimGLMcue/tum3vXJctyLLNiVY5LpE+NIYPgRan0MqFm
+    -----END RSA PRIVATE KEY-----
+---
+  [[1]] Generate a Certificate/Certificate Signing Request embedding the public key which pairs the Private Key generated for the server. These will be passed to client applications during the initial TLS handshaking.
+
+---
+  openssl req -new -key serverKey.pem -out serverReq.csr
+
+    You are about to be asked to enter information that will be incorporated
+    into your certificate request.
+    What you are about to enter is what is called a Distinguished Name or a DN.
+    There are quite a few fields but you can leave some blank
+    For some fields there will be a default value,
+    If you enter '.', the field will be left blank.
+    -----
+    Country Name (2 letter code) [AU]:GB
+    State or Province Name (full name) [Some-State]:.
+    Locality Name (eg, city) []:Leeds
+    Organization Name (eg, company) [Internet Widgits Pty Ltd]:pegortech
+    Organizational Unit Name (eg, section) []:.
+    Common Name (e.g. server FQDN or YOUR name) []:IP:10.2.0.5
+    Email Address []:
+
+    Please enter the following 'extra' attributes
+    to be sent with your certificate request
+    A challenge password []:
+    An optional company name []:
+---
+  [[1]] Once again, the content of the Signing Request can be examined.
+
+---
+  openssl req -text -in serverReq.csr -noout
+
+    Certificate Request:
+        Data:
+            Version: 0 (0x0)
+            Subject: C=GB, L=Leeds, O=pegortech, CN=IP:10.2.0.5
+            Subject Public Key Info:
+                Public Key Algorithm: rsaEncryption
+                    Public-Key: (2048 bit)
+                    Modulus:
+                        00:ba:2d:51:89:06:ba:1a:68:a5:6a:95:ca:0a:e8:
+                        32:9d:3d:06:77:8d:dd:c7:e0:99:c0:83:81:6f:33:
+                        e7:16:f4:5e:25:b6:58:80:56:fa:a3:2b:d9:b2:f1:
+                        0a:8b:54:c2:f4:6b:1f:7f:eb:5e:c5:d1:08:38:95:
+                        f5:7a:88:f9:de:3e:c6:7a:e0:67:0b:97:a1:76:46:
+                        82:45:24:01:63:e9:5b:e7:0c:7d:00:4f:bd:72:56:
+                        c3:c4:7a:0a:31:d2:b6:46:16:24:36:45:b6:27:73:
+                        2a:58:af:3e:d6:82:b7:42:20:7e:1a:22:86:9e:32:
+                        d5:f5:8e:cf:fa:89:b8:f9:9a:49:87:d6:f9:f3:3c:
+                        8b:4e:a5:98:82:e4:a9:a0:cf:37:8d:30:14:62:22:
+                        7f:d7:7b:d7:c5:85:7c:b9:bd:43:cb:5c:4e:dc:91:
+                        5b:dd:20:5e:5d:b3:0c:36:fa:c7:69:ed:f3:33:ce:
+                        f7:1d:85:22:1c:dc:d8:fb:53:c7:72:ae:00:75:1c:
+                        3f:73:ae:33:b2:17:63:40:3c:66:a5:aa:79:7d:bf:
+                        f0:86:b4:ff:5f:5b:26:88:56:32:ff:07:5d:cb:48:
+                        4e:c3:52:ea:6b:ce:d8:3e:f2:91:ad:d4:e7:d1:0f:
+                        ef:12:85:7a:01:50:87:01:67:bb:31:74:4e:80:b0:
+                        4a:2b
+                    Exponent: 65537 (0x10001)
+            Attributes:
+                a0:00
+        Signature Algorithm: sha256WithRSAEncryption
+             63:06:31:fd:8c:dc:4e:10:70:b8:18:b0:2a:22:64:63:cc:70:
+             f2:ec:80:96:68:a5:0f:b1:fb:c5:41:7b:99:ac:4d:4a:75:9c:
+             43:67:c4:a6:f4:0a:b6:7f:19:61:f9:ef:4e:d0:aa:69:bd:d3:
+             dd:ce:84:35:89:d7:23:8a:f5:87:d3:75:dc:53:a0:05:83:ff:
+             b6:eb:67:78:87:8d:7a:b0:7d:83:1d:3b:64:9e:2d:77:67:aa:
+             3a:40:47:c9:1e:21:5c:57:62:df:87:fd:d8:be:2a:4b:a3:29:
+             30:81:32:64:00:77:98:d2:c9:34:83:fd:61:f3:52:b7:2d:74:
+             b9:47:23:ec:0f:bd:4c:2d:78:27:5c:dd:c0:a6:6b:5e:ff:57:
+             35:02:78:9a:25:a0:3e:f6:d0:02:ae:a4:08:d6:22:91:42:85:
+             4c:15:a4:ae:4a:1c:50:8d:8c:c6:3e:79:75:46:9d:b8:df:d2:
+             c8:c0:0f:b1:5c:b8:9e:8c:b6:d9:39:51:72:51:79:fa:2b:44:
+             54:c9:11:f4:40:32:05:39:04:64:21:2f:c9:93:05:9d:90:82:
+             87:ea:3a:b4:bc:11:d5:96:dd:9b:7e:1e:38:e7:69:63:2b:79:
+             5c:b7:3e:eb:1a:1d:04:57:b4:ac:29:54:b1:ff:f5:ac:42:e2:
+             5d:a1:fd:6e
+---
+
+  [[1]] Certificate Signing. To be usable, the certificate needs to be signed. In some circumstance, it is possible to use a certificate signed using the same private-key whose corresponding public-key forms part of the certificate. However, the Docker Registry does not seem to like this : it seems to pick up on the fact that the server Key was destined for other uses.
+
+  An error message such as:
+
+---
+  x509: certificate signed by unknown authority (possibly because of "x509: invalid signature: parent certificate cannot sign this kind of certificate" while trying to verify candidate authority certificate "IP:10.0.2.15")
+---
+  is issued.
+
+  Instead, we have to use a second CA type certificate in order to sign the serverCertificates.
+
+  [[1]] Generate the Private Key that will be used to sign our Server certificates.
+
+---
+  openssl genrsa -out ./ca_key.pem 2048
+
+    Generating RSA private key, 2048 bit long modulus
+    ......................................................................................................................................................+++++
+    ...........+++++
+    e is 65537 (0x10001)
+---
+
+  [[1]] Generate the corresponding Public Key Certificate/CSR for our CA Private Key...
+
+---
+  openssl req -new -x509 -key ca-key.pem -out ca.crt
+
+    You are about to be asked to enter information that will be incorporated
+    into your certificate request.
+    What you are about to enter is what is called a Distinguished Name or a DN.
+    There are quite a few fields but you can leave some blank
+    For some fields there will be a default value,
+    If you enter '.', the field will be left blank.
+    -----
+    Country Name (2 letter code) [AU]:UK
+    State or Province Name (full name) [Some-State]:Yorkshire
+    Locality Name (eg, city) []:Leeds
+    Organization Name (eg, company) [Internet Widgits Pty Ltd]:Pegor Technical Services
+    Organizational Unit Name (eg, section) []:CA
+    Common Name (e.g. server FQDN or YOUR name) []:.
+    Email Address []:.
+---
+
+  [[1]] We can now use the CA key and Certificate to sign the Server certificates. Note that in this particular case, we are wanting to use the certificates on more then one machine: or more accurately we haven't decided yet on where we want to host the Registry, so are including more than one IP address in order to give us options.
+
+  These IP addresses need to given as Subject Alternative Names (SANS) within the signed certificate. These values CANNOT be specified on the command line, and must be included in an external file. This has the structure:
+
+---
+  subjectAltName=IP:10.2.0.15, IP:10.0.2.15, IP:192.168.0.17
+---
+
+  The name of the file is then specified on the command line.
+
+  [[1]] Sign the Server Certificates with out CA certificate This will generate a signed certificate for encrypting traffic from our client servers : server.crt
+
+---
+  openssl x509 -req -days 1000 -in serverReq.csr -CA ca.crt -CAkey ca-key.pem -extfile SANS.txt -out server.crt -CAcreateserial
+
+    Signature ok
+    subject=/C=UK/ST=Yorkshire/L=Leeds/O=Pegor Technical Services/CN=10.0.2.15
+    Getting CA Private Key
+---
+
+  [[1]] Check the Signed Certificate over
+
+---
+  openssl x509 -text -in server.crt -noout
+
+    Certificate:
+        Data:
+            Version: 3 (0x2)
+            Serial Number:
+                ae:67:18:28:3d:c1:c3:a8
+        Signature Algorithm: sha256WithRSAEncryption
+            Issuer: C=UK, ST=Yorkshire, L=Leeds, O=Pegor Technical Services, OU=CA
+            Validity
+                Not Before: Jan 21 22:20:13 2020 GMT
+                Not After : Oct 17 22:20:13 2022 GMT
+            Subject: C=UK, ST=Yorkshire, L=Leeds, O=Pegor Technical Services, CN=10.0.2.15
+            Subject Public Key Info:
+                Public Key Algorithm: rsaEncryption
+                    Public-Key: (2048 bit)
+                    Modulus:
+                        00:a7:b7:41:3a:dc:85:c2:37:d7:13:74:5a:48:60:
+                        c7:ac:17:69:5a:0c:dd:8e:f4:a5:04:c4:95:d0:50:
+                        4a:ef:4f:fa:9c:ce:46:17:0b:4d:76:30:5e:3c:cf:
+                        5b:ff:1e:e6:fb:fc:12:af:cc:e8:ef:0d:b2:da:b3:
+                        bc:2c:c9:f1:e3:07:42:a0:25:dd:1d:d1:09:35:87:
+                        39:1b:30:78:70:ef:97:7c:24:11:4e:2a:65:fa:66:
+                        ed:68:57:9a:c6:84:91:a3:fb:7c:75:99:6a:b0:4d:
+                        4a:5d:7e:71:0e:21:c0:f3:cb:5e:bc:5d:70:fd:c9:
+                        f4:65:03:25:fe:cc:f6:43:99:d9:a7:d3:35:01:0a:
+                        ca:8d:c3:59:d1:41:b4:d2:98:5f:33:85:92:a8:95:
+                        2a:cc:a9:22:08:f6:3b:1e:98:5f:cd:e6:b4:4d:81:
+                        90:62:9f:7f:2d:80:08:f8:ff:f7:2c:8c:1f:fe:cc:
+                        b1:63:90:b1:c8:1f:8a:7f:de:01:a6:84:00:9e:39:
+                        51:16:6c:ea:b5:3e:f9:25:29:08:f8:2d:52:e3:ef:
+                        f1:a6:59:b1:70:c8:2a:e3:f0:1e:81:a7:5a:1a:f9:
+                        77:41:74:68:96:64:4e:19:c7:97:ff:c2:3d:a8:67:
+                        27:96:c5:3d:00:64:30:d7:39:0e:5b:95:8f:28:11:
+                        1c:91
+                    Exponent: 65537 (0x10001)
+            X509v3 extensions:
+                X509v3 Subject Alternative Name:
+                    IP Address:10.2.0.15, IP Address:10.0.2.15, IP Address:192.168.0.17
+        Signature Algorithm: sha256WithRSAEncryption
+             31:0d:54:52:18:56:ed:48:84:0d:f2:2a:e1:ef:d6:a7:59:6d:
+             6b:6e:8f:77:e2:fc:f8:e6:28:c8:4c:af:06:33:22:45:d3:f4:
+             0f:7e:5d:71:43:34:78:15:52:d7:b3:4d:75:aa:84:a2:8e:3e:
+             18:8b:7a:1a:72:4f:ab:05:df:0c:63:0b:26:fe:90:2c:d2:9d:
+             f2:53:ab:ed:93:7e:c4:79:d7:c9:bc:39:d0:47:d9:e2:c0:1f:
+             e2:e2:0b:e3:1c:97:58:6c:ea:0d:0a:8f:22:ca:df:4b:37:4e:
+             f2:ad:bf:17:32:75:52:33:bf:e1:6c:e2:a9:2b:0d:ad:0a:e4:
+             3c:0b:de:98:6e:9a:9e:db:1d:ac:93:5a:62:f9:8a:d4:6e:45:
+             dc:10:b5:ef:ae:69:56:9a:78:7a:61:c7:f2:ec:31:ef:db:ea:
+             03:6c:89:bb:2b:e5:3e:1f:d9:54:26:fb:4d:c7:c9:26:6a:c7:
+             18:eb:86:c4:e4:be:fc:42:25:e8:29:37:9a:5c:7a:e6:09:15:
+             7c:28:b2:a2:39:53:8c:0d:1c:9d:d9:d0:5e:ea:51:67:d0:68:
+             99:87:00:ee:08:3c:de:52:76:a1:0b:22:60:af:b4:e3:d5:2e:
+             da:61:17:c1:dd:d2:9c:70:90:6c:55:11:ff:22:ea:6f:ae:25:
+             d9:8a:6b:04
+---
+
+
+**Configure Docker to use the certificates
+
+  [[1]] If necessary, stop the running container
+
+---
+  docker container stop registry
+
+    registry
+---
+
+  [[1]] Delete the existing container prior to its recreation
+
+---
+  docker ps -a
+
+    CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS                      PORTS               NAMES
+    86e9b62ec1e4        registry:2          "/entrypoint.sh /etc…"   About an hour ago   Exited (2) 18 seconds ago                       registry
+
+
+  docker rm 86e9b62ec1e4
+
+  86e9b62ec1e4
+---
+  [[1]] Recreate the container, providing the location of the certificates created above as parameters. These are the SERVER certificates NOT the CA ones.
+
+  Note that we are choosing to run the registry on port 6443 so that we can map a port in from a Host operating system without issue.
+
+---
+  docker run -d --restart=always --name registry -v /home/core/ssl:/ssl -e REGISTRY_HTTP_ADDR=0.0.0.0:6443 -e REGISTRY_HTTP_TLS_CERTIFICATE=/ssl/server.crt -e REGISTRY_HTTP_TLS_KEY=/ssl/serverKey.pem -p 6443:6443 registry:2
+
+    540956ae42565a194dbf694356a52288eb5345b0db4e915ff59dd06fb3a3e67d
+---
+
+
+**Testing the presentation of the Configured Certificates.
+
+  We can check that the certificates are working as we would expect them using:
+
+    * curl, or even better,
+
+    * an openssl utility c_serial
+
+    []
+
+*** Testing with curl.
+
+  Here we see that at the time of testing a self-signed certificate is in place.
+
+---
+  curl -v -X get https://10.0.2.15:6443
+
+    Note: Unnecessary use of -X or --request, GET is already inferred.
+    *   Trying 10.0.2.15:6443...
+    * TCP_NODELAY set
+    * Connected to 10.0.2.15 (10.0.2.15) port 6443 (#0)
+    * ALPN, offering http/1.1
+    * Cipher selection: ALL:!EXPORT:!EXPORT40:!EXPORT56:!aNULL:!LOW:!RC4:@STRENGTH
+    * successfully set certificate verify locations:
+    *   CAfile: /etc/ssl/certs/ca-certificates.crt
+      CApath: /etc/ssl/certs
+    * TLSv1.2 (OUT), TLS header, Certificate Status (22):
+    * TLSv1.2 (OUT), TLS handshake, Client hello (1):
+    * TLSv1.2 (IN), TLS handshake, Server hello (2):
+    * TLSv1.2 (IN), TLS handshake, Certificate (11):
+    * TLSv1.2 (OUT), TLS alert, unknown CA (560):
+    * SSL certificate problem: self signed certificate
+    * Closing connection 0
+    curl: (60) SSL certificate problem: self signed certificate
+    More details here: https://curl.haxx.se/docs/sslcerts.html
+
+    curl failed to verify the legitimacy of the server and therefore could not
+    establish a secure connection to it. To learn more about this situation and
+    how to fix it, please visit the web page mentioned above.
+---
+
+***Testing with openssl utility
+
+---
+  openssl s_client -connect 10.0.2.15:6443
+
+    CONNECTED(00000003)
+    depth=0 C = UK, L = LEEDS, O = Pegor Technical Services, CN = IP:10.0.2.15
+    verify error:num=18:self signed certificate
+    verify return:1
+    depth=0 C = UK, L = LEEDS, O = Pegor Technical Services, CN = IP:10.0.2.15
+    verify return:1
+    ---
+    Certificate chain
+     0 s:/C=UK/L=LEEDS/O=Pegor Technical Services/CN=IP:10.0.2.15
+       i:/C=UK/L=LEEDS/O=Pegor Technical Services/CN=IP:10.0.2.15
+    ---
+    Server certificate
+    -----BEGIN CERTIFICATE-----
+    MIIDKjCCAhICCQDwMVwu0spvtjANBgkqhkiG9w0BAQsFADBXMQswCQYDVQQGEwJV
+    SzEOMAwGA1UEBwwFTEVFRFMxITAfBgNVBAoMGFBlZ29yIFRlY2huaWNhbCBTZXJ2
+    aWNlczEVMBMGA1UEAwwMSVA6MTAuMC4yLjE1MB4XDTIwMDEyMDIwNDAxMFoXDTIy
+    MTAxNjIwNDAxMFowVzELMAkGA1UEBhMCVUsxDjAMBgNVBAcMBUxFRURTMSEwHwYD
+    VQQKDBhQZWdvciBUZWNobmljYWwgU2VydmljZXMxFTATBgNVBAMMDElQOjEwLjAu
+    Mi4xNTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALotUYkGuhpopWqV
+    ygroMp09BneN3cfgmcCDgW8z5xb0XiW2WIBW+qMr2bLxCotUwvRrH3/rXsXRCDiV
+    9XqI+d4+xnrgZwuXoXZGgkUkAWPpW+cMfQBPvXJWw8R6CjHStkYWJDZFtidzKliv
+    PtaCt0Igfhoihp4y1fWOz/qJuPmaSYfW+fM8i06lmILkqaDPN40wFGIif9d718WF
+    fLm9Q8tcTtyRW90gXl2zDDb6x2nt8zPO9x2FIhzc2PtTx3KuAHUcP3OuM7IXY0A8
+    ZqWqeX2/8Ia0/19bJohWMv8HXctITsNS6mvO2D7yka3U59EP7xKFegFQhwFnuzF0
+    ToCwSisCAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAswRfwDRjoImRfz2MiWYDwuql
+    TFQ3joHNIYiHXR5Ils4xe2ArrBbitNW9lH8If8za7Ugs3PRAwtJFz8Kr4mwf0gd6
+    GCGBMRnNdpo28gOAchjjBIG9LaEaJLPd4PuAaZchyKL5bOKVQmu6y5gXONStIqgD
+    jn5TGoCSVgJvwZzyvxfyXqd9fxDPR79j7x7u6mNzASXyI093L71ENHj6wTUS13AK
+    ZRUe0+4IMJkt/DYCTlDLj6aP+QS7XY9qKMdoidYbM4AVNA5nmuMjHXwjZ1DKBlP2
+    ArEqXIO0Av0r3Gc5CGuP5ZSazp+t7h+pDJ2cxCpCBU3QgO1F3GXP+VzdkLDEZg==
+    -----END CERTIFICATE-----
+    subject=/C=UK/L=LEEDS/O=Pegor Technical Services/CN=IP:10.0.2.15
+    issuer=/C=UK/L=LEEDS/O=Pegor Technical Services/CN=IP:10.0.2.15
+    ---
+    No client certificate CA names sent
+    Peer signing digest: SHA512
+    Server Temp Key: ECDH, P-256, 256 bits
+    ---
+    SSL handshake has read 1420 bytes and written 416 bytes
+    ---
+    New, TLSv1/SSLv3, Cipher is ECDHE-RSA-AES128-GCM-SHA256
+    Server public key is 2048 bit
+    Secure Renegotiation IS supported
+    Compression: NONE
+    Expansion: NONE
+    No ALPN negotiated
+    SSL-Session:
+        Protocol  : TLSv1.2
+        Cipher    : ECDHE-RSA-AES128-GCM-SHA256
+        Session-ID: E8CAE55F6D7031A388452BD52954164AE3676A66C1D998C87C488B2BAF1F8473
+        Session-ID-ctx:
+        Master-Key: 8DDEB9F4C33BEEA7DB3D79E781DE3AA9BB06D48796DB6CF0C63353C56A1EF85A81281BF548798F63AA3D84F0A66FA177
+        Key-Arg   : None
+        PSK identity: None
+        PSK identity hint: None
+        TLS session ticket:
+        0000 - ce 8a 92 16 1e 07 5d e0-38 51 2d 99 67 dd 67 9b   ......].8Q-.g.g.
+        0010 - bd f9 3d a1 c0 fb a9 2b-5b cd b9 21 c5 37 73 c6   ..=....+[..!.7s.
+        0020 - 20 a1 c1 90 63 39 a7 6e-f1 b9 84 ab d8 db 3e 55    ...c9.n......>U
+        0030 - 51 5f 50 ca 92 63 a5 c6-ed 3a fa b1 b2 6c d9 a8   Q_P..c...:...l..
+        0040 - 1c d2 ec c5 20 0d 62 f4-d3 15 b6 6a 82 9d 90 d5   .... .b....j....
+        0050 - ab 54 39 38 60 5f d3 e0-34 46 09 b1 58 06 ad e2   .T98`_..4F..X...
+        0060 - 2e 56 29 90 8b bb ec 64-8b 3b 74 19 40 76 9c 1f   .V)....d.;t.@v..
+        0070 - c0 d6 1f 6b cb 22 5f 23-                          ...k."_#
+
+        Start Time: 1579554574
+        Timeout   : 300 (sec)
+        Verify return code: 18 (self signed certificate)
+    ---
+    HEAD / HTTP/1.0
+    Host: 10.0.2.15
+
+    HTTP/1.0 200 OK
+    Cache-Control: no-cache
+    Date: Mon, 20 Jan 2020 21:10:42 GMT
+
+    closed
+---
+
+
+**Installation of CA public certificates
+
+  In order for Client applications to validate the signatures on the certificates passed to it by Docker, the the clients will need access to the Public Key certificates of the Certificating Body. Once such client application is the docker client itself.
+
+  If the docker client cannot validate the certificates, it will issue messages similar to:
+
+---
+    docker push 10.0.2.15:6443/my-ubuntu
+    Error response from daemon: Get https://10.0.2.15:9443/v2/: x509: certificate signed by unknown authority
+---
+  The docker client requires the CA public key certificates (Not the server certificates) to a directory under <<</etc/docker/certs.d>>>. Here are the certificates used to to connect to <<<10.0.2.15:6443>>> are configured:
+
+---
+  sudo mkdir -p /etc/docker/certs.d/10.0.2.15:6443
+
+  sudo cp ca.crt /etc/docker/certs.d/10.0.2.15:6443
+---
+
+*Pushing and Pulling to the local Repository
+
+  In the example below, an image is pulled from the Docker Hub repository and then pushed to the local repository.
+
+  [[1]] First pull an example image from the remote repository. The Docker Hub repository is used by default.
+
+---
+  docker pull ubuntu
+---
+  [[1]] Tag the downloaded image with the repository name and image new that you wish to use.
+
+---
+  docker tag ccc6e87d482b 10.0.2.15:6443/my-ubuntu
+---
+
+  [[1]] Now push it to the new repository.
+
+---
+  docker push 10.0.2.15:6443/my-ubuntu
+
+    The push refers to repository [10.0.2.15/my-ubuntu]
+    f55aa0bd26b8: Pushed
+    1d0dfb259f6a: Pushed
+    21ec61b65b20: Pushed
+    43c67172d1d1: Pushed
+    latest: digest: sha256:bc025862c3e8ec4a8754ea4756e33da6c41cba38330d7e324abd25c8e0b93300 size: 1152
+---
+
+*Networking Considerations when running the Registry within or alongside a Vagrant Cluster of VirtualBox Virtual Machines.
+
+  Within a Vagrant environment, the VirtualBoxes can be connected to the Network in a number of different ways. The virtual network architecture determining ho those machines are connected, and where within the network the Docker Registry is sited, has implications for how Registry must be configured for access.
+
+  A note, {{{./onVirtualBox.html#Networking with VirtualBox}describing Networking within VirtualBox}}, will give more details of this.
+
+**With the Registry sited on a machine connected via a NAT interface.
+
+  If your Registry is hosted on a virtual machine connected via a NAT interface, then that virtual machine is, by default, invisible and unreachable from the outside internet. The only way that you can make services such as the Registry available to the outside world is if you set up port forwarding.
+
+  Port forwarding would make the Registry available to the outside world on a port mapped from the <<Virtual Machine HOST>>. e.g. 192.168.0.17:6443. All virtual machines running on both this host and others in the network generally, should be able to access the registry via this address.
+
+  However, it does <<not>> seem to be possible to access the registry LOCALLY using this address. If you are actually logged on to the the machine hosting the registry, you need to access it using the local address, which, on a NAT connected machine, is usually 10.0.2.15.
+
+  This is a bit of a pain: it's not particularly desirable to have to address the register differently depending on where you are.
+
+***Port Mapping Restrictions
+
+  Note that ONLY ports on the host above 1024 can be mapped (unless vagrant is running as root, which it generally shouldn't be). So we can cannot map the normal Docker Port 443 : we have to choose a unused host port such as 6443 and map that onto the port we are using for Docker
+
+---
+  e.g. host:6443 --> host:6443
+---
+
+  This has consequences for how we reference repositories within the registry. It is not possible to change the default registry that the docker client uses, so we need to supply the full specification when we are referencing repositories
+
+    e.g. rather than pulling
+
+---
+      docker pull owner/repository:tag
+---
+    we would pull:
+
+---
+      docker pull 192.168.0.17:6443/owner/repository:tag
+---
+    which is a bit of a mouthful.
+
+***Availability of the Certification Authority Public Key Certificates
+
+  If the CA certificate used to sign the certificates protecting the secure port has not been issued by one of the standard ca bodies, then docker is not likely to have access to the necessary intermediate and root certificates needed to validate that signature.
+
+  In order for docker to trust traffic secured in this way, the public-key certificates from the signing body need to placed within a a directory on each client machine.
+
+---
+    /etc/docker/cert.d./\<IP ADDRESS\>:\<PORT\>
+---
+
+**With the Registry sited on a machine connected on a HostOnly adapter
+
+  If the Registry is installed to a server attached SOLEY to a HOST ONLY ADAPTER, then it will be available ONLY to the machines connected to the same HOST adapter i.e. virtual machines on the same host.
+
+  It is still possible for the Registry to be available outside of the virtual machine cluster, but only if a NAT device is used in addition.
+
+***Availability of the Certification Authority Public Key Certificates
+
+  As with the NAT interface above, the CA certificates need to be installed to the client machines in order for the signatures on the TLS certificates to be validated.
+
+**With the registry sited on a machine connected to a Bridged Interface.
+
+  With the Registry sited on a machine connected to a Bridged Interface, it ought to be available ANYWHERE on the network.
+
+  Additionally, it can be referenced with the same IP Address on any machine.

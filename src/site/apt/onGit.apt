@@ -155,7 +155,7 @@ The Git Version Control System
 
 				[add] Add file contents to the index;
 
-				[archive] - Creates a tar or zip archive on standard out.
+				[archive] - Creates a tar or zip archive on standard out. This is the closest git has to svn export.
 
 				[bisect] Find the change that introduced a bug by binary search;
 
@@ -504,10 +504,14 @@ The Git Version Control System
 
 ***Extracting a bare working tree (i.e. not as a git repository.)
 
-	The <<<git archive>>> command will cause the specified directory to be exported from the repository in the specified archive format. It is written directly as a stream  to <<<stdout>>>, where it can be captured as a file, or piped into some processing utility. Note it has to be run from within a git repository.
+	The <<<git archive>>> command will cause the specified directory to be exported from the repository in the specified archive format. It is written directly as a stream  to <<<stdout>>>, where it can be captured as a file, or piped into some processing utility. <<Note it has to be run from within a git repository. There is a --repo flag, but this doesn't mean what you might expect it to mean>>
 
 ---
 	git archive --format=tar -o <output.tar>
+
+	git archive --format=tar -o <output.tar> <branch>
+
+	git archive --format=tar -o <output.tar> <tag>
 
 ---
 

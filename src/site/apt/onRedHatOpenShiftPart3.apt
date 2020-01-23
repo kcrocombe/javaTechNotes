@@ -595,9 +595,9 @@ Nodes Pods and Containers
 
     Pods have a lifecycle. They:
 
-      * asre defined;
+      * are defined;
 
-      * ass=igned to run on a node;
+      * assigned to run on a node;
 
       * they run until their container exits ( or the pod is removed fro some reason);
 
@@ -606,11 +606,11 @@ Nodes Pods and Containers
       []
 
 
-    Pods are larely immutable: once running changes cannot be made while it is running.
+    Pods are largely immutable: once running changes cannot be made while it is running.
 
     They do not retain state when they exit.
 
-    Pods are not dirrectly managed by users, but by highe rlevel controllers. i.e. RplicationControleer
+    Pods are not directly managed by users, but by higher level controllers. i.e. ReplicationController
 
 ---
     oc get pods -o wide
@@ -619,7 +619,7 @@ Nodes Pods and Containers
 ---
 
 
-    Restart policy : always, onFilaure Never
+    Restart policy : always, onFailure Never
 
 
     Pods are bound to a Node.
