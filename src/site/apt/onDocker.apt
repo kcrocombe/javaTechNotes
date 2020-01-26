@@ -1643,3 +1643,37 @@ Deploying a local Registry Server.
   With the Registry sited on a machine connected to a Bridged Interface, it ought to be available ANYWHERE on the network.
 
   Additionally, it can be referenced with the same IP Address on any machine.
+
+
+
+Running Docker as a Client and Remote Server.
+
+  Although docker is packaged as a single executable, it can (and does) function as both:
+
+    * a background  daemon
+
+    * a command line client interface
+
+  That is, its a daemon that also operates as its own command line interface.
+
+  Often, the CLI and docker daemon will be on the same host. However, that does not have to be the case: the docker daemon listens on a tcp port (2375, by default), so as long as there is a communications pathway to that port, docker commands can be issued perfectly well from a remote host.
+
+  This works perfectly fine if the <<<dockerd>>> is sitting inside a virtual machine, such as virtual box, and the command line interface is executed from the Host operating system; as long as the Guest tcp port is exposed to the client, then everything will work perfectly well.
+
+  This is particularly useful for OSX (or at least my current version of OSX). On my current Hackintosh installation, there is insufficient hypervisor support from the OS (although, I may be able to fix this in the BIOS if I try) to run the docker daemon.
+
+  I can, however, run the docker daemon in a Linux virtualBox on OSX and issue commands to that instead.
+
+  All that is required is to point docker at the appropriate host. For example, if the 2375 port has been 'forwarded' on the Host OS to the same port on the Guest VM:
+
+---
+  docker --host tcp://localhost:2375 run -it busybox sh
+---
+
+  or
+
+---
+  export DOCKER_HOST=tcp://localhost:2375
+
+  docker run -it busybox sh
+---

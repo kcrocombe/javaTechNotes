@@ -551,6 +551,17 @@ The Git Version Control System
 	git checkout -b <newBranch>
 ---
 
+**Displaying Branch Information
+
+---
+	git branch
+---
+
+---
+	git show-branch
+---
+
+
 **Merging a branch
 
 	The vast majority of branches will be short-lived, existing for only the length of time it takes to develop a feature, fix a bug etc.. At that point the branch will need to be merged back into the main line of development. Normally just 2 branches will be merged together, but it is possible to merge 2,3,4.. branches simultaneously.
@@ -772,6 +783,37 @@ The Git Version Control System
 ---
 	git tag -a v1.2 9fceb02
 ---
+
+**Showning and Listing Tags
+
+	Tags can be listed, simply:
+
+---
+	git tag
+---
+
+	or alternatively:
+
+---
+	git tag --list
+---
+
+	Be careful not to use <<<git tag list>>>. This will create a tag called list, which is probably not what you want.
+
+	The most useful version of the command is probably:
+
+---
+	git --list -n [x]
+---
+	This will list all tags, with the first x lines of the description associated with the tag.
+
+
+	For details, use the <<<show>>> command:
+
+---
+	git show <tagName>
+---
+
 
 **Deleting Tags
 ---

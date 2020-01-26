@@ -1,97 +1,144 @@
+~~Header: blah blah
+~~
+~~Author
+~~
+
+
 Kubernetes with Vagrant and CoreOS
 
-*Introduction
-
-  The following page describes an effort to get a kubernetes installation up and running from the official coreos vagrant package on GitHub {{https://github.com/coreos/coreos-kubernetes}}. My previous experience with coreos repositories, has been good : basically they seem to work as described. However, this one did seem to be a bit more problematic. The document describes the problems encountered and the extent to which I have solved them.
-
-  Possibly at least some of the problems could stem from the fact that parts of the installation are out of date.  The READMEs provided with the package indicate that the repository I have used is no longer under active development. Instead the user is referred to the {{{https://coreos.com/tectonic/docs/latest/install/aws/index.html} Tectonic Installer}}, which I shall play around with at some point. But for now, I'm going to crack with the older version.
+*Contents
 
 
-  The guide I was following for this was {{{https://coreos.com/kubernetes/docs/1.6.1/kubernetes-on-vagrant.html}Kubernetes install with Vagrant on CoreOS}}
+*Background
 
-  Part of the problems, I think, stem from the fact that hte CoreOS product has moved on since the package was released and some of the bits supplied within that distribution are niow supplied in slightly different forms.
+**Introduction
 
+  The following page describes an effort to get a kubernetes installation up and running using the official coreOs vagrant package as published on GitHub {{https://github.com/coreos/coreos-kubernetes}}. My previous experience with coreOs official repositories, has been good: basically they seem to work as described. However, this one did seem to be a bit more problematic.
 
+  However, since running Kubernetes on coreOS does seem to be a particularly desirable combination, I have decided to persist with it and see if I can get it all working satiffactorily. This document describes the problems encountered on this journey, and the extent to which I have solved them.
 
+  At least some of the problems encountered undoubtedly stemmed from the fact that some components of the installation are somewhat out of date; the Kubernetes installation was based on v1.5.4 : the most recent version of Kubernetes is v1.17.x.
 
-*Client kubectl install
+  Likewise the Operating System Version will have moved on too: one of the attractions of CoreOs operating system is that it is specifically engineered to keep itself up to date.
 
-  Installed kubectl as follows:
+**The future of the coreos-kubernetes repository
 
----
-  brew install kubectl
----
+  The READMEs provided with the package indicate that the coreos-kubernetes repository I have used in this exercise is no longer under active development. Instead the user is referred to the {{{https://coreos.com/tectonic/docs/latest/install/aws/index.html} Tectonic Installer}}. This I shall play around with at some point: the documentation suggests it has not reached a sufficent level of maturity yet. But for now, I'm going to crack with the older version.
 
-*Repository Forking.
+**Useful Inforamtion
 
-  As is suggested above, the official package from coroes did not work too well out of th ebox, and I had to make some modifcation to it in order to get anything up and running. Consequently chose to Fork their repository as a basis for my own forward developement.
+  The guide I was following for this was {{{https://coreos.com/kubernetes/docs/1.6.1/kubernetes-on-vagrant.html}Kubernetes install with Vagrant on CoreOS}}.
 
-  Forked via the GitHub GUI
+  Useful supporting information has also been collated on other pages on this site. This is referenced in the text where appropriate, but the following pages may be of particular interest:
 
-    coreos/coreos-kubernetes --> kcrocombe/coreos-kubernetes
+    * {{{./onKubernetes.html}on Kubernetes}} ;
 
-  A local, repository was then forked
+    * {{{./onDocker.html}on Docker}} ;
 
+    * {{{./onVagrant.html}on Vagrant}} ;
 
----
-  ~/dvl/gitClones
+    * {{{./onVirtualBox.html}on Virtual Box}} ;
+
+    * {{{./onRedHatOpenShiftPart3.html}on RedHat OpenShift}} ;
+
+    []
+
+====
+*Creation of the kcrocombe/coreos-kubernetes repository
+
+  As is suggested above, the official package from coreOs did not work too well out of the box, and I had to make some modifications to it in order to get anything up and running. To support these changes, and to create something that can be maintained independently going forward, I chose to fork the original Git repository and create a new one.
+
+  The kcrocombe/coreos-kubernetes repository was therefor created as follows:
+
+    [[1]] The coreos/coreos-kubernetes repository was forked via the GitHub Desktop Tool.
+
+        <<<coreos/coreos-kubernetes --> kcrocombe/coreos-kubernetes>>>
+
+    [[1]] A local repository was then cloned from that.
+
+    []
+
+ ---
+  cd ~/dvl/gitReps
 
   git clone -separate-git-dir=/users/gitRepos/kevin/coreos-kubernetes.git https://github.com/kcrocome/coreos-kubernetes.git
----
+ ---
 
- The cloning process creates two notable subdirectories, one each for:
-
-  * single node, and
-
-  * multinode builds:
-
-  []
-
-Attempt1
-
- Had a go with the single Node and Multi-node options.
-
- Chose to leave the Container runtime as Docker
-
- Chose to leave the Network Policy as it was (USE_CALICO=false)
+  Further details of this general process can be found {{{./onGit.html}here.}}
 
 
----
+====
+*Initial Attempts to get the Kubernetes Installation Running.
+
+**Content of the original coreos-kubernetes repository
+
+  The repository provides a means of provisioning kubernetes installations supported by CoreOS virtual machines, using {{{./onVagrant.html}Vagrant}} and {{{./onVirtualBox.html}virtualBox}} to provide the Virtual Platforms.
+
+  The initial coreos-kubernetes repository provided the following features:
+
+    * A build process which ought to provision a Kubernetes Cluster on a Single Virtual Machine.
+
+    * A build process which ought to provision a Kubernetes Cluster on a Cluster of 3 Virtual Machines;
+
+    * Some utility scripting to generate and deploy SSL certificates to secure communication  between the various Kubernetes components.
+
+    * Some scripts to test the full extent of the features provided by the above installations (the Conformance Tests).
+
+    []
+
+  The following describes my attempts to get both of these configurations working, and outlines some of the problems encountered.
+
+**Initial attempts to get the Single Node Kubernetes running.
+
+***Initial Problems with OpenSll.
+
+  As a first attempt, tried just starting Singel Node configuration without amendment. This means, as far as the Vagrantfile was concerned:
+
+    * Chose to leave the Container runtime as Docker;
+
+    * Chose to leave the Network Policy as it was (USE_CALICO=false);
+
+    * Chose to let the Alpha stream of coreOs be selected as the base OS.
+
+  and started vagrant.
+
+ ---
   cd <dir>
 
   vagrant up
----
+ ---
 
-  Both Failed with:
+  This failed with:
 
----
+ ---
   Can't open /opt/vagrant/embedded/openssl.cnf for reading, No such file or directory
 
   140735799092096:error:02001002:system library:fopen:No such file or directory:crypto/bio/bss_file.c:74:fopen('/opt/vagrant/embedded/openssl.cnf','r')
 
   140735799092096:error:2006D080:BIO routines:BIO_new_file:no such file:crypto/bio/bss_file.c:81:
----
+ ---
 
-  Vagrant ships with an embedded version of openssl. However this version of vagrant, does not seem to include the ssl configuration file that the <<<Vagrantfile>>> is expecting to find.
+  Vagrant ships with an embedded version of openssl. However this version of vagrant, does not seem to include the ssl configuration file that the <<<Vagrantfile>>> was expecting to find.
 
-  Could not find on on the system, so downloaded one from git hub and stuck it where <<<Vagrantfile>>> is expecting to find it.
+  I could not find on on the system, so downloaded one from git hub and stuck it where <<<Vagrantfile>>> is expecting to find it.
 
----
+ ---
   https://github.com/openssl/openssl/blob/master/apps/openssl.cnf
----
+ ---
 
-  copied it to: <<</opt/vagrant/embedded/openssl.cnf>>>
+  This was copied to: <<</opt/vagrant/embedded/openssl.cnf>>>
 
   and tried again...
 
+***Building on the Alpha Stream of CoreOs.
 
-Attempt 2
+  Without amending the configuarion, tried again:
 
----
+ ---
   vagrant up
----
+ ---
 
-  Now it seems to:
+  This seemed better. Now it seems to:
 
     * generate the ssl artifacts ok
 
@@ -101,7 +148,7 @@ Attempt 2
 
   However, once the newly built server is started and running,  vagrant cannot seem to logon to it in order to complete the configuration.
 
----
+ ---
   ==> default: Importing base box 'coreos-alpha'...
   ==> default: Matching MAC address for NAT networking...
   ==> default: Checking if box 'coreos-alpha' version '2331.0.0' is up to date...
@@ -124,32 +171,31 @@ Attempt 2
     default: Warning: Authentication failure. Retrying...
     default: Warning: Authentication failure. Retrying...
     default: Warning: Authentication failure. Retrying...
----
+ ---
 
-  attempted to connect manually via ssh:
+  So, attempted to connect manually via ssh:
 
----
+ ---
   vagrant ssh core
 
   vagrant ssh vagrant
----
+ ---
 
   Again, failed to connect. So...
 
-
-Attempt 3
+***Building on the Stable Stream of CoreOs.
 
   Within the Vagrantfile, changed Channel from alpha --> stable (within config.rb for the Multinode configuration)
 
   However this failed with the same result.
 
-Attempt 4
+***Building on the Stable Stream of CoreOs.
 
-  Within the Vagrantfile, changed Channel from alpha --> beta (within config.rb for the Multinode configuration)
+  Within the Vagrantfile, changed the Channel from alpha --> beta (within config.rb for the Multinode configuration)
 
   <<Now, this time it seems to work ok in both Single-Node and Multi-Node options>>
 
----
+ ---
   vagrant up
 
   ==> default: Importing base box 'coreos-beta'...
@@ -181,54 +227,75 @@ Attempt 4
       default: /Users/kevin/dvl/gitClones/coreos-kubernetes/single-node/user-data => /tmp/vagrantfile-user-data
   ==> default: Running provisioner: shell...
       default: Running: inline script
----
+ ---
 
-  Looking at the Vagrantfile and all the files surrounding it, I can find nothing resembling an Ignition Script, or anything which might be injectable into the o/s on its first boot. In particular I can find no reference to any 'core' user or 'vagrant' user which might typically be used to logon to the server.
+  It was also possible to logon to the server
 
-  Therefore, either the core user already exists in the Beta channel boxfile, (and so doesn't need to be injected in)
+**Login problems with Alpha and Stable Streams.
 
-  or
+  Why then does use of the stable and alpha stream present a login problem that is not found when we use the Beta Stream?
 
-  The injection process is injecting ok on the Beta image, but in a way that I don't understand.
+  Looking at the Vagrantfile and all the files surrounding it, I can find nothing resembling an Ignition Script, or anything which might be injectable into the o/s on its first boot. In particular, I can find no reference to any 'core' user or 'vagrant' user which might typically be used to logon to the server.
 
-  However, I think it is probably the first suggestion: if I change the
+  Therefore, either:
 
-      config.ssh.username to something other than "core" and the builds fail!
+    * the core user already exists in the Beta channel boxfile, (and so doesn't need to be injected in), or
 
-  So, I think the config is NOT being injected; it is relying on it already being there.
+    * the injection process is injecting ok on the Beta image, but in a way that I don't understand.
 
-  On other coreos packagings that I have used, the provisioning is performed by a plugin to vagrant. Having checked, this plugin does seem to be available to vagrant:
+    []
 
----
+  Of these, however, I think it is probably the first that is more likely: if I change the config.ssh.username to specify something other than "core" and the builds fail!
+
+  So, my thinking is that the config is NOT being injected; it is relying on the user already being there.
+
+  On other coreOs packagings that I have used, the provisioning is performed by an Ignition plugin to vagrant. Having checked, this Ignition plugin does seem to be available to vagrant:
+
+ ---
   vagrant plugin list
 
   vagrant-ignition (0.0.3, global)
----
+ ---
 
- However, there does not seem to be anything the Vagrant file that makes use of any of the Ignition features that the plugin provides. All the provisioning seems to be way of inline provisioning scripts, which it can't run because it can't logon to the server.
+  However, there does not seem to be anything in the Vagrant file that makes use of any of the Ignition features that the plugin provides. All the provisioning seems to be way of inline provisioning scripts, which it can't run because it can't logon to the server.
 
+  This is quite an annoying little problem: since it would be infinitely more preferable to be using the stable scheme as the basis of the platforms. At the moment we can only really use the Beta Test stream.
 
-Fixing the supplied Vagrant File
+  <The answer to this little mystery was eventually uncovered, and is discussed further on in the document)>
 
-  In essence what we want to do is to amend the provided Vagrant file so that it uses the vagrant Ignition.plugin. We will then use the vagrant plugin to inject the 'core' userId during system provisioning. In doing this, I basically examined the Vagrant file supplied with the {{{https://github.com/coreos/coreos-vagrant.git}coreOs-vagrant}}, and copied over the relevant ignition sections from there and then configured them as I wanted.
+**Introducing the Ignition Plugin.
 
-  I think the way that the Ignition plugin works, is basically to set up a drive mapping within the guest os that points to a diskimage  held locally on the host o/s. The diskimage contains the Ignition File that is to be injected into the server as part of provisioning. The location mapped within the guest is one where Ignition defaults to when looking for provisioning scripts. When the Guest O/S gets provisioned, the Ignition System reads the file from the mapped drive and configures the box accordingly.
+***The missing logins on the Alpha and Stable streams.
+
+  As things stand, the stable and alpha streams are missing all logins and it is proving impossible to interact with the systems in any sort of meaningful way.
+
+  In the absence of anything obvious to inject Logins into the Alpha and Stable schemes, I have decided to try and use the same Ignition mechanism that coreOs have used in a more recent of their git repositories: coreos/coreos-vagrant. (This does not provision kubernetes at all, just a group of servers.)
+
+  In essence what we want to do is to amend the provided Vagrant file so that it uses the vagrant Ignition.plugin. This will then be used to inject the 'core' userId during system provisioning. In doing this, I basically examined the Vagrant file supplied with the {{{https://github.com/coreos/coreos-vagrant.git}coreOs-vagrant}}, and copied over the relevant ignition sections from there and then configured them as I wanted.
+
+***Vagrant-Ignition plugin functionality.
+
+  I think the way that the Ignition plugin works, is basically to set up a drive mapping within the guest os that points to a disk image  held locally on the host o/s. The disk image contains the Ignition File that is to be injected into the server as part of provisioning. The location mapped within the guest is one where Ignition defaults to when looking for provisioning scripts. When the Guest O/S gets provisioned, the Ignition System reads the file from the mapped drive and configures the box accordingly.
 
    If there is no Ignition File, it will create a default one that injects the desired user ("core"), plus public key etc. plus a bit of default network configuration.
 
-   Otherwise, it merges this default info into the custom Ignition file that was provided, so createing a composite one.
+   Otherwise, it merges this default info into the custom Ignition file that was provided, so creating a composite one.
 
+***Adding the Ignition plugin into the Vagrant File
 
- Fixing the supplied Vagrant File
+  Elsewhere, I have detailed some background on {{{./onVagrant.html#The Vagrant Ignition Plugin}the vagrant plugin}} itself, and where it sits within the {{{./onContainerLinux.html#Provisioning with Ignition} provisioning process of Container Linux}} generally. I have also detailed some features of it that have proved {{{./onFedoraCoreOs.html#The problems - the Ignition Plugin}problematic}}.
 
+  For our purposes here, we reworked the Ignition file in orderto introduce the 'standard' version of the vagrant plugin as described at on {{{https://github.com/coreos/vagrant-ignition}GitHub}}, rather my own variant which is alluded to in the above links.
 
----
-  https://github.com/coreos/vagrant-ignition
----
+  The vagrant box plugin was introduced with the line:
 
+ ---
+  system "vagrant plugin install vagrant-ignition"
+ ---
 
+  and then configured for each machine as so:
 
----
+ ---
   config.ignition.enabled: Set to true to enable this plugin
 
   config.ignition.path: Set to the path of the base ignition config (can be nil if there is no base)
@@ -242,66 +309,78 @@ Fixing the supplied Vagrant File
   config.ignition.hostname: Set to desired hostname of the machine (optional)
 
   config.ignition.ip: Set to desired ip of eth1 (only applies if a private network is being created)
----
+ ---
 
+  Getting this to work was a little tricky but eventually managed it. Because, the Ignition plugin itself will introduce a user by default (vagrant), even this minimal configuration enabled the alpha, beta and stable streams to build to a point where it was possible to logon.
 
-     Bit tricky but eventually managed it.
+===
+*Getting the Single Node Configuration Running on the Beta Stream.
 
+  The notes above detail what has been done in order to get the vagrant coreOS boxes being controlled by the Vagrantfile to at least boot. At the moment, there is still no sign on any actual Kubernetes Services.
 
+  In order to troubleshoot whats going on, I chhose to concentrate efforts on getting just a single configuration working. Since teh Beta stream has hitherto been better behaved than the other two, decided to concentrate efforts on that initially, and, again for simplicity, put the Multi-node configuration to once side and decided to concentrate on just the Single Node Configuration.
 
-Getting the Single Node Configuration Running.
+  In doing so, there was a bit of a deep dive into the fundamentals of coreOs provisioning, with particular regard to earlier OS released.
 
-  Chose to use the Beta Stream initially
+**Initial startup.
 
-*coreos-cloudinit
+  Amended the Vagrant file to allocate more memory and cpu resources for our single machine (actually adding more cpu does not have any effect: there is a bit of bug with VirtualBox machines on OSX in that they are currently only able to take advantage of a single CPU, regardless).
 
-  The supplied Vagrant file makes use of the {{{https://github.com/coreos/coreos-cloudinit}coreOs-cloudinit}} mechanism for automatically provisioning coreOs with a Kubernetes cluster. Note that cloudinit has now been superceded by Ignition as the preferred provisioning mechanism.
-
-  {{{https://cloudinit.readthedocs.io/en/latest/index.html}CloudInit}} is an indudstry standard didtribution method for machine iniitaliazation. It can initiate provisioning based on instructions provided in various forms, but one of which is a simple script file : user-data
-
-  coreos-cloudinit is cores's implementaion of coloudinit, and it only implements a subset of the full functionality.
-
-  As far as I can tell, teh way that it works is as follows:
-
-    Vagrant injects the user-data script to a particular location on the coreOs intance as it is being provisioned.
-
----
-  /var/lib/coreos-vagrant
----
-
-    When the box starts for the first time, a particular service coreos-cloudinit (or one of a number of related services) runs as a one off. What this does is not at all straightforward to workout, but it is becomes aware of the file in /var/lib/coreos-vagrant and triggers a series of set-up actions including
-
-      creation of the some entries in /etc/environment
-
-      creation of some directories such as /var/lib/
-
-      and eventually moves the user-data file into a different direcory /var/lib/coreos-install/user_data
-
-    Something is watching for this files arrival, and when it does, the
-
-     and calls the /usr/bin/coreos-cloudinit executable get called. The somehow executes the contents of the user_data file and configures the box accordingly.
-
-*Initial startup.
-
-  Amended the Vagrant file to allocate more memory and cpu resources
-
----
+ ---
   cpus --> 4
   memory --> 4096
----
+ ---
 
   When the box was initially provisioned, the coreos-cloudinit service failed.
 
----
+ ---
   Container Linux by CoreOS beta (2303.2.0)
 
   Failed Units: 1
   coreos-cloudinit-836679022.service
----
+ ---
+
+  Did some digging around what the cloud-init business was all about. This is described below.
+
+**The role of the coreos-cloudinit system.
+
+  The single node vagrant file seems to do very little in terms of kubernetes configuration itself. All of the functionality around setting up services etc seems to reside within a ordinary shell script (user-data). All Vagarnt seems to do with this file is deliver it to a particular location on the server it is trying to build : it does not execute it. This seems to be where <<<coreos-cloudinit>>> comes in.
+
+  {{{https://cloudinit.readthedocs.io/en/latest/index.html}CloudInit}} is an industry standard distribution method for machine initialisation, and coreos-cloudinit is coreOs's implementation of it. It can initiate provisioning based on instructions provided in various forms, but one of which is running of a simple script file : in our case, <<<user-data>>>
+
+  The Vagrant file makes use of the {{{https://github.com/coreos/coreos-cloudinit}coreOs-cloudinit}} mechanism for automatically provisioning coreOs with a Kubernetes cluster.
+
+  As far as I can tell, the way that it works is as follows:
+
+    [[1]] Vagrant injects the user-data script to a particular location on the coreOs instance as it is being provisioned.
+
+ ---
+  /var/lib/coreos-vagrant
+ ---
+
+    [[1]] When the box starts for the first time, a particular service coreos-cloudinit (or one of a number of related services) runs as a one off. What this does is not at all straightforward to workout, but it is becomes aware of the file in /var/lib/coreos-vagrant and triggers a series of set-up actions including:
+
+      * creation of the some entries in /etc/environment
+
+      * creation of some directories such as /var/lib/
+
+      * and eventually moving the user-data file into a different directory /var/lib/coreos-install/user_data
+
+    [[1]] Something is watching for this files arrival, and when it does, the /usr/bin/coreos-cloudinit executable get called.
+
+    [[1]] The somehow executes the contents of the user_data file and configures the box accordingly.
+
+  Obviously, this is a bit smoke-and-mirror, but essentially, this is how the user-data script should get automatically executed when the box is provisioned.
+
+  <<Note that cloudinit has now been superseded by Ignition as the preferred provisioning mechanism. This mayu have something to do with why some of the provisioning mechanisms aren;lt working as they were originally envisioned : the underlying platform has moved on.>>
+
+**Updating to etcd v3.
+
+  When the box was initially provisioned, the coreos-cloudinit service failed as detailed above.
 
   Examination of system journal suggested that the etcd2.service did not exist.
 
----
+ ---
   core@localhost ~ $ journalctl  -u coreos-cloudinit-836679022
 
   journal -xe
@@ -309,29 +388,27 @@ Getting the Single Node Configuration Running.
   Dec 23 19:51:14 localhost bash[1337]: Failed to enable unit: Unit file etcd2.service does not exist.
   Dec 23 19:51:14 localhost systemd[1]: coreos-cloudinit-836679022.service: Main process exited, code=exited, status=1/FAILURE
   Dec 23 19:51:14 localhost systemd[1]: coreos-cloudinit-836679022.service: Failed with result 'exit-code'.
----
+ ---
 
+  Some research on the web indicated that the etcd2 service is no longer being provided with this version of coreos and that it had been replaced with <<<v3 etcd>>>. <<<etcd v3>>> now expects to be run in a container.
 
-  Some research on the web indicated that the etcd2 service was no longer being provided with this version of coreos and that it had been replaced with v3 etcd, which now expects to be run in a container.
+  Therefore amended the user-data file to reflect this change:
 
-  Amended the user-data file to reflect this change
-
-
----
+ ---
   systemctl enable etcd2; systemctl start etcd2
   -->
   systemctl enable /usr/lib64/systemd/system/etcd-member.service; systemctl start etcd-member
----
+ ---
 
+  With this change in place, rebuilt the machine from scratch:
 
-  Rebuilt the machine
+ ---
+  vagrant halt
 
-    vagrant halt
+  vagrant destroy
 
-    vagrant destroy
-
-    vagrant up
-
+  vagrant up
+ ---
 
   This build seemingly succeeded. Slowly, the various container based element of kubernetes came up. It needed several minutes for this.  When complete it seemed to consist of:
 
@@ -345,15 +422,20 @@ Getting the Single Node Configuration Running.
 
            1 exechealthz process
 
+**CoreOs Automatic Update
 
   Allowed coreOs to automatically update itself --> beta (2303.2.0)
 
+**Testing on the Beta Stream.
+
+  The installation now seems stable enough to actually run some tests on.
 
 
+    kubectl create deployment tester --image=ubuntu
 
+    FAILED -- seems to have etcd problems.
 
-
-*The 'Stable' stream
+**Getting the Single Node Configuration Running on the Stable Stream.
 
   Then tried the same thing with the 'stable' stream.
 
@@ -363,114 +445,85 @@ Getting the Single Node Configuration Running.
 
   I'm not going waste anymore time on trying to get this to work... presumably at some point it will work as beta becomes 'stable' ?
 
-*Conformance test
+===
+*Initial Evaluation of running a Multi-node configuration
 
-  Checked the installation out by running the conformance-test.sh script. This was not at straightforward as it might be. It does seem to be very resource intensive : had a couple of attempts at it, but it was very slow and a number of tests seemed to be failing with what looked like resource-type issues.
+  Having had a modicum of success with the Single Node configuration (at least on the Beta stream), attempted to have a go with the Multi-Server configuration. Once again we have started with the Beta stream, the only one working so far.
 
-  Attempted to address this by increasing the no of cpu's available to the VM to 4, and the memory available to 4GB.
+  The various fixes worked out on the Single Node we applied to the Multi Node Vagrantfile, and a boot attempted...
 
-  Then kicked it off as follows:
+**Initial Boot.
 
-    ./conformance-test.sh | tee conformanceTest.log
+  No immediate success. So...
 
+  Logged onto the machines in order to try and work out what was going on.
 
+***The Controller Server (c1).
 
+  The controller server (c1), seems to have started all of its services ok, but seems to be struggling to talk to the etcd server (e1).
 
-
-
-
-OK... for now lets just crack on with the remaining steps of the guide paper....
-
----
-
-
-
-   kubectl config set-credentials vagrant-multi-admin \
-        --certificate-authority=${PWD}/ssl/ca.pem \
-        --client-key=${PWD}/ssl/admin-key.pem \
-        --client-certificate=${PWD}/ssl/admin.pem
-
-   User "vagrant-multi-admin" set.
-
-
-   kubectl config set-context vagrant-multi  \
-        --cluster=vagrant-multi-cluster \
-        --user=vagrant-multi-admin
-
-   Context "vagrant-multi" created.
-
-
-   kubectl config use-context vagrant-multi
-
-   Switched to context "vagrant-multi".
-
-
-   kubectl get nodes
-   The connection to the server 172.17.4.101:443 was refused - did you specify the right host or port?
----
-
-  Logged onto the machines in order to try and work out wahta was going on...
-
-    The conttoller server (c1), seems to have started all of its services ok, but seems to be struggling to talk to the etc server e1
-
----
+ ---
     journalctl -r | more
 
-  -- Logs begin at Wed 2019-12-04 09:59:38 UTC, end at Wed 2019-12-04 10:06:17 UTC. --
-  Dec 04 10:06:17 c1 bash[1395]: Trying: http://172.17.4.51:2379
-  Dec 04 10:06:16 c1 bash[1395]: Trying: http://172.17.4.51:2379
-  Dec 04 10:06:15 c1 bash[1395]: Trying: http://172.17.4.51:2379
-  Dec 04 10:06:14 c1 bash[1395]: Trying: http://172.17.4.51:2379
-  Dec 04 10:06:13 c1 bash[1395]: Trying: http://172.17.4.51:2379
-  Dec 04 10:06:12 c1 bash[1395]: Trying: http://172.17.4.51:2379
----
+      -- Logs begin at Wed 2019-12-04 09:59:38 UTC, end at Wed 2019-12-04 10:06:17 UTC. --
+      Dec 04 10:06:17 c1 bash[1395]: Trying: http://172.17.4.51:2379
+      Dec 04 10:06:16 c1 bash[1395]: Trying: http://172.17.4.51:2379
+      ...
+ ---
 
-  The etc server (e1) (172.17.4.51) failed to start its service:
+***The Etcd Server (e1).
 
-    user-cloudinit@var-lib-coreos\x2dvagrant-vagrantfile\x2duser\x2ddata.service
+  Checking out the etcd server (e1) (172.17.4.51), it looks like it failed to start its service:
 
-  This seems to be because the server does not have the etcd software installed anymore.
+  <<<user-cloudinit@var-lib-coreos\x2dvagrant-vagrantfile\x2duser\x2ddata.service>>>
 
- Dec 03 23:19:09 e1 coreos-cloudinit[1279]: 2019/12/03 23:19:09 line 6: warning: deprecated key "etcd2" (etcd2 is no longer shipped in Container Linux)
+  This seems to be because the server does not have the etcd software installed anymore:
 
- Seems to be because etcd is no longer shipped with coreos - should be run in container instead.
+ ---
+   Dec 03 23:19:09 e1 coreos-cloudinit[1279]: 2019/12/03 23:19:09 line 6: warning: deprecated key "etcd2" (etcd2 is no longer shipped in Container Linux)
+ ---
 
+  So it seems to be because etcd is no longer shipped with coreos. Seemingly, it should be run in container instead.
 
- The worker server (w1) also fails to start the one of its services
+***The Worker Server (w1).
 
----
-Container Linux by CoreOS beta (2303.2.0)
-Failed Units: 2
-coreos-cloudinit-255695975.service
-update-engine.service
----
+  Finally, checked out the worker server. The worker server (w1) also fails to start the one of its services
 
-  This seems to fail on the
+ ---
+ Container Linux by CoreOS beta (2303.2.0)
+ Failed Units: 2
+ coreos-cloudinit-255695975.service
+ update-engine.service
+ ---
 
+  This seems to fail on the coreos-cloudinit-255695975.service:
+
+ ---
   Dec 04 10:07:53 w1 systemd[1]: coreos-cloudinit-255695975.service: Main process exited, code=exited, status=1/FAILURE
+ ---
 
-  This looks to be a service that set up the  flanneld.service and kubelet services.
+  This looks to be a service that set up the flanneld.service and kubelet services.
 
-  I suspect the flanned.d service is not starting
+  I suspect that it is the flanned.d service that is not starting:
 
----
-Dec 04 10:39:27 w1 flannel-wrapper[2029]: timed out
-Dec 04 10:39:26 w1 flannel-wrapper[2029]: E1204 10:39:26.778232    2029 main.go:382] Couldn't fetch network config: client: etcd cluster is unavailable or misconfigured; error #0: dial tcp 172.17.4.51:237
-9: connect: connection refused
----
+ ---
+ Dec 04 10:39:27 w1 flannel-wrapper[2029]: timed out
+ Dec 04 10:39:26 w1 flannel-wrapper[2029]: E1204 10:39:26.778232    2029 main.go:382] Couldn't fetch network config: client: etcd cluster is unavailable or misconfigured; error #0: dial tcp 172.17.4.51:2379: connect: connection refused
+ ---
 
-  So everything seems to be coming back to the etc.d service not running on the e1 server.
+***Summary
 
+  So, everything seems to be coming back to the etc.d service not running on the e1 server. In the next section, we will see if we can work out who this can be addressed.
 
+**Trial effort in getting a containerised version of Etcd running.
 
+  From the above, it seems that the initial problem with out installation, at least, is that the etcd daemon is failing to be installed and started correctly. Before trying to re-engineer the build processes to try and rectify this, it is probably worth hacking something together manually so that any deeper problems are exposed early on, and I don't waste too much time chasing a lost cause.
 
+  In this regard, sought out the documentation on {{{https://github.com/etcd-io/etcd/blob/master/Documentation/v2/docker_guide.md}v2 etcd}} from it's github pages.
 
+  According to that, firing it up through docker should be possible using the following:
 
-Invstigating trying to get a containerized version of it running.
-
-  This does seem to get things moveing a little. The processes on c1 and w1 seem to managet to talk to it at least...
-
----
+ ---
   docker run -d -v /usr/share/ca-certificates/:/etc/ssl/certs -p 4001:4001 -p 2380:2380 -p 2379:2379 \
     --name etcd quay.io/coreos/etcd:v2.3.8 \
     -name etcd0 \
@@ -481,137 +534,69 @@ Invstigating trying to get a containerized version of it running.
     -initial-cluster-token etcd-cluster-1 \
     -initial-cluster etcd0=http://172.17.4.51:2380 \
     -initial-cluster-state new
----
+ ---
 
-  ..bits of it seem to start working
+  Gave it a go, and found that this does seem to get things moving a little. The processes on c1 and w1 seem to manage to talk to it at least...
 
----
-  etcdctl member list
-
-  ea651507af29316f: name=etcd0 peerURLs=http://172.17.4.51:2380 clientURLs=http://172.17.4.51:2379,http://172.17.4.51:4001 isLeader=true
----
-    ...but not everthing
-
----
-  kubectl get nodes
-
-  Error from server (NotAcceptable): the server was unable to respond with a content type that the client supports (get nodes)
----
-
-  Some suggestion that this might just be a version compatability thing (which it is, see below)...
-
-
-  Goint to leave this for now and maybe pick it up later.
-
-
-
-
-Vagrant CoreOS images
-
-    I THINK Vagrant CoreOs box files come with specific additions that are supposed to help provision the machine.
-
-    I THINK these are under:
-
-      /usr/share/oem
-
-    It seems to comprise a .yml file that defines 2 one off Units:
-        coreos-cloudinit-vagrant-mkdir.service
-        coreos-cloudinit-vagrant-user.path
-
-    It also installs the vagrant insecure key ---> which may explain why the 'beta' stream is loggable onto, while the
-    'stable' stream is not. ( See notes and discussion elsewhere)
-
-    It also compriseses a shell script, which seems to be monitoring /etc/envionment for particular changes and fixing it if necessary.
-
-    journalctl --identifier=coreos-cloudinit
-
-
-
-
-    NB ignition is not supported on all platforms
-
-
-
-    Converting from Cloudinit to Ignition
-
-    {{{https://github.com/coreos/docs/blob/master/os/migrating-to-clcs.md}Migrating from Cloudinit to Ignition}}
-
-
-
-
-     {{{./onEtcd.html}On the etcd distributed database}}
-
-     curl http://172.17.4.51:2379/v2/machines
-http://172.17.4.51:2379
-
-
-
-
-Ways of Testing everything is up and running
-
-  make sure the kubernetes API is available
-
-  On Controller...
-
----
-  curl http://127.0.0.1:8080/version
-
-  {
-    "major": "1",
-    "minor": "5",
-    "gitVersion": "v1.5.4+coreos.0",
-    "gitCommit": "97c11b097b1a2b194f1eddca8ce5468fcc83331c",
-    "gitTreeState": "clean",
-    "buildDate": "2017-03-08T23:54:21Z",
-    "goVersion": "go1.7.4",
-    "compiler": "gc",
-    "platform": "linux/amd64"
-  }
-
-  curl -s localhost:10255/pods | jq -r '.items[].metadata.name'
-
-  kube-apiserver-172.17.4.101
-  kube-controller-manager-172.17.4.101
-  kube-proxy-172.17.4.101
-  kube-scheduler-172.17.4.101
----
-
-
-
-  On Worker...
-
----
-  curl -s localhost:10255/pods | jq -r '.items[].metadata.name'
-kube-proxy-172.17.4.201
----
-
-
+  This is encouraging.  Decided to plough on and try and get the multi-node stuff working properly.
 
 ====
+*CloudInit and Ignition
 
-Multi-vagrant
+**Converting the Vagrant/CoreOs Provisioning Scripts to use Ignition.
 
-*A Note on Product Versions
+  The <<<vagrantfile>>> supplied with the <<<coreos-kubernetes>>> repository attempt to leverage the {{{https://github.com/coreos/coreos-cloudinit}coreOs-cloudinit}} system in order to provision the virtual servers with the kubernetes infrastructure.
 
-  One of the features of CoreOS is that it will normally autmatically update itself to refelct the latest available release on any given stream. Thus it is safe to assume that the OS platform will always be reasonably up to date.
+  If you examine a machine built from the v2303.2 beta stream you will see that they come pre-installed with specific components to interact with this system. These can be seen under <<</usr/share/oem>>>.
+
+  It seems to comprise a <<<cloud-config.yml>>> file that defines 2 one off Units:
+
+    * a one-off unit coreos-cloudinit-vagrant-mkdir.service;
+
+    * a one-off unit coreos-cloudinit-vagrant-user.path;
+
+    * the ssh certificate for the 'vagrant' user (i.e. what allows the vagrant user to logon to the box).
+
+    []
+
+  The guts of the provisioning is provided by the <<<coreos-cloudinit-vagrant-user.path>>> one-off service. This essentially waits for the <<<vagrantfile-user-data>>> script to appear in <<</var/lib/coreos-vagrant>>> (this will get injected by Vagrant once the box has been built). Once this arrives, the script will be run by the <<<user-cloudinit>>> service, and so the box will be built/configured according to whatever instructions are in that script.
+
+  This process can be examined by looked at machine journal.
+
+ ---
+    journalctl --identifier=coreos-cloudinit
+ ---
+
+**Why the later CoreOs versions fail to build.
+
+  If you examine the <<</usr/share/oem>>> directory from later coreOs vagrant box files, you will see that the <<<cloud-config.yml>>> file is no longer distributed. This reflects the fact that the provisioning mechanism is being changed from cloud-init to Ignition.
+
+  It also explains why the later coreOs vagrant boxes will not build with the vagrantfile that make up the coreos-kubernetes repository : they lack the file that creates the vagrant user and kicks off the build sequence.
+
+====
+*Getting a Multiple Node Configuration Running on the Beta Stream.
+
+**A note on product versions
+
+  One of the features of CoreOS is that it will normally automatically update itself to reflect the latest available release on any given stream. Thus it is safe to assume that the OS platform will always be reasonably up to date.
 
   However that does not necessarily mean all the software run on the platform will remain up to date, because much of these will be downloaded and run in containers.  The exact image (including version) will be specified by whatever mechanism creates the image.
 
   The fundamental component services of kubernetes are:
 
-    * etcd-member
+    * etcd-member;
 
-    * flannel
+    * flannel;
 
-    * docker
+    * docker;
 
-    * kubelet
+    * kubelet;
 
   Of these, etcd-member and flannel are component services of coreOs itself, and the IMAGE_TAGS specifiying whaich version to use are supplied within the Enironment section of the Service file:
 
-    * Provided in the etcd-member.service file: Environment="ETCD_IMAGE_TAG=v3.3.17"
+    * Provided in the etcd-member.service file: Environment="ETCD_IMAGE_TAG=v3.3.17";
 
-    * Provided in the flanneld.service file: Environment="FLANNEL_IMAGE_TAG=v0.11A.0"
+    * Provided in the flanneld.service file: Environment="FLANNEL_IMAGE_TAG=v0.11A.0";
 
   Consequently, these SHOULD move forward as the OS moved forward.
 
@@ -619,14 +604,13 @@ Multi-vagrant
 
       * Current version though is 18.06.3
 
-  The kubernetes main service (kubelet), which exectutes the all-in-one hyperkube executable, is NOT part of the coreOs disributon and is intalled as a drop in service. As before, the particular image that is conainerised when the service is brought up is specified by an envionment variable. This is also presented in the kubelet service file:
+  The kubernetes main service (kubelet), which executes the all-in-one hyperkube executable, is NOT part of the coreOs distribution and is installed as a drop in service. As before, the particular image that is containerised when the service is brought up is specified by an environment variable. This is also presented in the kubelet service file:
 
-      * PRovided in the kubelet.service: Environment=KUBELET_IMAGE_TAG=v1.5.4_coreos.0
+      * Provided in the kubelet.service: Environment=KUBELET_IMAGE_TAG=v1.5.4_coreos.0
 
+  This WILL NOT be updated automatically as the installation moves forward ( since the service file does not form part of the distribution). it will need to be updated manually (presumably by amending the Service file.)
 
-  This WILL NOT be updated automatically as the installation moves formward ( since the service file does not form part of the distibution). it will need to be updated manually (presumably by amending the Service file.)
-
-  The current version (1.5.4) is consequently very out of date. ( The latest versions, as of Jan 2020, is 1.17.1; which is some way behind)
+  The current version (1.5.4) is consequently very out of date. (The latest versions, as of Jan 2020, is 1.17.1; which is some way behind).
 
 
     Repository is here:  {{https://quay.io/repository/coreos/hyperkube?tab=tags}}
@@ -665,10 +649,9 @@ Multi-vagrant
 
     Also necessaary to specify the --insecure-options=image parameter
 
+**Step by Step Guide for setting up Kubernetes
 
-*Step by Step Guide for setting up Kubernetes
-
-  Taken from {{{https://github.com/coreos/coreos-kubernetes/blob/master/Documentation/getting-started.md}CoreOs and Kubernetes Step By Step}}
+  The step indicated below are taken from {{{https://github.com/coreos/coreos-kubernetes/blob/master/Documentation/getting-started.md}CoreOs and Kubernetes Step By Step}}. That guide is based using Kerbetes v1.5.4. The original build work was indeed performed on v1.5.4, but as is described later in these notes, a subsequent upgrade to more contemporary versions has been performed. Consequently some of the below may be less applicable to these later versions.
 
   The primary goals of this guide are:
 
@@ -686,22 +669,21 @@ Multi-vagrant
 
     * Deploy the network policy add-on
 
-
-*Deployment Options
+**Deployment Options
 
   The following variables will be used throughout this guide. Most of the provided defaults can safely be used, however some values such as ETCD_ENDPOINTS and MASTER_HOST will need to be customised to your infrastructure.
 
----
+ ---
   MASTER_HOST=no default
----
+ ---
 
   The address of the master node. In most cases this will be the publicly routable IP of the node. Worker nodes must be able to reach the master node(s) via this address on port <<443>>. Additionally, <<external clients>> (such as an administrator using <<<kubectl>>>) will also need access, since this will run the Kubernetes API endpoint.
 
   If you will be running a high-availability control-plane consisting of multiple master nodes, then MASTER_HOST will ideally be a network load balancer that sits in front of them. Alternatively, a DNS name can be configured which will resolve to the master IPs. How requests are routed to the master nodes will be an important consideration when creating the TLS certificates.
 
----
+ ---
   ETCD_ENDPOINTS=no default
----
+ ---
 
   List of etcd machines (http://ip:port), comma separated. If you're running a cluster of 5 machines, list them <<all>> here.
 
@@ -709,41 +691,43 @@ Multi-vagrant
 
   Typically the ETCD_ENDPOINTS will be on http://<someIp>:2379. (The etcd process typically will talk to otehr etcd servers on port: 2380. Donlt get these mixed up).
 
----
+ ---
   POD_NETWORK=10.2.0.0/16
----
+ ---
 
   The CIDR network to use for pod IPs. Each pod launched in the cluster will be assigned an IP out of this range. This network must be routable between all hosts in the cluster. In a default installation, the <<flannel>> overlay network will provide the routing to this network.
 
   ({{{./glossary.html#Classless Inter-Domain Routing}Classless Inter-Domain Routing (CIDR)}} wis a method for allocating a range of IP addresses, in this case 10.2.0.0 --> 10.2.254.254)
 
----
+ ---
   SERVICE_IP_RANGE=10.3.0.0/24
----
+ ---
 
   The {{{./glossary.html#Classless Inter-Domain Routing}CIDR}}  network to use for service cluster VIPs (Virtual IPs). Each service will be assigned a cluster IP out of this range. This must not overlap with <<any>> IP ranges assigned to the POD_NETWORK, or other existing network infrastructure. Routing to these VIPs is handled by a local <<kube-proxy>> service to each host, and are not required to be routable between hosts.
 
----
+ ---
   K8S_SERVICE_IP=10.3.0.1
----
+ ---
 
   The VIP (Virtual IP) address of the <<Kubernetes API Service>>. If the SERVICE_IP_RANGE is changed above, this must be set to the first IP in that range.
 
----
+ ---
   DNS_SERVICE_IP=10.3.0.10
----
+ ---
 
   The VIP (Virtual IP) address of the cluster DNS service. This IP <<must>> be in the range of the SERVICE_IP_RANGE and <<cannot>> be the first IP in the range. This <<same>> IP must be configured on all worker nodes to enable DNS service discovery.
 
-*Etcd Cluster Configuration
+**Etcd Cluster Configuration
 
   There are some {{{./onEtcd.html}general notes on etcd and how it works}} elsewhere, which may be useful in understanding the following.
 
   This was the trickiest part to configure, mainly because the provided scripts, documentation etc assumes etcd2 server, and the world has moved on to use etcd-member.
 
-  Additional confusion was also caused by the fact that the facilites provided by the 'stable' and 'beta' streams of coreOs are significantly different.
+  Additional confusion was also caused by the fact that the facilities provided by the 'stable' and 'beta' streams of coreOs are significantly different.
 
-**How the Etcd Provisioning via Vagrant was intended to work.
+***Legacy Etcd Provisioning via cloudinit and Vagrant.
+
+****Intended Mechanics
 
   By looking at the originally provided Vagrantfile, we can see how the provisioning of the box was intended to work.
 
@@ -755,7 +739,7 @@ Multi-vagrant
 
     [[1]] The coreos-cloudinit calls the coreOs custom binary /usr/bin/coreos-cloudinit, which knows how to process the specific etcd2 stanza in the etcd-cloud-config.yaml and so set up the etcd2 service.
 
-**Why does this not work.
+****Why does this not work anymore.
 
   The basic problems with this are:
 
@@ -765,8 +749,7 @@ Multi-vagrant
 
     [[1]] It is not possible to just change the etcd-cloud-config.yaml file to reference the new service. This is bacause the coreos-cloudinit program which processes the file doesn't know how to set up etcd-member.
 
-
-**Why Changing to a later version of the operating system does not work.
+****Why Changing to a later version of the operating system does not work.
 
   It might be expected that changing to a later version of the coreOs operating system would fix these incompatibilities, particularly if we use the "stable" stream.
 
@@ -780,19 +763,19 @@ Multi-vagrant
 
       http://beta.release.core-os.net/amd64-usr/
 
-  is 2303.2 ( i.e. BEHIND the beta stream). There ARE later versions of the beta stream availble (up to 2331.1), but NOT for the vagrant-virtualbox platform.
+  is 2303.2 ( i.e. BEHIND the beta stream). There ARE later versions of the beta stream available (up to 2331.1), but NOT for the vagrant-virtualbox platform.
 
-  Consequently to upgrade at all, we need to switch to the 'Stable' 2303.3 rlease.
+  Consequently to upgrade at all, we need to switch to the 'Stable' 2303.3 release.
 
   However, this does not work out of the box either, for the following reason
 
     [[1]] We still have the problem that coreos-cloudinit does not understand how to set up later versions of etcd.
 
-    [[1]] The cloudinit provisioining mechanism no longer seems to work on the 'stable' stream. The full mechanics of the provisioning procews are described here, but the basic change seems to be that the /usr/share/oem files that bootstrap the coreos-cloudinit process are no longer present. This probably reflects the fact that cloudinit is being discontinued as a provisioning process in favour of Ignition.
+    [[1]] The cloudinit provisioning mechanism no longer seems to work on the 'stable' stream. The full mechanics of the provisioning process are described here, but the basic change seems to be that the /usr/share/oem files that bootstrap the coreos-cloudinit process are no longer present. This probably reflects the fact that cloudinit is being discontinued as a provisioning process in favour of Ignition.
 
     [[1]] Because the cloudinit process is not working, we are no longer even getting a core user created. Consequently we can;t even log on.
 
-**Solution
+***Re-provisioning of Etcd services via Ignition.
 
   If we are to move forward with etcd, we have move away from coreos-cloudinit as a provisioning method and look at its replacement : Ignition.
 
@@ -816,9 +799,9 @@ Multi-vagrant
 
     [[1]] Generate a discovery token and amend config.ign to incorporate it. Make sure you specify the right <<size>>
 
----
+ ---
   curl https://discovery.etcd.io/new?size=1
----
+ ---
   Note that the size refers to the number of etcd servers in the cluster, NOT the Number of machines (etcd servers are usually duplicated, in order to provide redundancy). Consequently, in non-production situations, the size is likely to be 1.
 
   If you re-create the etcd server, the existing token will cease to be valid and you will need to generate a new one.
@@ -849,8 +832,7 @@ Multi-vagrant
 
   * vagrant up
 
-
-**Running machine
+***Service on The Running machine
 
   The running machine will incorporate 2 main services:
 
@@ -864,59 +846,57 @@ Multi-vagrant
 
   Both of these run as images within the rkt container system:
 
----
+ ---
   rkt list
 
   UUID		APP	IMAGE NAME			STATE	CREATED		STARTED		NETWORKS
   4d8863dd	flannel	quay.io/coreos/flannel:v0.11.0	running	7 minutes ago	7 minutes ago
   f9bfdb50	etcd	quay.io/coreos/etcd:v3.3.18	running	7 minutes ago	7 minutes ago
----
+ ---
 
   If the etcd server is rebuilt for any reason, then remember that you will need to make sure that the network configuration get reposted to it. It may be that the process building the etcd server will do this for you, but if necessary it can be posted manually. The details may vary, but it will be something like:
 
----
+ ---
   curl -X PUT -d "value={\"Network\":\"10.2.0.0/16\",\"Backend\":{\"Type\":\"vxlan\"}}" "172.17.4.51:2379/v2/keys/coreos.com/network/config"
----
+ ---
 
-
-***Basic Tests
+***Basic Testing of Etcd servicew installation and function
 
   Good journals to check:
 
----
+ ---
   journalctl -u ignition-setup
   journalctl -u ignition-disks
   journalctl -u ignition-files
   journalctl -u ignition-quench
 
-or
+  or
 
   journalctl -u ignition*
-
 
   journalctl -u etcd-member
 
   journalctl -u flanneld
----
+ ---
 
   Quick functionality checks:
 
----
-export ETCDCTL_API=3
+ ---
+  export ETCDCTL_API=3
 
-etcdctl member list
+  etcdctl member list
   2f3900f650797284, started, e1, http://172.17.4.51:2380, http://172.17.4.51:2379
 
-etcdctl put test "Tester"
-  OK
+  etcdctl put test "Tester"
+    OK
 
-etcdctl get test
-  test
-  Tester
----
+  etcdctl get test
 
+    test
+    Tester
+ ---
 
-*Generation of the SSL Certificates etc for kubernetes controller-node communication.
+**Generation of the SSL Certificates reuired for kubernetes controller-node communication.
 
   The control of entire kubernetes cluster is reliant on various client and server processes making calls to one another. In order to secure the integrity of the cluster, the server processes must be sure that the clients attempting to contact them are legitimate clients.
 
@@ -942,25 +922,24 @@ etcdctl get test
 
     []
 
-
-**Create a Cluster Root CA
+***Create a Cluster Root CA
 
   First, we need to create a new certificate authority which will be used to sign the rest of our certificates.
 
----
+ ---
   openssl genrsa -out ca-key.pem 2048
 
   openssl req -x509 -new -nodes -key ca-key.pem -days 10000 -out ca.pem -subj "/CN=kube-ca"
----
+ ---
 
-**The Kubernetes API Server Keypair
+***The Kubernetes API Server Keypair
 
   This is quite a tricky configuration. You can't actually specify all the options needed via the command line, so a configuration file needs to be used to capture all the requirements.
 
   This looks like this:
 
----
-[req]
+ ---
+  [req]
   req_extensions = v3_req
   distinguished_name = req_distinguished_name
 
@@ -978,7 +957,7 @@ etcdctl get test
   DNS.4 = kubernetes.default.svc.cluster.local
   IP.1=172.17.4.101
   IP.2=10.3.0.1
----
+ ---
 
   Note the two IP Addresses, which are:
 
@@ -989,17 +968,17 @@ etcdctl get test
 
   If deploying multiple master nodes in an HA configuration, you may need to add more TLS subjectAltNames. Proper configuration of SANs in each certificate depends on how worker nodes and kubectl users contact the master nodes: directly by IP address, via load balancer, or by resolving a DNS name.
 
----
+ ---
   Example:
 
   DNS.5 = ${MASTER_DNS_NAME}
   IP.3 = ${MASTER_IP}
   IP.4 = ${MASTER_LOADBALANCER_IP}
----
+ ---
 
   We can then generate the certificates themselves:
 
----
+ ---
   openssl genrsa -out apiserver-key.pem 2048
 
   # First the certificate signing request
@@ -1009,16 +988,16 @@ etcdctl get test
   #Then the certificate itself(self-signed)
 
   openssl x509 -req -in apiserver.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out apiserver.pem -days 365 -extensions v3_req -extfile openssl.cnf
----
+ ---
 
-**Kubernetes Worker Keypairs
+***Kubernetes Worker Keypairs
 
   Remember each worker need their own key-pair. However, each can be generated using teh same configuraiton file, but substituting for the environment variable <<<$ENV::WORKER_IP>>>
 
----
+ ---
   worker-openssl.cnf
 
-[req]
+  [req]
   req_extensions = v3_req
   distinguished_name = req_distinguished_name
 
@@ -1037,17 +1016,17 @@ etcdctl get test
 
   IP.1 = $ENV::WORKER_IP
   #(e.g. 172.17.4.201)
----
+ ---
 
   The certificates themselves can then be generated for each Worker Node. We can use the same key for each.
 
----
+ ---
   openssl genrsa -out ${WORKER_FQDN}-worker-key.pem 2048
----
+ ---
 
   Then for each worker node:
 
----
+ ---
   WORKER_IP=${WORKER_IP}
 
   # First the certificate signing request
@@ -1058,13 +1037,13 @@ etcdctl get test
 
   openssl x509 -req -in ${WORKER_FQDN}-worker.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out ${WORKER_FQDN}-worker.pem -days 365 -extensions v3_req -extfile worker-openssl.cnf
 
----
+ ---
 
-**The Cluster Administrator Key Pair
+***The Cluster Administrator Key Pair
 
   Finally, the pair of keys required for administrative access to the API server (e.g. via kubectl)
 
----
+ ---
   openssl genrsa -out admin-key.pem 2048
 
   # First the certificate signing request
@@ -1077,10 +1056,9 @@ etcdctl get test
 
   openssl x509 -req -in admin.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out admin.pem -days 365 -extensions v3_req -extfile admin-req.cnf
   )
----
+ ---
 
-
-*Configure the Controller/Master Node.
+**Configure the Controller/Master Node.
 
   Boot a single CoreOS machine which will be used as the Kubernetes master node.  The principle scripts used to build the Controller node should be present in the installation image; you must use a CoreOS version 962.0.0+ for the /usr/lib/coreos/kubelet-wrapper script to be present. See kubelet-wrapper for more information.
 
@@ -1090,28 +1068,27 @@ etcdctl get test
 
   The apiserver itself is stateless, but handles recording the results of leader elections to <<etcd>> on behalf of other master components. The <<controller-manager>> and <<scheduler>> use the leader election mechanism to ensure only one of each is active, leaving the inactive master components ready to assume responsibility in case of failure.
 
-
-**Install the required certificates
+***Install the required certificates
 
   Create the required directory and place the keys generated previously in the following locations:
 
----
+ ---
   sudo mkdir -p /etc/kubernetes/ssl
 
       File: /etc/kubernetes/ssl/ca.pem
       File: /etc/kubernetes/ssl/apiserver.pem
       File: /etc/kubernetes/ssl/apiserver-key.pem
----
+ ---
 
   And make sure you've set proper permission for private key:
 
----
+ ---
   sudo chmod 600 /etc/kubernetes/ssl/*-key.pem
 
   sudo chown root:root /etc/kubernetes/ssl/*-key.pem
----
+ ---
 
-**Network Configuration
+***Network Configuration
 
   Networking is provided by Flannel and Calico.
 
@@ -1119,8 +1096,7 @@ etcdctl get test
 
   <<<calico>>> secures the overlay network by restricting traffic to/from the pods based on fine-grained network policy.
 
-
-***Flannel Service
+****Flannel Service
 
   We will configure flannel to source its local configuration from /etc/flannel/options.env and cluster-level configuration in etcd. Create this file and edit the contents:
 
@@ -1130,7 +1106,7 @@ etcdctl get test
 
     []
 
----
+ ---
   /etc/flannel/options.env
 
   FLANNELD_IFACE=${ADVERTISE_IP}
@@ -1139,18 +1115,18 @@ etcdctl get test
   e.g.
   FLANNELD_IFACE=172.17.4.101
   FLANNELD_ETCD_ENDPOINTS=http://172.17.4.51:2379
----
+ ---
 
   Next create a systemd drop-in, which is a method for appending or overriding parameters of a systemd unit. In this case we're appending two dependency rules. Create the following drop-in, which will use the above configuration when flannel starts:
 
----
+ ---
   /etc/systemd/system/flanneld.service.d/40-ExecStartPre-symlink.conf
 
   [Service]
   ExecStartPre=/usr/bin/ln -sf /etc/flannel/options.env /run/flannel/options.env
----
+ ---
 
-***Docker Configuration for Flannel
+****Docker Configuration for Flannel
 
   In order for flannel to manage the pod network in the cluster, Docker needs to be configured to use it. All we need to do is require that <<flanneld>> is running prior to Docker starting.
 
@@ -1158,7 +1134,7 @@ etcdctl get test
 
   Again, we will use a systemd drop-in:
 
----
+ ---
   /etc/systemd/system/docker.service.d/40-flannel.conf
 
   [Unit]
@@ -1166,24 +1142,24 @@ etcdctl get test
   After=flanneld.service
   [Service]
   EnvironmentFile=/etc/kubernetes/cni/docker_opts_cni.env
----
+ ---
 
-***Docker Container Network Interface(CNI) options
+****Docker Container Network Interface(CNI) options
 
   Create the Docker CNI Options file referenced in the above:
 
----
+ ---
   /etc/kubernetes/cni/docker_opts_cni.env
 
   DOCKER_OPT_BIP=""
   DOCKER_OPT_IPMASQ=""
----
+ ---
 
-***Flannel Container Network Interface(CNI) options
+****Flannel Container Network Interface(CNI) options
 
   If using Flannel for networking, setup the Flannel CNI configuration with below. If you intend to use Calico for networking, follow the guide to Set Up Calico For Network Policy instead.
 
----
+ ---
   /etc/kubernetes/cni/net.d/10-flannel.conf
 
   {
@@ -1193,9 +1169,9 @@ etcdctl get test
           "isDefaultGateway": true
       }
   }
----
+ ---
 
-**Create the kubelet Unit
+***Create the kubelet Unit
 
   The kubelet is the agent on each machine that starts and stops Pods and other machine-level tasks.
 
@@ -1246,7 +1222,7 @@ etcdctl get test
 
   Note: Anyone with access to port 10250 on a node can execute arbitrary code in a pod on the node. Information, including logs and metadata, is also disclosed on port 10255. See securing the Kubelet API for more information.
 
----
+ ---
   /etc/systemd/system/kubelet.service
 
   [Service]
@@ -1287,10 +1263,10 @@ etcdctl get test
   [Install]
   WantedBy=multi-user.target
 
----
+ ---
   For example:
 
----
+ ---
   [Service]
   Environment=KUBELET_IMAGE_TAG=v1.5.4_coreos.0
 
@@ -1322,9 +1298,9 @@ etcdctl get test
 
   [Install]
   WantedBy=multi-user.target
----
+ ---
 
-**The POD Manifests
+***The POD Manifests
 
   There are a number of kubernetes images that run within containers on the Control Node. These are:
 
@@ -1338,9 +1314,7 @@ etcdctl get test
 
   Each of these containers host the <<same>> image (hyperkube).  <<Hyperkube is the all-in-one binary for the Kubernetes server components>>. However it is invoked with different parameters, so conferring the behaviours required in each execution context.
 
-
-
-***Set Up the kube-apiserver Pod
+****Set Up the kube-apiserver Pod
 
   The API server is where most of the magic happens. It is stateless by design and takes in API requests, processes them and stores the result in etcd if needed, and then returns the result of the request.
 
@@ -1352,7 +1326,7 @@ etcdctl get test
     Replace ${SERVICE_IP_RANGE}
     Replace ${ADVERTISE_IP} with this node's publicly routable IP.
 
----
+ ---
   /etc/kubernetes/manifests/kube-apiserver.yaml
 
   apiVersion: v1
@@ -1409,11 +1383,11 @@ etcdctl get test
     - hostPath:
         path: /usr/share/ca-certificates
       name: ssl-certs-host
----
+ ---
 
   For example:
 
----
+ ---
 
   kind: Pod
   metadata:
@@ -1468,9 +1442,9 @@ etcdctl get test
     - hostPath:
         path: /usr/share/ca-certificates
       name: ssl-certs-host
----
+ ---
 
-***Set Up the kube-proxy Pod
+****Set Up the kube-proxy Pod
 
   We're going to run the proxy just like we did the API server. The proxy is responsible for directing traffic destined for specific services and pods to the correct location. The proxy communicates with the API server periodically to keep up to date.
 
@@ -1478,7 +1452,7 @@ etcdctl get test
 
   All you have to do is create /etc/kubernetes/manifests/kube-proxy.yaml, there are no settings that need to be configured.
 
----
+ ---
   /etc/kubernetes/manifests/kube-proxy.yaml
 
   apiVersion: v1
@@ -1512,9 +1486,9 @@ etcdctl get test
     - hostPath:
         path: /var/run/dbus
       name: dbus
----
+ ---
 
-***Set Up the kube-controller-manager Pod
+****Set Up the kube-controller-manager Pod
 
   The controller manager is responsible for reconciling any required actions based on changes to Replication Controllers.
 
@@ -1522,7 +1496,7 @@ etcdctl get test
 
   Create /etc/kubernetes/manifests/kube-controller-manager.yaml. It will use the TLS certificate placed on disk earlier.
 
----
+ ---
   /etc/kubernetes/manifests/kube-controller-manager.yaml
 
   apiVersion: v1
@@ -1566,15 +1540,15 @@ etcdctl get test
     - hostPath:
         path: /usr/share/ca-certificates
       name: ssl-certs-host
----
+ ---
 
-***Set Up the kube-scheduler Pod
+****Set Up the kube-scheduler Pod
 
   The scheduler monitors the API for unscheduled pods, finds them a machine to run on, and then communicates the decision back to the API.
 
   Create File /etc/kubernetes/manifests/kube-scheduler.yaml:
 
----
+ ---
   /etc/kubernetes/manifests/kube-scheduler.yaml
 
   apiVersion: v1
@@ -1602,16 +1576,15 @@ etcdctl get test
           port: 10251
         initialDelaySeconds: 15
         timeoutSeconds: 15
----
+ ---
 
-**Set Up Calico For Network Policy (optional)
+***Set Up Calico For Network Policy (optional)
 
   This step can be skipped if you do not wish to provide network policy to your cluster using Calico.
 
   Details can be found {{{https://github.com/coreos/coreos-kubernetes/blob/master/Documentation/deploy-master.md}here}} if needed.
 
-
-*Start Controller Node Services
+***Start Controller Node Services
 
   Now that we've defined all of our units and written our TLS certificates to disk, we're ready to start the master components.
 
@@ -1619,11 +1592,11 @@ etcdctl get test
 
   First, we need to tell systemd that we've changed units on disk and it needs to rescan everything:
 
----
+ ---
   sudo systemctl daemon-reload
----
+ ---
 
-**Write the flannel network configuration to etcd.
+***Write the flannel network configuration to etcd.
 
   Earlier it was mentioned that flannel stores cluster-level configuration in etcd. We need to configure our Pod network IP range within it now:
 
@@ -1633,47 +1606,47 @@ etcdctl get test
 
     []
 
----
+ ---
   curl -X PUT -d "value={\"Network\":\"$POD_NETWORK\",\"Backend\":{\"Type\":\"vxlan\"}}" "$ETCD_SERVER/v2/keys/coreos.com/network/config"
----
+ ---
 
-**Restart the flannel service
+***Restart the flannel service
 
   After configuring flannel, we should restart it for our changes to take effect. Note that this will also restart the docker daemon and could impact running containers.
 
----
+ ---
   sudo systemctl start flanneld
 
   sudo systemctl enable flanneld
----
+ ---
 
-**Start the kubelet service
+***Start the kubelet service
 
   Now that everything is configured, we can start the kubelet, which will also start the Pod manifests for the API server, the controller manager, proxy and scheduler.
 
----
+ ---
   sudo systemctl start kubelet
----
+ ---
 
   Ensure that the kubelet will start after a reboot:
 
----
+ ---
   sudo systemctl enable kubelet
----
+ ---
 
-*Basic Controller Health Checks
+**Basic Controller Health Checks
 
   Theoretically, our control node is now fully built and active. we can make some basic checks to it as follows:
 
   First, we need to make sure the Kubernetes API is available (this could take a few minutes after starting the kubelet.service)
 
----
+ ---
   curl http://127.0.0.1:8080/version
----
+ ---
 
   A successful response should look something like:
 
----
+ ---
   {
     "major": "1",
     "minor": "4",
@@ -1685,64 +1658,61 @@ etcdctl get test
     "compiler": "gc",
     "platform": "linux/amd64"
   }
----
+ ---
 
   To check the health of the kubelet systemd unit that we created,
 
----
+ ---
   systemctl status kubelet.service.
----
+ ---
 
   Our Pods should now be starting up, downloading their containers. Once the kubelet has started, you can check that  it has created its pods via the metadata api:
 
----
+ ---
   curl -s localhost:10255/pods | jq -r '.items[].metadata.name'
 
   kube-scheduler-$node
   kube-apiserver-$node
   kube-controller-$node
   kube-proxy-$node
----
+ ---
 
   curl -s localhost:10255/pods | jq
 
-======
-
-*Configure the Worker Nodes
+**Configure the Worker Nodes
 
   Boot one or more CoreOS nodes which will be used as Kubernetes Workers. The principle scripts used to set up the Worker node shouls already be present in the installation; though you must use a CoreOS version 962.0.0+ for the /usr/lib/coreos/kubelet-wrapper script to be present. See kubelet-wrapper for more information.
 
-
-**Install the required certificates.
+***Install the required certificates.
 
   Place the TLS keypairs generated above in the following locations. Note that each keypair is unique to the worker and should be installed on the worker node it was specifically generated for:
 
----
+ ---
     File: /etc/kubernetes/ssl/ca.pem
     File: /etc/kubernetes/ssl/${WORKER_FQDN}-worker.pem
     File: /etc/kubernetes/ssl/${WORKER_FQDN}-worker-key.pem
----
+ ---
 
     And make sure you've set proper permission for private key:
 
----
+ ---
   sudo chmod 600 /etc/kubernetes/ssl/*-key.pem
   sudo chown root:root /etc/kubernetes/ssl/*-key.pem
----
+ ---
 
   Create symlinks to the worker-specific certificate and key so that the remaining configurations on the workers do not have to be unique per worker.
 
----
+ ---
   cd /etc/kubernetes/ssl/
 
   sudo ln -s ${WORKER_FQDN}-worker.pem worker.pem
 
   sudo ln -s ${WORKER_FQDN}-worker-key.pem worker-key.pem
----
+ ---
 
-**Networking Configuration
+***Networking Configuration
 
-***Flannel Service
+****Flannel Service
 
   Just like earlier, create the /etc/flannel/options.env and modify these values:
 
@@ -1752,36 +1722,36 @@ etcdctl get test
 
     []
 
----
+ ---
   /etc/flannel/options.env
 
   FLANNELD_IFACE=${ADVERTISE_IP}
   FLANNELD_ETCD_ENDPOINTS=${ETCD_ENDPOINTS}
----
+ ---
 
   e.g.
 
----
+ ---
   FLANNELD_IFACE=172.17.4.201
   FLANNELD_ETCD_ENDPOINTS=http://172.17.4.51:2379
----
+ ---
 
   Next create a systemd drop-in, which will use the above configuration when flannel starts
 
----
+ ---
   /etc/systemd/system/flanneld.service.d/40-ExecStartPre-symlink.conf
 
   [Service]
   ExecStartPre=/usr/bin/ln -sf /etc/flannel/options.env /run/flannel/options.env
----
+ ---
 
-***Docker Configuration for Flannel
+****Docker Configuration for Flannel
 
   We need to 'require' that flanneld is running prior to Docker start.
 
   Create /etc/systemd/system/docker.service.d/40-flannel.conf
 
----
+ ---
   /etc/systemd/system/docker.service.d/40-flannel.conf
 
   [Unit]
@@ -1789,22 +1759,22 @@ etcdctl get test
   After=flanneld.service
   [Service]
   EnvironmentFile=/etc/kubernetes/cni/docker_opts_cni.env
----
+ ---
 
-***Docker Container Network Interface(CNI) options
+****Docker Container Network Interface(CNI) options
 
   Create the Docker CNI Options file referenced in the above:
 
----
+ ---
   /etc/kubernetes/cni/docker_opts_cni.env
 
   DOCKER_OPT_BIP=""
   DOCKER_OPT_IPMASQ=""
----
+ ---
 
   Setup the Flannel CNI configuration with below. If you intend to use Calico for networking, setup using Set Up the CNI config (optional) instead.
 
----
+ ---
   /etc/kubernetes/cni/net.d/10-flannel.conf
 
   {
@@ -1814,9 +1784,9 @@ etcdctl get test
           "isDefaultGateway": true
       }
   }
----
+ ---
 
-**Create the kubelet Unit
+***Create the kubelet Unit
 
   The kubelet is the agent on each machine that starts and stops Pods and other machine-level tasks.
 
@@ -1863,7 +1833,7 @@ etcdctl get test
 
   Note: Anyone with access to port 10250 on a node can execute arbitrary code in a pod on the node. Information, including logs and metadata, is also disclosed on port 10255. See securing the Kubelet API for more information.
 
----
+ ---
   /etc/systemd/system/kubelet.service
 
   [Service]
@@ -1910,11 +1880,11 @@ etcdctl get test
 
   [Install]
   WantedBy=multi-user.target
----
+ ---
 
   For example,
 
----
+ ---
   [Service]
   Environment=KUBELET_IMAGE_TAG=v1.5.4_coreos.0
   Environment=KUBELET_IMAGE_URL=quay.io/coreos/hyperkube
@@ -1930,24 +1900,23 @@ etcdctl get test
 
   [Install]
   WantedBy=multi-user.target
----
+ ---
 
-**The POD Manifest
+***The POD Manifest
 
-  The worker node runs just one controll plane pod:
+  The worker node runs just one control plane pod:
 
     * kube-proxy
 
   As with the Controller node, this runs the hyperkube image with suitable parameters to modify its behaviour.
 
-
-***Set Up the kube-proxy Pod
+****Set Up the kube-proxy Pod
 
   Create /etc/kubernetes/manifests/kube-proxy.yaml:
 
     Replace $\{MASTER_HOST\}
 
----
+ ---
   /etc/kubernetes/manifests/kube-proxy.yaml
 
   apiVersion: v1
@@ -1995,65 +1964,65 @@ etcdctl get test
     - hostPath:
         path: /var/run/dbus
       name: dbus
----
+ ---
 
   For example:
 
----
-apiVersion: v1
-kind: Pod
-metadata:
-name: kube-proxy
-namespace: kube-system
-annotations:
-  rkt.alpha.kubernetes.io/stage1-name-override: coreos.com/rkt/stage1-fly
-spec:
-hostNetwork: true
-containers:
-- name: kube-proxy
-  image: quay.io/coreos/hyperkube:v1.5.4_coreos.0
-  command:
-  - /hyperkube
-  - proxy
-  - --master=http://172.17.4.101:443
-  - --cluster-cidr=10.2.0.0/16
-  - --kubeconfig=/etc/kubernetes/worker-kubeconfig.yaml
-  securityContext:
-    privileged: true
-  volumeMounts:
-  - mountPath: /etc/ssl/certs
-    name: "ssl-certs"
-  - mountPath: /etc/kubernetes/worker-kubeconfig.yaml
-    name: "kubeconfig"
-    readOnly: true
-  - mountPath: /etc/kubernetes/ssl
-    name: "etc-kube-ssl"
-    readOnly: true
-  - mountPath: /var/run/dbus
+ ---
+  apiVersion: v1
+  kind: Pod
+  metadata:
+  name: kube-proxy
+  namespace: kube-system
+  annotations:
+    rkt.alpha.kubernetes.io/stage1-name-override: coreos.com/rkt/stage1-fly
+  spec:
+  hostNetwork: true
+  containers:
+  - name: kube-proxy
+    image: quay.io/coreos/hyperkube:v1.5.4_coreos.0
+    command:
+    - /hyperkube
+    - proxy
+    - --master=http://172.17.4.101:443
+    - --cluster-cidr=10.2.0.0/16
+    - --kubeconfig=/etc/kubernetes/worker-kubeconfig.yaml
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - mountPath: /etc/ssl/certs
+      name: "ssl-certs"
+    - mountPath: /etc/kubernetes/worker-kubeconfig.yaml
+      name: "kubeconfig"
+      readOnly: true
+    - mountPath: /etc/kubernetes/ssl
+      name: "etc-kube-ssl"
+      readOnly: true
+    - mountPath: /var/run/dbus
+      name: dbus
+      readOnly: false
+  volumes:
+  - name: "ssl-certs"
+    hostPath:
+      path: "/usr/share/ca-certificates"
+  - name: "kubeconfig"
+    hostPath:
+      path: "/etc/kubernetes/worker-kubeconfig.yaml"
+  - name: "etc-kube-ssl"
+    hostPath:
+      path: "/etc/kubernetes/ssl"
+  - hostPath:
+      path: /var/run/dbus
     name: dbus
-    readOnly: false
-volumes:
-- name: "ssl-certs"
-  hostPath:
-    path: "/usr/share/ca-certificates"
-- name: "kubeconfig"
-  hostPath:
-    path: "/etc/kubernetes/worker-kubeconfig.yaml"
-- name: "etc-kube-ssl"
-  hostPath:
-    path: "/etc/kubernetes/ssl"
-- hostPath:
-    path: /var/run/dbus
-  name: dbus
----
+ ---
 
-**Set up kubeconfig
+***Set up kubeconfig
 
   In order to facilitate secure communication between Node components and Master components, the kubeconfig file can be used to define authentication settings. In this case, the kubelet and proxy pod will reading this configuration to communicate with the API on the Controller.
 
   Create /etc/kubernetes/worker-kubeconfig.yaml:
 
----
+ ---
   /etc/kubernetes/worker-kubeconfig.yaml
 
   apiVersion: v1
@@ -2073,89 +2042,120 @@ volumes:
       user: kubelet
     name: kubelet-context
   current-context: kubelet-context
----
+ ---
 
-**Start Services
+***Start Worker Services
 
   We are now in a position to start the Worker services.
 
   Tell systemd to rescan the units on disk:
 
----
+ ---
   sudo systemctl daemon-reload
----
-
-***Start kubelet and flannel services
+ ---
 
   Start the flannel and kubelet services (which will, in turn, start the proxy pod).
 
----
+ ---
   sudo systemctl start flanneld
 
   sudo systemctl start kubelet
----
+ ---
 
   Ensure that the services start on each boot:
 
----
+ ---
   sudo systemctl enable flanneld
 
   sudo systemctl enable kubelet
----
+ ---
 
 **Basic Worker Health Checks
 
   To check the health of the kubelet systemd unit that we created
 
----
+ ---
   systemctl status kubelet.service
----
+ ---
 
-
-
+=====
 *kubectl
+
+**Installation
 
   kubectl is the command line tool used for accessing/manipulating a running kubernetes cluster. It works by talking principally to the Api server on port 443 (via REST calls, as far as I can tell).
 
   Its basic usage is described in the {{{https://kubernetes.io/docs/reference/kubectl/overview/}kubectl overview}} pages. All deployments, etc are generally performed using kubectl.
 
-  <<Note: You must use a kubectl version that is within one minor version difference of your cluster. For example, a v1.2 client should work with v1.1, v1.2, and v1.3 master. Using the latest version of kubectl helps avoid unforeseen issues>>
+  <<(Note: You must use a kubectl version that is within one minor version difference of your cluster. For example, a v1.2 client should work with v1.1, v1.2, and v1.3 master. Using the latest version of kubectl helps avoid unforeseen issues. A response like:
+
+ ---
+  Error from server (NotAcceptable): the server was unable to respond with a content type that the client supports (get nodes)
+ ---
+  often means there is mismatch between the version the kubectl client and the version of the server.)>>
 
   Executables are available for both linux and osx, and for most scenarios executing from the client osx machine would seem like the natural choice.
 
   For osx, kubectl can be installed either via brew:
 
----
+ ---
     brew install kubectl
----
+ ---
   or via curl. First establish the latest release:
 
----
+ ---
   curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt
 
   v1.17.0
----
+ ---
   and then install
 
----
+ ---
   curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl
----
+ ---
   or, for OSX:
 
----
+ ---
   curl -O https://storage.googleapis.com/kubernetes-release/release/v1.6.1/bin/darwin/amd64/kubectl
----
+ ---
 
   Instinctively, the brew route seemed to be the way to go. However, this did cause difficulties ( see below). Brew will tend to install the latest version of the product, which is not always what you want.
 
   For instance, version 1.17(the current latest) does not work with server 1.5.4 which seems to be installed with this version of coreOs (beta 2303.2.0 )
 
+  ---
 
-kubectl configuration
 
-  <<<kubectl>>> requires a configuration file to point it to the cluster in question, and supply authentication credentials etc.
 
-  By defualt, this gets held within <<<~/.kube/config>>>. However, you can point it towards any particular file eiter by:
+    kubectl config set-credentials vagrant-multi-admin \
+         --certificate-authority=${PWD}/ssl/ca.pem \
+         --client-key=${PWD}/ssl/admin-key.pem \
+         --client-certificate=${PWD}/ssl/admin.pem
+
+    User "vagrant-multi-admin" set.
+
+
+    kubectl config set-context vagrant-multi  \
+         --cluster=vagrant-multi-cluster \
+         --user=vagrant-multi-admin
+
+    Context "vagrant-multi" created.
+
+
+    kubectl config use-context vagrant-multi
+
+    Switched to context "vagrant-multi".
+
+
+    kubectl get nodes
+    The connection to the server 172.17.4.101:443 was refused - did you specify the right host or port?
+  ---
+
+**Configuration
+
+  <<<kubectl>>> requires a configuration file to point it to the cluster in question, and to supply authentication credentials etc.
+
+  By default, this gets held within <<<~/.kube/config>>>. However, you can point it towards any particular file either by:
 
     * using the <<<---kubeconfig>>> commandline parameter;
 
@@ -2164,19 +2164,19 @@ kubectl configuration
     []
   e.g.
 
----
+ ---
   export KUBECONFIG="$(pwd)/kubeconfig"
----
+ ---
 
-  (Note, that the various kubernetes server processes also use a similarily formatted file in order to find the api-server.)
+  (Note, that the various kubernetes server processes also use a similarly formatted file in order to find the api-server.)
 
   In simple terms, the config stores 4 things:
 
     * sets of server addresses
 
-    * set of credentials that can be used to access seerers
+    * set of credentials that can be used to access servers
 
-    * set of contexts, which is basically an associateion betweeen a server and a set of credentials
+    * set of contexts, which is basically an association between a server and a set of credentials
 
     * the name of the current context.  i.e the server and credentials to be used for current operations.
 
@@ -2184,7 +2184,7 @@ kubectl configuration
 
   A typical configuration file looks like this:
 
----
+ ---
   apiVersion: v1
   clusters:
   - cluster:
@@ -2205,12 +2205,12 @@ kubectl configuration
     user:
       client-certificate: ssl/admin.pem
       client-key: ssl/admin-key.pem
----
+ ---
   The contents of the configuration file can itself be manipulated by kubectl
 
   For example:
 
----
+ ---
   kubectl config set-cluster vagrant-multi-cluster \
           --server=https://172.17.4.101:443 \
           --certificate-authority=${PWD}/ssl/ca.pem
@@ -2234,11 +2234,11 @@ kubectl configuration
   kubectl config use-context vagrant-multi
 
     Switched to context "vagrant-multi".
----
+ ---
 
   The following command can be used to view the contents of the config file:
 
----
+ ---
   kubectl config view
 
   apiVersion: v1
@@ -2274,43 +2274,36 @@ kubectl configuration
     user:
       client-certificate: /Users/kevin/dvl/gitReps/coreos-kubernetes/multi-node/vagrant/ssl/admin.pem
       client-key: /Users/kevin/dvl/gitReps/coreos-kubernetes/multi-node/vagrant/ssl/admin-key.pem
----
+ ---
 
-Useful kubectl commands
+**Useful kubectl commands
 
-  Note: if kubectl responds:
+  The following is a short list of often used kubectl commands. For a fuller list see the {{{https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands}kubectl Command Reference}}.
 
----
-Error from server (NotAcceptable): the server was unable to respond with a content type that the client supports (get nodes)
----
-  this often means there is mismatch between the version the kubectl client and the version of the api-sserver. Check with <<<kubectl versions>>>.
-
-
----
+ ---
   kubectl get nodes
 
-  NAME           STATUS                     ROLES     AGE       VERSION
-  172.17.4.101   Ready,SchedulingDisabled   <none>    1d        v1.9.11+coreos.0
-  172.17.4.201   Ready                      <none>    1d        v1.9.11+coreos.0
+    NAME           STATUS                     ROLES     AGE       VERSION
+    172.17.4.101   Ready,SchedulingDisabled   <none>    1d        v1.9.11+coreos.0
+    172.17.4.201   Ready                      <none>    1d        v1.9.11+coreos.0
 
 
   kubectl cluster-info
 
-  Kubernetes master is running at https://172.17.4.101:443
-  Heapster is running at https://172.17.4.101:443/api/v1/namespaces/kube-system/services/heapster/proxy
-  KubeDNS is running at https://172.17.4.101:443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
-  Jkubernetes-dashboard is running at https://172.17.4.101:443/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy
+    Kubernetes master is running at https://172.17.4.101:443
+    Heapster is running at https://172.17.4.101:443/api/v1/namespaces/kube-system/services/heapster/proxy
+    KubeDNS is running at https://172.17.4.101:443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+    Jkubernetes-dashboard is running at https://172.17.4.101:443/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy
 
   kubectl cluster-info dump  > someFile.txt
+ ---
+  This dumps loads of information, too much to take in interactively, but useful to send to a file. The information includes:
 
-  This dumps loads of information, too much to take in interactively, but eseful to send to a file.
+    * configuration info, in json format.
 
-  Includes configuration info, in json format.
+    * logs from all the processes.
 
-  Logs from all the processes.
-
-
-
+ ---
   kubectl attach POD -c CONTAINER [-i] [-t] [flags]
 
   kubectl version
@@ -2326,19 +2319,14 @@ Error from server (NotAcceptable): the server was unable to respond with a conte
   kubectl create/delete -f FILENAME [flags]
 
   kubectl edit
-
----
-
-
-
-
-
+ ---
 
 ======
+*Getting kubernetes to run on the latest stable stream of Coreos.
 
-Getting kubernetes to run on the latest stable stream of Coreos.
+**The Problem
 
-  The basic problem here is that the coreos-cloudinit method of provisioning the box is being deprecated in favour of a Ignition based setup, and hasn't been maintained as the product moves forward.
+  The basic problem here is that the <<<coreos-cloudinit>>> method of provisioning the box is being deprecated in favour of a <<<Ignition>>> based setup, and the coreos-kubernetes repository hasn't been maintained as the coreOS product has moved forward.
 
   For the etcd servers:
 
@@ -2348,11 +2336,9 @@ Getting kubernetes to run on the latest stable stream of Coreos.
 
     vagrant doesn't inject the networks.yml and hostname.yml files that the contoller.sh and worker.sh scripts are expecting to be picked up an processed by coreos-cloudinit. As a consequence, the environment does not get set up correctly and the various build sctipts do not run.
 
-
   Fortunately it ought to be possible to adapt the provisioning scripts so that they can be used by Ignition rather than coreos-cloudinit.
 
-
-*Possible ways forward
+**Possible ways forward
 
   Vagrant has a plugin that we can use to inject Ignition script into the host we are provisioning. CoreOS also provides a 'ct' ('configuration transpiler') tool to aid the generation of Ignition scripts from the intuitively simpler YAML.
 
@@ -2362,7 +2348,7 @@ Getting kubernetes to run on the latest stable stream of Coreos.
 
   We will try the first route first, ad then maybe comback to the second.
 
-*Changes to the Vagrant File
+**Changes to the Vagrant File
 
   The existing vagrant file used its own provisioning mechanism to push files to the box AFTER it had been booted for the first time. These were then picked up by coreos-cloudinit infrastructure and processed accordingly.
 
@@ -2378,45 +2364,43 @@ Getting kubernetes to run on the latest stable stream of Coreos.
 
   Additionally the Vagrant file was modifies to included the vagrant.plug itself and the additonal processing to make use of it.
 
+**Changes to the The Etcd servers
 
-*The Etcd servers
-
-  An Ignition configuration for this already existed ast part of the coreos/vagrant git repository at:
+  An Ignition configuration for this already existed as part of the coreos-vagrant git repository at:
 
     https://github.com/coreos/coreos-vagrant.git
 
   The configuration for this (cl.conf). This was adapted for use in this situation by:
 
-    [[1]] Removing the unneccesary docker service
+    [[1]] Removing the unnecessary docker service
 
     [[1]] Disabling automatic updates when an os upgrade occurs
 
     [[1]] Adding in the specific flannel configuration that we were already using on the controller build
 
----
+ ---
   /usr/bin/etcdctl set /flannel/network/config '{ "Network": "10.1.0.0/16" }'
----
+ ---
 
   This was distilled into a single config file: etcd.ct injected into ignition as etcd.ign
 
-  Previous versions of Vagrantfile used to pre-process the etcd configuration files in order to introduce hostname, cluster ip addresses etc. Becuase ignition has awareness of a certain numbe of environment variables, it has been possible to right a .ct file that does not need pre-processing.
+  Previous versions of Vagrantfile used to pre-process the etcd configuration files in order to introduce hostname, cluster ip addresses etc. Because ignition has awareness of a certain number of environment variables, it has been possible to right a .ct file that does not need pre-processing.
 
   Instead, all vagrant does is run the ct utility in order to generate the .ign file. The Ignition plugin then post processes the .ign file to introduce the core user, certificates etc. and copies it to a virtual disk for presentation to the booting server.
 
   The general form of the ct invocation wold be:
 
----
+ ---
   ct -in-file=etcd.ct -out-file=etcd.ign -platform vagrant-virtualbox -pretty -strict
----
+ ---
 
-
-*The Controller Servers
+**Changes to the Controller Servers
 
   Converting this server to Ignition was a bit more involved. The basic idea was:
 
     * inject a modified version of the controller-install.sh script
 
-    * create a one-off sercice kubernetes-install to run the install script above on first boot.
+    * create a one-off service kubernetes-install to run the install script above on first boot.
 
     * directly inject the various ssl certificates
 
@@ -2430,33 +2414,52 @@ Getting kubernetes to run on the latest stable stream of Coreos.
 
     []
 
-  As with the etcd server, the vagrant file would use the 'ct' utility to geenrate teh necessary .ign file and inject it in a similar fashion.
+  As with the etcd server, the vagrant file would use the 'ct' utility to generate the necessary .ign file and inject it into the building server.
 
+  (Note : I have noticed that the controller server can take a while to come up. Occasionally, it doesn't come up at all.  I suspect that it may give up if it can't register everything it needs to within a certain time?? I don't know for sure. Possibly starting the server in isolation from the etcd and worker servers will help here??. It is also possible that this happens if we are starting the controller with insufficient memory.)
 
-Have noticed the th controller serve can take a while to come up:
+  You can view the progress of the installation and startup using:
 
-Somtimes it doesn;t come up at all - possibly it gives up if it can' register everything within a certain time?? I don;t know. Possibly starting ht server in osolation from hte etc and worker servers will help ghere??
+ ---
+  systemctl status kubernetes-install
 
+  systemctl status kubelet
+ ---
 
+  The rkt containers can be viewed:
 
+ ---
+ rkt list
 
-systemctl status kubernetes-install
-systemctl status kubelet
+  UUID		APP		IMAGE NAME					STATE	CREATED		STARTED		NETWORKS
+  435b2d04	flannel		quay.io/coreos/flannel:v0.11.0			running	1 hour ago	1 hour ago
+  6fef3605	hyperkube	quay.io/coreos/hyperkube:v1.9.11_coreos.0	running	1 hour ago	1 hour ago
+ ---
 
-rkt list
-UUID		APP		IMAGE NAME					STATE	CREATED		STARTED		NETWORKS
-435b2d04	flannel		quay.io/coreos/flannel:v0.11.0			running	1 hour ago	1 hour ago
-6fef3605	hyperkube	quay.io/coreos/hyperkube:v1.9.11_coreos.0	running	1 hour ago	1 hour ago
+ and the docker images viewed:
 
+ ---
+  docker ps
 
+    93fd83ba3864        92e8364db5b0                 "/hyperkube apiserve…"   2 minutes ago        Up 2 minutes                            k8s_kube-apiserver_kube-apiserver-172.17.4.101_kube-system_902b03f9506160c93a1fdc064061c0ff_15
+    5350d3b8a01d        92e8364db5b0                 "/hyperkube proxy --…"   4 minutes ago        Up 3 minutes                            k8s_kube-proxy_kube-proxy-172.17.4.101_kube-system_b100c0d3b14ca7564ddf70434c9c2485_6
+    a1bdb9dcef75        92e8364db5b0                 "/hyperkube schedule…"   4 minutes ago        Up 3 minutes                            k8s_kube-scheduler_kube-scheduler-172.17.4.101_kube-system_5269d3c3995ed67234de1b9b70bb8270_7
+    9e2ba0fd0073        92e8364db5b0                 "/hyperkube controll…"   4 minutes ago        Up 3 minutes                            k8s_kube-controller-manager_kube-controller-manager-172.17.4.101_kube-system_4a7a9b0de30bfa47ef543ce432292716_7
+    b873e839c17e        k8s.gcr.io/pause-amd64:3.1   "/pause"                 4 minutes ago        Up 4 minutes                            k8s_POD_kube-controller-manager-172.17.4.101_kube-system_4a7a9b0de30bfa47ef543ce432292716_6
+    f08ed56283f8        k8s.gcr.io/pause-amd64:3.1   "/pause"                 4 minutes ago        Up 4 minutes                            k8s_POD_kube-apiserver-172.17.4.101_kube-system_902b03f9506160c93a1fdc064061c0ff_6
+    ad51bb86e8ff        k8s.gcr.io/pause-amd64:3.1   "/pause"                 4 minutes ago        Up 4 minutes                            k8s_POD_kube-proxy-172.17.4.101_kube-system_b100c0d3b14ca7564ddf70434c9c2485_6
+    3290d4454fe9        k8s.gcr.io/pause-amd64:3.1   "/pause"                 4 minutes ago        Up 4 minutes                            k8s_POD_kube-scheduler-172.17.4.101_kube-system_5269d3c3995ed6
+ ---
 
-*The Worker Server
+  There will be more than this if th ecluster is running any apps.
+
+**Changes to the Worker Server
 
   Converting the worker server involves the same process as for the Controller server. Namely:
 
     * inject a modified version of the worker-install.sh script
 
-    * create a one-off sercice kubernetes-install to run the install script above on first boot.
+    * create a one-off service kubernetes-install to run the install script above on first boot.
 
     * directly inject the various ssl certificates
 
@@ -2472,229 +2475,328 @@ UUID		APP		IMAGE NAME					STATE	CREATED		STARTED		NETWORKS
 
     []
 
+  Once again the progress of the installation and configuration may be viewed:
+
+ ---
+  journalctl -u ignition-*
+
+  systemctl status kubernetes-install
+
+  journalctl -u kubernetes-install
+
+  systemctl status kubelet
+
+  journalctl -u kubelet
+ ---
+
+  ..and the running containers:
+
+ ---
+  rkt list
+
+    UUID		APP		IMAGE NAME						STATE		CREATED		STARTED		NETWORKS
+    bf79d969	hyperkube-amd64	gcr.io/google_containers/hyperkube-amd64:v1.10.13	running		7 minutes ago	7 minutes ago
+    fa414bfa	flannel		quay.io/coreos/flannel:v0.11.0				running		7 minutes ago	7 minutes ago
 
 
-journalctl -u ignition-*
+  docker ps
 
-systemctl status kubernetes-install
-journalctl -u kubernetes-install
+    CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS              PORTS               NAMES
+    4036303dfda3        92e8364db5b0                 "/hyperkube proxy --…"   6 minutes ago       Up 6 minutes                            k8s_kube-proxy_kube-proxy-172.17.4.201_kube-system_fae8c7e615103b5fc6af968423b5a6bd_6
+    989046d98a29        k8s.gcr.io/pause-amd64:3.1   "/pause"                 6 minutes ago       Up 6 minutes                            k8s_POD_kube-proxy-172.17.4.201_kube-system_fae8c7e615103b5fc6af968423b5a6bd_6
+ ---
 
-systemctl status kubelet
-journalctl -u kubelet
+**Outcome
 
+  After a bit of tinkering around, came up with something bases on kunernetes 1.5.4 which seemed to work satisfactorily over 3 nodes. Both multinode and single node configurations seem to roughly work.
 
+  Tagged the is landmark in the git repository as follows:
 
+ ---
+  git tag -a kub1.5.4 b4c65f08580417f022e92a6bcf4719a34fa86705 -m "Working version based on kubernetes 1.5.4"
+ ---
 
+  Now lets attempt to move on and get a more contemporary version working.
 
-*Handling deprecated stuff,.
+======
+*Updating Kubernetes to v1.9.11
 
-  Jan 09 19:00:15 c1 kubelet-wrapper[1206]: Flag --api-servers has been deprecated, Use --kubeconfig instead. Will be A
-  removed in a future version.
+**Rationale
+
+  The version of Kerbetes supplied with the original coreos-kubernetes is now somewhat out of date (and indeed, now unsupported). Contemporary versions are now at v1.17x. Hence is seems desireable to get a little closer to that.
+
+  The kubernetes version we are using is based on a containerised version of <<<hyperkube>>> taken from the repository maintained by coreOs at quay.io. However, maintenance of this repository ceased in March 2018 with version 1.9.x (or maybe v1.10; its a little unclear). Instead, later versions are maintained at the google repository gcr.io (more of which later), albeit in a slightly different format.
+
+  Note that these are still maintained by coreOS, built form their git repository {{https://github.com/coreos/kubernetes}} (which is a fork from the official kubernetes release.)
+
+  To try and get a feel for how difficult upgrading was going to be, decided not to overcomplicate things too much and just try upgrading to the latest version of hyperkube available from quay.io.
+
+  This would be v 1.9.11.
+
+**Process
+
+    Initially, just amended the version of the Hyperkube image referenced in the in the kubelet service file of both controller and worker servers...
+
+ ---
+  within /etc/systemd/system/kubelet.service
+
+  Environment=KUBELET_IMAGE_TAG=1.5.4
+  --->
+  Environment=KUBELET_IMAGE_TAG=1.9.11
+ ---
+
+    ...and rebooted the server.
+
+    However, this initially failed. The servers seemed to build ok. However when the api-server is launched it complains that a particular parameter has now been depreciated ( --api-server).
+
+    It also indicates that another paramter --rkt-stage1-image will also be depreciated in the next version.
+
+    These issues were tackled as follows.
+
+**Handling deprecated features in kubernetes v1.9.11
+
+  During the upgrade to version 1.9.11 the following errors were thrown as various processes started:
+ ---
   Jan 09 19:00:16 c1 kubelet-wrapper[1206]: Flag --rkt-stage1-imagekhas been deprecated, Will be removed in a future version. The default stage1 image will be specified by the rkt configurations, see https://github.com/coreos/rkt/blob/master/Documentation/configuration.md for more details
 
+  Jan 09 19:00:15 c1 kubelet-wrapper[1206]: Flag --api-servers has been deprecated, Use --kubeconfig instead. Will be A removed in a future version.
+ ---
 
-  The --rkt-stage1-image flag is a flag on the kubelet part of hyperkube. Its job is to specify the stage1 loader to be used by invoked by rkt, prior to running the container itself. In this case it is requesting the "standard" stage1-coreos loader which will layer in components allowing it to be managed by systemd.
+***rkt-stage1-image
 
-  There is no replacement flag. Instead the loader is specified as one of the option to rkt itself ( namely --stage1-from-dir).
+  The --rkt-stage1-image flag is a flag on the kubelet part of hyperkube. Its job is to specify the stage1 loader to be used by invoked by rkt, prior to running the container itself (more details {{{,/onRKT.html}on rkt here}}). In this case it is requesting the "standard" stage1-coreos loader which will layer in components allowing it to be managed by systemd.
 
-  However, it appears taht there is no need to explicitly introduce this flag. rkt is currently launched through the coreOs supplied wrapper /usr/lib64/coreos/kubelet-wrapper. This EXPLICITLY exists to introduce the --stage1-from-dir parameter and set it to stage1-fly.aci. (Note this is different from the depreciated --rkt-stage1-image setting).
+  There is no direct replacement flag for it in the later versions of hyperkube. Instead the loader is specified as one of the option to rkt itself (namely --stage1-from-dir).
 
-  Previously, then it, would appear that rkt was bing invoked with 2 flags doing contradictory things. It is not clear which has precedent but my guess would be the one introdued by kubelet-wrapper.
+  However, it appears that there is no need to explicitly introduce this flag. rkt is currently launched through the coreOs supplied wrapper /usr/lib64/coreos/kubelet-wrapper. This EXPLICITLY exists to introduce the --stage1-from-dir parameter and set it to stage1-fly.aci. (Note this is different from the depreciated --rkt-stage1-image setting).
 
-  It is also indicated in the documentation that the 'fly' loader IS preferred for kubernetes. Thus the only chnge we need to make is to remove teh redundnat flag.
+  Previously, then it, would appear that rkt was bing invoked with 2 flags doing contradictory things. It is not clear which has precedent but my guess would be the one introduced by kubelet-wrapper.
+
+  It is also indicated in the documentation that the 'fly' loader IS preferred for kubernetes.
+
+  Consequently all we need do is remove the flag from the command line of the service file responsible for starting the kubelet.wrapper service (/etc/systemd/system/kubelet.service).
+
+***api-servers
+
+  Rather than just point clients direclty at the api-server port, kerberetes now inists the opportunity to layer additional security measures on top. As is common elsewhere in the application it now uses a kubeconfig file to fully specify these details.
+
+  Consequently, we need to add an additional simple kubeconfig file to our configuration...
+
+ ---
+  /etc/kubernetes/master-kubeconfig.yaml**
+
+  apiVersion: v1
+  kind: Config
+  clusters:
+  - name: local
+    cluster:
+      server: http://127.0.0.1:8080
+  users:
+  - name: kubelet
+  contexts:
+  - context:
+      cluster: local
+      user: kubelet
+    name: kubelet-context
+  current-context: kubelet-context
+ ---
+
+  ...and, within /etc/systemd/system/kubelet.service, direct our hypercube processes to use that instead.
+
+ ---
+  --api-servers=http://127.0.0.1:8080 \
+
+  -->
+
+  --kubeconfig=/etc/kubernetes/master-kubeconfig.yaml \
+ ---
+
+**Upgrade Outcome
+
+    Once these changes were made, the resultant system seemed to work ok, surprisingly well...
+
+ ---
+  kubelet get pods
+
+    NAME           STATUS                     AGE       VERSION
+    172.17.4.101   Ready,SchedulingDisabled   18m       v1.9.11+coreos.0
+    172.17.4.201   Ready                      11m       v1.9.11+coreos.0
+ ---
+
+  ...which looked ok...
+
+  However, this doesn't seem to have been picked up in away that kubectl picks up?
+
+ ---
+  ./kubectl version
+
+    Client Version: version.Info{Major:"1", Minor:"9", GitVersion:"v1.9.11",....
+    Server Version: version.Info{Major:"1", Minor:"9", GitVersion:"v1.5.4_coreos.0",...
+ ---
+
+  Could not understand why this did not reflect the value on the upgraded server. It turned out to be more than cosmetic significance though, because if the client and server versions differ by too much they don't work together.
+
+  Attempts to apply various test cases with kubectl in this state failed.
+
+  Did not really get to the bottom of this. However if the servers are re-provisioned and v1.9.11 installed from the start, then this problem does not seem to occur.
+
+**Test deployment
+
+  Created a little smoke test application deployment of an empty webserver.
+
+  Note: you need to be careful about what images you choose here: things like busybox are no good because they arent designed to be offer a service. The httpd image does, though it is little bigger thn ideal.
+
+ --
+  kubectl create deployment tester --image=httpd:latest
+
+    deployment "tester" created
+
+
+  kubectl get replicasets
+
+    NAME                DESIRED   CURRENT   READY     AGE
+    tester-6b668d8b77   1         1         0         8s
+
+
+  kubectl get pods
+
+    NAME                      READY     STATUS              RESTARTS   AGE
+    tester-6b668d8b77-t42dw   0/1       ContainerCreating   0          19s
+
+
+  kubectl get pods
+
+    NAME                      READY     STATUS    RESTARTS   AGE
+    tester-6b668d8b77-t42dw   1/1       Running   0          8m
+
+
+  kubectl describe po/tester-6b668d8b77-t42dw
+
+    Name:           tester-6b668d8b77-t42dw
+    Namespace:      default
+    Node:           172.17.4.99/172.17.4.99
+    Start Time:     Sun, 26 Jan 2020 14:33:21 +0000
+    Labels:         app=tester
+                    pod-template-hash=2622484633
+    Annotations:    <none>
+    Status:         Running
+    IP:             10.2.85.9
+    Controlled By:  ReplicaSet/tester-6b668d8b77
+    Containers:
+      httpd:
+        Container ID:   docker://e36e6ab43ea5224e66e2bf7d8f1a3cbb34d4765817636066b1584a439bc0e61f
+        Image:          httpd:latest
+        Image ID:       docker-pullable://httpd@sha256:769018135ba22d3a7a2b91cb89b8de711562cdf51ad6621b2b9b13e95f3798de
+        Port:           <none>
+        State:          Running
+          Started:      Sun, 26 Jan 2020 14:39:31 +0000
+        Ready:          True
+        Restart Count:  0
+        Environment:    <none>
+        Mounts:
+          /var/run/secrets/kubernetes.io/serviceaccount from default-token-b9w8s (ro)
+    Conditions:
+      Type           Status
+      Initialized    True
+      Ready          True
+      PodScheduled   True
+    Volumes:
+      default-token-b9w8s:
+        Type:        Secret (a volume populated by a Secret)
+        SecretName:  default-token-b9w8s
+        Optional:    false
+    QoS Class:       BestEffort
+    Node-Selectors:  <none>
+    Tolerations:     <none>
+    Events:
+      Type    Reason                 Age   From                  Message
+      ----    ------                 ----  ----                  -------
+      Normal  Scheduled              8m    default-scheduler     Successfully assigned tester-6b668d8b77-t42dw to 172.17.4.99
+      Normal  SuccessfulMountVolume  8m    kubelet, 172.17.4.99  MountVolume.SetUp succeeded for volume "default-token-b9w8s"
+      Normal  Pulling                7m    kubelet, 172.17.4.99  pulling image "httpd:latest"
+      Normal  Pulled                 1m    kubelet, 172.17.4.99  Successfully pulled image "httpd:latest"
+      Normal  Created                1m    kubelet, 172.17.4.99  Created container
+      Normal  Started                1m    kubelet, 172.17.4.99  Started container
+ --
+
+======
+*The Guest Book Test application.
+
+  kubernetes has a number of test applications that  you can use to smoketest your cluster.
+
+  The Guest Book application is on I have used, whose {{{https://kubernetes.io/docs/tutorials/stateless-application/guestbook}source is available here}}.
+
+  There are simple scripts to build and tear down the application in the <<<testApps>>> directory
+
+======
+*Amendments Required to migrate to using the gcr.io site.
+
+**Rational
+
+  As has been described above, the hyperkube image is no longer maintained within the quay.io registry. If are to move forward, we will need to migrate to the registry at gcr.io.
+
+  In theory, this is just a matter of switching the source repository but there a couple of complications:
+
+  [[1]] The image format used by the gcr.io site is the standard 'Docker' format, whilst the format used by quay.io is the aci format. When using rkt (as we are) to download and run images taken from the gcr.io site, is necessary to tell rkt explicitly that these are docker images in the URL:
+
+ ---
+  docker://gcr.io/google_containers/hyperkube-{ARCH}:{K8S_VERSION}
+ ---
+
+  [[1]] However, when we want docker to run the same images, we have to specify it without the docker:// protocol
+  specified:
+
+ ---
+  gcr.io/google_containers/hyperkube-{ARCH}:{K8S_VERSION}
+ ---
+
+  As a consequence, a certain amount of extra jiggling about with environemnt variable with the build script is necessary.
+
+  [[1]] The docker images from gcr.io are not digitally signed in the same way the at the aci images are. By default,  rkt expects to have to validate the signature before being allowed to use the image, which obviously now it can't do. Consequently, we need to supply an additional parameter to rkt to prevent it performing this check.
+
+ ---
+  --insecure-options=image
+ ---
+
+  For the purposes of our initial switch, chose to use the same hyperkube version v1.9.11 that was working when served form quay.io
+
+**Outcome
+
+  Seemed to go reasonable smoothly. Some suggestion that this runs slower thatn the previos version, but I suspec tha this is just a lack of memory being allocated in the virtual machine.
+
+  Tagged the resulting software as release v1.1.0
+
+======
 
 
 
-kubelet-wrapper
-  #!/bin/bash
-# Wrapper for launching kubelet via rkt-fly.
+ihgjgjgjgjgjgj
 
 
---rkt-stage1-image=coreos.com/rkt/stage1-coreos
+   Finding out how to access the exposed service:
+
+  ---
+   kubectl get service frontend
+
+   NAME       TYPE       CLUSTER-IP   EXTERNAL-IP   PORT(S)        AGE
+   frontend   NodePort   10.3.0.95    <none>        80:31297/TCP   4s
+  ---
+
+   The application will then be available on <IP of WORKERNODE>:31279
+
+       http://172.17.4.201:31297/
+
+   But not on port 80 however....
+
+   Need to understand this more.i
 
 
----
---stage1-from-dir=stage1-coreos.aci
-
---stage1-from-dir=stage1-fly.aci
-
---kubeconfig=/path/to/kubeconfig --require-kubeconfig
-
-e.g.
-
- --api-servers=http://127.0.0.1:8080 \
---kubeconfig=/etc/kubernetes/master-kubeconfig.yaml \
---require-kubeconfig \
-
-
-**/etc/kubernetes/master-kubeconfig.yaml**
-
-apiVersion: v1
-kind: Config
-clusters:
-- name: local
-  cluster:
-    server: http://127.0.0.1:8080
-users:
-- name: kubelet
-contexts:
-- context:
-    cluster: local
-    user: kubelet
-  name: kubelet-context
-current-context: kubelet-context
----
-
-https://github.com/coreos/coreos-kubernetes/compare/master...euank:kubeconfig?expand=1
-
+dfsdfsdfs
+    --require-kubeconfig \
 
 
 https://github.com/kelseyhightower/kubernetes-the-hard-way
 
-
-
-
-
-RKT
-
-rkt ( rocket) is the Container runtime developed and packaged by coreOS. There are some difference between rkt and docker:
-
-  * rkt is daemonless. The problem of containers dyinf is the dockerd is restarted does not exist.
-
-  * rkt integrates well with systemd so that containers resources limits can be set easily for containers.
-
-
-  There aer 3 stages of rkt exaecuton
-
-  * Stage 0 : This does image discaover and retrieval. It also sets up teh filesystem  for stages 1 nad 2.
-
-  * Stage 1 : This sets up the executionenvironemnt for the container executon using the filesystem set up be stage 0. Rkt sets up cgroups, networking etc. There are more than implementiation of the the stage1 loader.
-
-
-      - the regular one : which uses systemd
-
-      - the lightweight one : fly
-
-  * Stage2 This is the actual execution of the Cntainer pod and the appliaciton itself.
-
-
-  rkt's execution of pods is divided roughly into three separate stages:
-
-    Stage 0: discovering, fetching, verifying, storing, and compositing of both application (stage2) and stage1 images for execution.
-    Stage 1: execution of the stage1 image from within the composite image prepared by stage0.
-    Stage 2: execution of individual application images within the containment afforded by stage1.
-
-This separation of concerns is reflected in the file-system and layout of the composite image prepared by stage0:
-
-    Stage 0: rkt executable, and the pod manifest created at /var/lib/rkt/pods/prepare/$uuid/pod.
-    Stage 1: stage1.aci, made available at /var/lib/rkt/pods/run/$uuid/stage1 by rkt run.
-    Stage 2: $app.aci, made available at /var/lib/rkt/pods/run/$uuid/stage1/rootfs/opt/stage2/$appname by rkt run, where $appname is the name of the app in the pod manifest.
-
-  The stage1 implementation is what creates the execution environment for the contained applications. This occurs via entrypoints from stage0 on behalf of rkt run and rkt enter. These entrypoints are executable programs located via annotations from within the stage1 ACI manifest, and executed from within the stage1 of a given pod at /var/lib/rkt/pods/$state/$uuid/stage1/rootfs.
-
-  Stage2 is the deployed application image. Stage1 is the vehicle for getting there from stage0. For any given pod instance, stage1 may be replaced by a completely different implementation. This allows users to employ different containment strategies on the same host running the same interchangeable ACIs.
-
-
-  The motivation of the fly feature is to add the ability to run applications with full privileges on the host but still benefit from the image management and discovery from rkt. The Kubernetes kubelet is one candidate for rkt fly.
-
-  n comparison to the default stage1, there is no process manager involved in the stage1. This a visual illustration for the differences in the process tree between the default and the fly stage1:
-
-  stage1-coreos.aci:
-
-  host OS
-    └─ rkt
-      └─ systemd-nspawn
-        └─ systemd
-          └─ chroot
-            └─ user-app1
-
-  stage1-fly.aci:
-
-  host OS
-    └─ rkt
-      └─ chroot
-        └─ user-app1
-
-  The rkt application sets up bind mounts for /dev, /proc, /sys, and the user-provided volumes. In addition to the bind mounts, an additional tmpfs mount is done at /tmp. After the mounts are set up, rkt chroots to the application's RootFS and finally executes the application.
-
-
-  By design, the fly stage1 does not provide the same isolaton and security features as the default stage1.
-
-  Specifically, the following constraints are not available when using the fly stage1:
-
-    network namespace isolation
-    CPU isolators
-    Memory isolators
-    CAPABILITY bounding
-    SELinux
-
-
-
-*RKT - To force garbage collection
-
-    rkt gc --grace-period 0
-
-
-
-  stage 0
-
-  stage 1
-
-  stage 2
-
-
-Updating the Version of kubernetes
-
-  Initially, just amended the version of the Hyperkube image in the kubelet service file and rebooted the server.
-
-  This seemed to work.
-
-    kubelet get pods
-
-    NAME           STATUS                     AGE       VERSION
-172.17.4.101   Ready,SchedulingDisabled   18m       v1.9.11+coreos.0
-172.17.4.201   Ready                      11m       v1.9.11+coreos.0
-
----
-which looked ok...
-
-However
-
-./kubectl version
-Client Version: version.Info{Major:"1", Minor:"9", GitVersion:"v1.9.11",....
-Server Version: version.Info{Major:"1", Minor:"9", GitVersion:"v1.5.4_coreos.0",...
-
-Could not understand why this did not reflect the value on the upgraded server. It turned out to be more than cosmetic significane though...
-
-If the client and server versions differ by too much they don't work together.
-
-Consequently attempt to apply the test cases below failed with mesages sucj like
----
-
-
-
-Installation of the the GuestBook test applicaion.
-
-
-  {{{https://kubernetes.io/docs/tutorials/stateless-application/guestbook}source is here}}
-
-
-  Finding out how to access the exposed service:
-
----
-  kubectl get service frontend
-
-  NAME       TYPE       CLUSTER-IP   EXTERNAL-IP   PORT(S)        AGE
-  frontend   NodePort   10.3.0.95    <none>        80:31297/TCP   4s
----
-
-  The application will then be available on <IP of WORKERNODE>:31279
-
-      http://172.17.4.201:31297/
-
-  But not on port 80 however....
-
-  Need to understand this more.i
 
 
 
@@ -2711,22 +2813,39 @@ Creating a Local Deployment of a simple Application.
     * A local Docker Registry that we can push/pull our images to {{{./onDocker.html#Deploying a local Registry Server.}described here}}
 
 
-  This is the process.
+  The process is described below. At them moment we are unable to run the dockerd daemon locally on my OSX box; so, instead, we are running it in a CoreOs virtual environment. This gives us two options to do the build:
+
+    * we can either logon to the virtual machine hosting Docker and run the commands there;
+
+    * we can point our docker client to the remote Docker Daemon and run the commands locally on the OSX host (see {{{./onDocker.html#Running Docker as a Client and Remote Server.}Running Docker as a Client and Remote Server.}});
+
+    []
+
+  The Steps are:
 
 
-  [[1]] Log onto out virtual environment ( core-01 ). We need to use a linux environment here as we are unable to run docker direcly on OSX>
+  [[1]] EITHER:
 
----
+        set your DOCKER_HOST environment variable to point at the apporpriate dockerd;
+
+ ---
+    export DOCKER_HOST=tcp://localhost:2375
+ ---
+        OR:
+
+        Log onto out virtual environment (core-01). We need to use a linux environment here as we are unable to run docker directly on OSX>
+
+ ---
     cd dvl/gitClones/coreos-vagrant
 
     vagrant up
 
     vagrant ssh core-01
----
+ ---
 
   [[1]] Build our Docker Image locally. We are using the same source as above...
 
----
+ ---
     cd /home/kevin/apache
 
     cat Dockerfile
@@ -2747,25 +2866,25 @@ Creating a Local Deployment of a simple Application.
       ---> dc5108416fae
       Successfully built dc5108416fae
       Successfully tagged javatechnotes:latest
----
+ ---
 
----
+ ---
   docker images
 
     REPOSITORY            TAG                 IMAGE ID            CREATED             SIZE
     javatechnotes         latest              dc5108416fae        55 seconds ago      172MB
     ...
----
+ ---
   [[1]] Tag the image with the Repository we wish to send it to. Note that we have to use the local IP address of the NAT connected host.:
 
----
+ ---
   docker tag dc5108416fae  10.0.2.15:6443/kevin/javatechnotes
----
+ ---
   [[1]] Push our application to out local Docker Registry.
 
----
+ ---
   docker push 10.0.2.15:6443/kevin/javatechnotes
----
+ ---
 
   [[1]] We now have a copy of our application in a registry available to out Kubernetes Cluster, which ought to be deployable directly from that Registry.
 
@@ -2776,43 +2895,43 @@ Creating a Local Deployment of a simple Application.
 
   [[1]] Set up the environment, so that the correct version of <<<kubectl>>> is picked up and that it used the correct
 
----
+ ---
   cd /Users/kevin/dvl/gitReps/coreos-kubernetes/multi-node/vagrant/localKubectl
 
   . ./kubectl.env
----
+ ---
 
   [[1]] Confirm the versions of the client and server match sufficiently (the client should not be behind the server by more than a version or two). Here we are using v1.10 (which is a bit behind)
 
----
+ ---
   kubectl version
 
   Client Version: version.Info{Major:"1", Minor:"10", GitVersion:"v1.10.13", GitCommit:"954ff68d59e9dc62fa8252ffa9023a90ff8a358c", GitTreeState:"clean", BuildDate:"2019-02-13T11:15:10Z", GoVersion:"go1.9.3", Compiler:"gc", Platform:"darwin/amd64"}
 
   Server Version: version.Info{Major:"1", Minor:"10", GitVersion:"v1.10.13", GitCommit:"954ff68d59e9dc62fa8252ffa9023a90ff8a358c", GitTreeState:"clean", BuildDate:"2019-02-13T11:03:32Z", GoVersion:"go1.9.3", Compiler:"gc", Platform:"linux/amd64"}
----
+ ---
 
   [[1]] Check out the status of the node machines in the cluster. At the moment, we have only one node in the cluster up and running, which is fine for our purposes.
 
----
+ ---
   kubectl get nodes
 
     NAME           STATUS     ROLES     AGE       VERSION
     172.17.4.101   Ready      <none>    6d        v1.10.13
     172.17.4.201   NotReady   <none>    6d        v1.10.13
----
+ ---
 
   [[1]] Create an actual deployment.  There seems to be a couple of ways to do this: either to use the <<<kubectl create deployment>>> command, or use the <<<kubectl apply>>> command to apply a YAML file (either a local file or delivered via HTTP).
 
----
+ ---
   kubectl create deployment javatechnotes --image=192.168.0.17:6443/kevin/javatechnotes
 
     deployment.extensions "javatechnotes" created
----
+ ---
 
   Under the bonnet, this will create a deployment object, with suitable attributes. We can see what that looks like by using the --output option, e.g.:
 
----
+ ---
   kubectl create deployment javatechnotes --image=192.168.0.17:6443/kevin/javatechnotes --dry-run --output yaml
 
     apiVersion: extensions/v1beta1
@@ -2839,7 +2958,7 @@ Creating a Local Deployment of a simple Application.
             name: javatechnotes
             resources: {}
     status: {}
----
+ ---
 
   This can be captured to a file, edited and then the resultant file applied via the <<<kubectl apply>>> command.
 
@@ -2869,12 +2988,12 @@ Creating a Local Deployment of a simple Application.
 
     [[a]] <<The deployment resource>>
 
----
+ ---
   kubectl get deployments -o wide
 
     NAME            DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE       CONTAINERS      IMAGES                                  SELECTOR
     javatechnotes   1         1         1            1           11m       javatechnotes   192.168.0.17:6443/kevin/javatechnotes   app=javatechnotes
----
+ ---
 
     <<<READY>>> shows the ratio of CURRENT to DESIRED replicas
 
@@ -2887,7 +3006,7 @@ Creating a Local Deployment of a simple Application.
     <<<AVAILABLE>>> state shows how many replicas are actually AVAILABLE to the users
 
 
----
+ ---
   kubectl describe deployment javatechnotes
 
      Name:                   javatechnotes
@@ -2921,12 +3040,12 @@ Creating a Local Deployment of a simple Application.
        Type    Reason             Age   From                   Message
        ----    ------             ----  ----                   -------
        Normal  ScalingReplicaSet  2m    deployment-controller  Scaled up replica set javatechnotes-85d6d67f9c to 1
----
+ ---
 
 
     [[a]] <<The replicaset resource>>
 
----
+ ---
   kubectl get replicaset -o wide
 
     NAME                       DESIRED   CURRENT   READY     AGE       CONTAINERS      IMAGES                                  SELECTOR
@@ -2961,12 +3080,12 @@ Creating a Local Deployment of a simple Application.
       Type    Reason            Age   From                   Message
       ----    ------            ----  ----                   -------
       Normal  SuccessfulCreate  48m   replicaset-controller  Created pod: javatechnotes-85d6d67f9c-9r27s
----
+ ---
 
 
     [[a]] <<The pod resource>>
 
----
+ ---
   kubectl get pods -o wide
 
     NAME                             READY     STATUS    RESTARTS   AGE       IP           NODE
@@ -3021,18 +3140,18 @@ Creating a Local Deployment of a simple Application.
       Normal  Pulled                 19m   kubelet, 172.17.4.101  Successfully pulled image "192.168.0.17:6443/kevin/javatechnotes"
       Normal  Created                19m   kubelet, 172.17.4.101  Created container
       Normal  Started                19m   kubelet, 172.17.4.101  Started container
----
+ ---
 
   [[1]] We can also check any logs generated by the pods as they have been running
 
----
+ ---
   kubectl logs javatechnotes-85d6d67f9c-9r27s
 
   AH00558: httpd: Could not reliably determine the server's fully qualified domain name, using 10.2.52.11. Set the 'ServerName' directive globally to suppress this message
   AH00558: httpd: Could not reliably determine the server's fully qualified domain name, using 10.2.52.11. Set the 'ServerName' directive globally to suppress this message
   [Thu Jan 23 12:24:55.383635 2020] [mpm_event:notice] [pid 1:tid 139889036530816] AH00489: Apache/2.4.41 (Unix) configured -- resuming normal operations
   [Thu Jan 23 12:24:55.430362 2020] [core:notice] [pid 1:tid 139889036530816] AH00094: Command line: 'httpd -D FOREGROUND'
----
+ ---
 
 
 
@@ -3040,7 +3159,7 @@ Creating a Local Deployment of a simple Application.
 
     You can run a command on it
 
----
+ ---
     kubectl exec javatechnotes-85d6d67f9c-9r27s env
     PATH=/usr/local/apache2/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
     HOSTNAME=javatechnotes-85d6d67f9c-9r27s
@@ -3064,11 +3183,11 @@ Creating a Local Deployment of a simple Application.
     HTTPD_SHA256=133d48298fe5315ae9366a0ec66282fa4040efa5d566174481077ade7d18ea40
     HTTPD_PATCHES=
     HOME=/root
----
+ ---
 
   and, providing it contains a suitable interactive shell, logon to it. Note you have to specify the --interactive and ---tty flags in order to connect the shell properly to your terminal.
 
----
+ ---
   kubectl exec -ti javatechnotes-85d6d67f9c-twzfd bash
 
     root@javatechnotes-85d6d67f9c-9r27s:/usr/local/apache2# pwd
@@ -3084,17 +3203,17 @@ Creating a Local Deployment of a simple Application.
     /usr/local/apache2
 
     root@javatechnotes-85d6d67f9c-9r27s:/usr/local/apache2# exit
----
+ ---
 
   [[1]] Using the application deployed in pod.
 
   In order to work properly with the application hosted in the pod we need to expose its endpoints to the outside world. One quick way we can do this, for investigative or testing purposes is to run a proxy service which will set up a tunnel through to the ports on the container.
 
----
+ ---
   kubectl proxy &
 
   curl 127.0.0.1:8080/api/v1/namespaces/default/pods/javatechnotes-85d6d67f9c-9r27s/proxy
----
+ ---
 
   In the real world, however, the application will be exposed to the outside world via a service. A service is a logical set of pods, and a policy by which to access them. The service exposes the Pod IP address at a port on the node or cluster.
 
@@ -3111,15 +3230,15 @@ Creating a Local Deployment of a simple Application.
 
   To make the port available from outside we use the expose command
 
----
+ ---
   kubectl expose deployment/javatechnotes --type="NodePort" --port 8080
 
     service "javatechnotes" exposed
----
+ ---
 
   <<NB - we need to expose the PORT that we stipulated the application would use in the DockerFile.>>
 
----
+ ---
   kubectl get services -o wide
 
     NAME            TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)          AGE       SELECTOR
@@ -3132,11 +3251,11 @@ Creating a Local Deployment of a simple Application.
     NAME            TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)          AGE
     javatechnotes   NodePort    10.3.0.160   <none>        8080:31127/TCP   42s
     kubernetes      ClusterIP   10.3.0.1     <none>        443/TCP          7d
----
+ ---
 
   This shows that the port that eh applicaion is using within the container (8080) has been exposed on port 31127 of the NodeIp (in this case the virtualBox 172.17.4.101). Note this makes the application available on a port on the <<Virtual Server>> NOT the Host.
 
----
+ ---
   kubectl describe service javatechnotes
 
     Name:                     javatechnotes
@@ -3153,13 +3272,13 @@ Creating a Local Deployment of a simple Application.
     Session Affinity:         None
     External Traffic Policy:  Cluster
     Events:                   <none>
----
+ ---
 
   I THINK THE IP Addresses listed above are CONTAINER and POD addresses. They are not Node addresses.
 
   We can address the application.
 
----
+ ---
   curl 172.17.4.101:31896
 
     <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
@@ -3176,22 +3295,22 @@ Creating a Local Deployment of a simple Application.
      | Generated by Apache Maven Doxia Site Renderer 1.8.1 from src/site/apt/index.apt at 2019-12-07
      | Rendered using Apache Maven Fluido Skin 1.7
     -->
----
+ ---
 
 
 Scaling up and Down
 
   The application can be scaled to handle higher incoming loads by increasing the number of replicas running the application. In other words, by scaling the application up, we launch more pods.
 
----
+ ---
   kubectl scale deployments/javatechnotes --replicas=4
 
     deployment.extensions "javatechnotes" scaled
----
+ ---
 
   If we now examine the configuration of the application, we can see that the configuration has been changed and more pods launched as a result.
 
----
+ ---
   kubectl get deployment javatechnotes
 
     NAME            DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
@@ -3205,22 +3324,22 @@ Scaling up and Down
     javatechnotes-85d6d67f9c-9r27s   1/1       Running   0          3h        10.2.52.11   172.17.4.201
     javatechnotes-85d6d67f9c-p7j5n   1/1       Running   0          1m        10.2.52.13   172.17.4.101
     javatechnotes-85d6d67f9c-wdw5x   1/1       Running   0          1m        10.2.52.12   172.17.4.201
----
+ ---
 
   We now have 4 replica in 4 pods, and the scheduler has distributed them over 2 hosts. Additionally incoming work will now be load balanced across each of these 4 replicas.
 
   Similarly the number of nodes can be scaled back:
 
----
+ ---
   kubectl scale deployments/javatechnotes --replicas=2
----
+ ---
 
 Viewing Load on the nodes and pods
 
   The following commands can be used to view how the workload is being distributed about the cluster.
   This command requires Heapster to be correctly configured and working on the server.
 
----
+ ---
   kubectl top node
 
     NAME           CPU(cores)   CPU%      MEMORY(bytes)   MEMORY%
@@ -3232,7 +3351,7 @@ Viewing Load on the nodes and pods
     NAME                             CPU(cores)   MEMORY(bytes)
     javatechnotes-66b5769ff7-lmm8s   0m           23Mi
     javatechnotes-66b5769ff7-nsjtb   0m           15Mi
----
+ ---
 
 
 Performing a Rollout of an update of the application
@@ -3243,25 +3362,25 @@ Performing a Rollout of an update of the application
 
     from within a git working directory:
 
----
+ ---
     git archive -o /tmp/javaTechNotes.tar HEAD
----
+ ---
 
     This was untarred to the region of the OSX host where the docker image was  being prepared.
 
     On the OS HOST...
 
----
+ ---
   cd /Users/kevin/dvl/vagrantMounts/core-01
 
   tar -xvf /tmp/javaTechNotes.jar
----
+ ---
 
   [[1]] The application was then built. Once again from the OSX Host..
 
----
+ ---
   mvn site
----
+ ---
 
   This builds the HTML pages from which our application is constructed
 
@@ -3270,7 +3389,7 @@ Performing a Rollout of an update of the application
 
     From within the coreos-vagrant machine core-01, run the docker build
 
----
+ ---
     cd /home/kevin/apache
 
     docker build --tag javatechnotes:2 .
@@ -3306,11 +3425,11 @@ Performing a Rollout of an update of the application
       10.0.2.15/my-ubuntu                  latest              ccc6e87d482b        7 days ago          64.2MB
       httpd                                latest              c2aa7e16edd8        3 weeks ago         165MB
       registry                             2                   f32a97de94e1        10 months ago       25.8MB
----
+ ---
 
     [[1]] We can now Tag this as part of our own repository, and then push it up
 
----
+ ---
     docker tag 13f48b3f39fb 10.0.2.15:6443/kevin/javatechnotes:v2
 
     docker push 10.0.2.15:6443/kevin/javatechnotes:v2
@@ -3325,36 +3444,36 @@ Performing a Rollout of an update of the application
       525297c1b6d2: Layer already exists
       556c5fb0d91b: Layer already exists
       v2: digest: sha256:a21a72e743d182f0ac46c2a2b031b6639330e98c9d3a740f736063980f2934a0 size: 1993
----
+ ---
 
     [[1]] Set the image for the <<<javatechnotes>>> deployment our new image...
 
----
+ ---
   kubectl set image deployments/javatechnotes javatechnotes=192.168.0.17:6443/kevin/javatechnotes:v2
----
+ ---
 
       We can see the deployment has taken the new image....
 
----
+ ---
   get deployments -o wide
 
     NAME            DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE       CONTAINERS      IMAGES                                     SELECTOR
     javatechnotes   4         4         4            4           7h        javatechnotes   192.168.0.17:6443/kevin/javatechnotes:v2   app=javatechnotes
----
+ ---
 
   There are temporarily 2 ReplicaSets: one controlling the pods hosting the new image, and one controlling the pods hosting the old image.
 
----
+ ---
   kubectl get replicasets -o wide
 
     NAME                       DESIRED   CURRENT   READY     AGE       CONTAINERS      IMAGES                                     SELECTOR
     javatechnotes-66b5769ff7   0         0         0         1h        javatechnotes   192.168.0.17:6443/kevin/javatechnotes:v2   app=javatechnotes,pod-template-hash=2261325993
     javatechnotes-85d6d67f9c   4         4         4         7h        javatechnotes   192.168.0.17:6443/kevin/javatechnotes      app=javatechnotes,pod-template-hash=4182823957
----
+ ---
 
   Here we see the old pods still running the old image, while the new pods are struggling slightly to spin up...
 
----
+ ---
   kubectl get pods -o wide
 
     NAME                             READY     STATUS             RESTARTS   AGE       IP           NODE
@@ -3363,10 +3482,10 @@ Performing a Rollout of an update of the application
     javatechnotes-66b5769ff7-nsjtb   1/1       Running            0          1h        10.2.52.24   172.17.4.101
     javatechnotes-85d6d67f9c-g9cth   0/1       ImagePullBackOff   0          5m        10.2.99.9    172.17.4.201
     javatechnotes-85d6d67f9c-r62xx   0/1       ImagePullBackOff   0          5m        10.2.99.8    172.17.4.201
----
+ ---
 
   ..but have now succeeded. The pods running the old images are gone.
----
+ ---
 
   kubectl get pods -o wide
 
@@ -3375,32 +3494,32 @@ Performing a Rollout of an update of the application
     javatechnotes-85d6d67f9c-g9cth   1/1       Running   0          7m        10.2.99.9    172.17.4.201
     javatechnotes-85d6d67f9c-r62xx   1/1       Running   0          7m        10.2.99.8    172.17.4.201
     javatechnotes-85d6d67f9c-skz8g   1/1       Running   0          1m        10.2.99.11   172.17.4.201
----
+ ---
 
   ...and the old <<<replicaset>>> is now still present, but nothing is now using it.
 
----
+ ---
   kubectl get replicasets -o wide
 
     NAME                       DESIRED   CURRENT   READY     AGE       CONTAINERS      IMAGES                                     SELECTOR
     javatechnotes-66b5769ff7   4         4         4         2h        javatechnotes   192.168.0.17:6443/kevin/javatechnotes:v2   app=javatechnotes,pod-template-hash=2261325993
     javatechnotes-85d6d67f9c   0         0         0         8h        javatechnotes   192.168.0.17:6443/kevin/javatechnotes      app=javatechnotes,pod-template-hash=4182823957
----
+ ---
 
   The rollout history is maintained online...
 
----
+ ---
   kubectl rollout history deployment/javatechnotes
 
     deployments "javatechnotes"
     REVISION  CHANGE-CAUSE
     5         <none>
     6         <none>
----
+ ---
 
   ...and can be queried in detail
 
----
+ ---
   kubectl rollout history deployment/javatechnotes --revision=6
 
     deployments "javatechnotes" with revision #6
@@ -3432,17 +3551,17 @@ Performing a Rollout of an update of the application
         Environment:	<none>
         Mounts:	<none>
       Volumes:	<none>
----
+ ---
 
   Should it be necessary, the rollout can be backed out...
 
----
+ ---
     kubectl rollout undo deployment/javatechnotes
 
     or
 
     kubectl rollout undo deployment/javatechnotes --revision=6
----
+ ---
 
 
 
@@ -3542,27 +3661,6 @@ What are these services all about
 
 
 
-Switching to using the new image repository
-
-  When using rkt to download and run images taken from the gcr.io site, is necessary to tell rkt explicitly
-  that these are docker images in the URL:
-
-  docker://gcr.io/google_containers/hyperkube-{ARCH}:{K8S_VERSION}
-
-  However, when we want docker to run the same images, we have to specifiy it without the docker:// protocol
-  specified
-
-  gcr.io/google_containers/hyperkube-{ARCH}:{K8S_VERSION}
-
-
-  (Note the docker protocol has to be stated explicitly.)
-
-  Also necessaary to specify the --insecure-options=image parameter
-
-
-There is still some nonsense goin on around certificates!
-
-New version seems to be much slowe than the quay.io verion? Memory ?? Not distributing to the worer node?
 
 Need to stop the certificates from constantly regenerating!
 
@@ -3584,3 +3682,15 @@ Trying to get kunernetes running in virtual environemnt across 2 physical machin
 
 
   It will lead to the configuration of a VirtualBox HOST_ONLY Network Adapter on the Host.A
+
+
+
+Conformance test
+
+  Checked the installation out by running the conformance-test.sh script. This was not at straightforward as it might be. It does seem to be very resource intensive : had a couple of attempts at it, but it was very slow and a number of tests seemed to be failing with what looked like resource-type issues.
+
+  Attempted to address this by increasing the no of cpu's available to the VM to 4, and the memory available to 4GB.
+
+  Then kicked it off as follows:
+
+    ./conformance-test.sh | tee conformanceTest.log

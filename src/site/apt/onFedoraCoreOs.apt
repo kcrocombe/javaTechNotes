@@ -514,7 +514,7 @@ Fedora-coreos - the future development of CoreOs
 ---
 
 
-**The problems
+**The problems - the Ignition Plugin
 
   When I was trying to package up specifically the <<<fedora-coreos>>> distribution, I ran into some fairly niche problems which I'm documenting below as a aide-memoir.
 
