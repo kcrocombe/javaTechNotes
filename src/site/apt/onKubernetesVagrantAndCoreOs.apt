@@ -651,7 +651,7 @@ Kubernetes with Vagrant and CoreOS
 
 **Step by Step Guide for setting up Kubernetes
 
-  The step indicated below are taken from {{{https://github.com/coreos/coreos-kubernetes/blob/master/Documentation/getting-started.md}CoreOs and Kubernetes Step By Step}}. That guide is based using Kerbetes v1.5.4. The original build work was indeed performed on v1.5.4, but as is described later in these notes, a subsequent upgrade to more contemporary versions has been performed. Consequently some of the below may be less applicable to these later versions.
+  The step indicated below are taken from {{{https://github.com/coreos/coreos-kubernetes/blob/master/Documentation/getting-started.md}CoreOs and Kubernetes Step By Step}}. That guide is based using Kubernetes v1.5.4. The original build work was indeed performed on v1.5.4, but as is described later in these notes, a subsequent upgrade to more contemporary versions has been performed. Consequently some of the below may be less applicable to these later versions.
 
   The primary goals of this guide are:
 
@@ -689,7 +689,7 @@ Kubernetes with Vagrant and CoreOS
 
   e.g ETCD_ENDPOINTS=http://<Ip1>:2379,http://<Ip2>:2379,http://Ip3>:2379,
 
-  Typically the ETCD_ENDPOINTS will be on http://<someIp>:2379. (The etcd process typically will talk to otehr etcd servers on port: 2380. Donlt get these mixed up).
+  Typically the ETCD_ENDPOINTS will be on http://<someIp>:2379. (The etcd process typically will talk to other etcd servers on port: 2380. Don't get these mixed up).
 
  ---
   POD_NETWORK=10.2.0.0/16
@@ -773,7 +773,7 @@ Kubernetes with Vagrant and CoreOS
 
     [[1]] The cloudinit provisioning mechanism no longer seems to work on the 'stable' stream. The full mechanics of the provisioning process are described here, but the basic change seems to be that the /usr/share/oem files that bootstrap the coreos-cloudinit process are no longer present. This probably reflects the fact that cloudinit is being discontinued as a provisioning process in favour of Ignition.
 
-    [[1]] Because the cloudinit process is not working, we are no longer even getting a core user created. Consequently we can;t even log on.
+    [[1]] Because the cloudinit process is not working, we are no longer even getting a core user created. Consequently we can't even log on.
 
 ***Re-provisioning of Etcd services via Ignition.
 
@@ -785,7 +785,7 @@ Kubernetes with Vagrant and CoreOS
 
   Provisioning of these boxes is via Ignition, and makes use of a plugin to vagrant (vagrant-ignition) to do so. Consequently, is is possible to take the VagrantFile supplied with this repository, and amend it for use for the coreos:kubernetes repository:
 
-  {{https://github.com/coreos/coreos-kerberos}}
+  {{https://github.com/coreos/coreos-kubernetes}}
 
   This, therefore, will hopefully provision our etcd server a little differently.
 
@@ -857,7 +857,7 @@ Kubernetes with Vagrant and CoreOS
   If the etcd server is rebuilt for any reason, then remember that you will need to make sure that the network configuration get reposted to it. It may be that the process building the etcd server will do this for you, but if necessary it can be posted manually. The details may vary, but it will be something like:
 
  ---
-  curl -X PUT -d "value={\"Network\":\"10.2.0.0/16\",\"Backend\":{\"Type\":\"vxlan\"}}" "172.17.4.51:2379/v2/keys/coreos.com/network/config"
+  curl -X PUT -d "value=\{\"Network\":\"10.2.0.0/16\",\"Backend\":\{\"Type\":\"vxlan\"\}\}" "172.17.4.51:2379/v2/keys/coreos.com/network/config"
  ---
 
 ***Basic Testing of Etcd servicew installation and function
@@ -2087,12 +2087,12 @@ Kubernetes with Vagrant and CoreOS
 
   Its basic usage is described in the {{{https://kubernetes.io/docs/reference/kubectl/overview/}kubectl overview}} pages. All deployments, etc are generally performed using kubectl.
 
-  <<(Note: You must use a kubectl version that is within one minor version difference of your cluster. For example, a v1.2 client should work with v1.1, v1.2, and v1.3 master. Using the latest version of kubectl helps avoid unforeseen issues. A response like:
+  <<(Note: You must use a kubectl version that is within one minor version difference of your cluster. For example, a v1.2 client should work with v1.1, v1.2, and v1.3 master. Using the latest version of kubectl helps avoid unforeseen issues. A response like:>>
 
  ---
   Error from server (NotAcceptable): the server was unable to respond with a content type that the client supports (get nodes)
  ---
-  often means there is mismatch between the version the kubectl client and the version of the server.)>>
+  <<often means there is mismatch between the version the kubectl client and the version of the server.)>>
 
   Executables are available for both linux and osx, and for most scenarios executing from the client osx machine would seem like the natural choice.
 
@@ -2523,7 +2523,7 @@ Kubernetes with Vagrant and CoreOS
 
 **Rationale
 
-  The version of Kerbetes supplied with the original coreos-kubernetes is now somewhat out of date (and indeed, now unsupported). Contemporary versions are now at v1.17x. Hence is seems desireable to get a little closer to that.
+  The version of Kubernetes supplied with the original coreos-kubernetes is now somewhat out of date (and indeed, now unsupported). Contemporary versions are now at v1.17x. Hence is seems desireable to get a little closer to that.
 
   The kubernetes version we are using is based on a containerised version of <<<hyperkube>>> taken from the repository maintained by coreOs at quay.io. However, maintenance of this repository ceased in March 2018 with version 1.9.x (or maybe v1.10; its a little unclear). Instead, later versions are maintained at the google repository gcr.io (more of which later), albeit in a slightly different format.
 
@@ -2564,7 +2564,7 @@ Kubernetes with Vagrant and CoreOS
 
 ***rkt-stage1-image
 
-  The --rkt-stage1-image flag is a flag on the kubelet part of hyperkube. Its job is to specify the stage1 loader to be used by invoked by rkt, prior to running the container itself (more details {{{,/onRKT.html}on rkt here}}). In this case it is requesting the "standard" stage1-coreos loader which will layer in components allowing it to be managed by systemd.
+  The --rkt-stage1-image flag is a flag on the kubelet part of hyperkube. Its job is to specify the stage1 loader to be used by invoked by rkt, prior to running the container itself (more details {{{./onRKT.html}on rkt here}}). In this case it is requesting the "standard" stage1-coreos loader which will layer in components allowing it to be managed by systemd.
 
   There is no direct replacement flag for it in the later versions of hyperkube. Instead the loader is specified as one of the option to rkt itself (namely --stage1-from-dir).
 
@@ -2578,7 +2578,7 @@ Kubernetes with Vagrant and CoreOS
 
 ***api-servers
 
-  Rather than just point clients direclty at the api-server port, kerberetes now inists the opportunity to layer additional security measures on top. As is common elsewhere in the application it now uses a kubeconfig file to fully specify these details.
+  Rather than just point clients directly at the api-server port, kubernetes now insists the opportunity to layer additional security measures on top. As is common elsewhere in the application it now uses a kubeconfig file to fully specify these details.
 
   Consequently, we need to add an additional simple kubeconfig file to our configuration...
 
@@ -2724,7 +2724,7 @@ Kubernetes with Vagrant and CoreOS
 
   kubernetes has a number of test applications that  you can use to smoketest your cluster.
 
-  The Guest Book application is on I have used, whose {{{https://kubernetes.io/docs/tutorials/stateless-application/guestbook}source is available here}}.
+  The Guest Book application is one I have used, whose {{{https://kubernetes.io/docs/tutorials/stateless-application/guestbook}source is available here}}.
 
   There are simple scripts to build and tear down the application in the <<<testApps>>> directory
 
@@ -2767,8 +2767,21 @@ Kubernetes with Vagrant and CoreOS
   Tagged the resulting software as release v1.1.0
 
 ======
+*Updating Kubernetes to v1.10.11
+
+  This required NO CHANGES, other than updating the environment variable:
+
+    <<<K8S_VER=v1.9.11 --> v1.10.13>>>
+
+  in both the controller-install.sh, worker-install.sh scripts.
 
 
+---
+  Jan 27 19:23:05 localhost kubelet-wrapper[964]: Flag --allow-privileged has been deprecated, will be removed in a future version
+  Jan 27 19:23:05 localhost kubelet-wrapper[964]: Flag --pod-manifest-path has been deprecated, This parameter should be set via the config file specified by the Kubelet's --config flag. See https://kubernetes.io/docs/tasks/administer-cluster/kubelet-config-file/ for more information.
+  Jan 27 19:23:05 localhost kubelet-wrapper[964]: Flag --cluster-dns has been deprecated, This parameter should be set via the config file specified by the Kubelet's --config flag. See https://kubernetes.io/docs/tasks/administer-cluster/kubelet-config-file/ for more information.
+  Jan 27 19:23:05 localhost kubelet-wrapper[964]: Flag --cluster-domain has been deprecated, This parameter should be set via the config file specified by the Kubelet's --config flag. See https://kubernetes.io/docs/tasks/administer-cluster/kubelet-config-file/ for more information.
+---  
 
 ihgjgjgjgjgjgj
 
@@ -3647,7 +3660,7 @@ The AddOns
     https://172.17.4.101:443/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy
 
 
-    The addons are distributed with the controllerCt files (/srv/kerbetes/*yaml) and need to be maintained in line with the core application.
+    The addons are distributed with the controllerCt files (/srv/kubernetes/*yaml) and need to be maintained in line with the core application.
 
 
 

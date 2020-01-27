@@ -106,6 +106,8 @@ The Git Version Control System
 
  	When you <<<checkout>>> or <<<switch>>> branches, then HEAD get updated to point at that branch.
 
+	HEAD^ refers to the commit immediately prior to HEAD (see below)
+
 ***Commit Relative Names
 
  	If a given <<<branch>>> e.g. master refers to the terminal commit on a particular line of development, then:
@@ -471,12 +473,38 @@ The Git Version Control System
 	Glob patterns are like simplified <<<regexp>>>s.
 
 
-	[[1]] Viewing Changes made
+	[[1]] Viewing Changes made to trees or to single files/directories.
+
+	By default, diff will show all changes  between the Working Directory and the HEAD commit...
 
 ---
 	git diff
-
+---
+	...or between the Staged Files (add'ed) and the HEAD commit.
+---
 	git diff --staged
+---
+
+	Alternatively, you can specify the specific commits you wish to compare..
+
+---
+	git diff HEAD HEAD^3
+
+	git diff tag1 tag2
+---
+
+	If you wish to restrict the comparison to a single file or directory...
+
+---
+	git diff HEAD someFileOrDir
+
+	git diff HEAD HEAD^1 someFileOrDir
+---
+
+	You can get a general picture of the amount of change between 2 Commits.
+
+---
+	git diff --stat HEAD HEAD^1
 ---
 
 
@@ -850,16 +878,11 @@ The Git Version Control System
 
 	A Git repository is either a bare or a development (non-bare) repository.
 
-	[[a]] A development repository is used for normal, daily development. It maintains the
-notion of a current branch and provides a checked out copy of the current branch in a
-working directory.
+	[[a]] A development repository is used for normal, daily development. It maintains the notion of a current branch and provides a checked out copy of the current branch in a working directory.
 
-	[[b]] In contrast, a bare repository has no working directory and shouldn’t be used for normal
-development.A bare repository has no notion of a checked out branch, it is simply a subset of the contents of the .git directory. In other words, you can't (or shouldn't) make commits on a bare repository.
+	[[b]] In contrast, a bare repository has no working directory and shouldn’t be used for normal development.A bare repository has no notion of a checked out branch, it is simply a subset of the contents of the .git directory. In other words, you can't (or shouldn't) make commits on a bare repository.
 
-	A bare repository may seem of little use, but its role is crucial: to serve as an
-authoritative focal point for collaborative development.
-
+	A bare repository may seem of little use, but its role is crucial: to serve as an authoritative focal point for collaborative development.
 
 	A bare repository:
 
@@ -1430,6 +1453,7 @@ authoritative focal point for collaborative development.
 
 *Stashing
 
+	TO DO.
 
 
 
