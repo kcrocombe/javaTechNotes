@@ -1009,7 +1009,7 @@ The Git Version Control System
 
 	Initially we will create a repository that we can initially work with. This is so we can add some initial structure to the repository, and some initial files. Consequently, we don't use the --bare qualifier.
 
-	Once again, we are creating the .git directory way from the working directory.
+	Once again, we are creating the .git directory away from the working directory.
 
 ---
 	cd dvl/gitClones

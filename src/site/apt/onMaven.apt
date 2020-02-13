@@ -437,7 +437,7 @@ Need to do some cutting and pasting on this and get some of the bits in a more l
 			....
 ---
 
-* Dependencies
+*Dependencies
 
 		The external dependencies required for a particular project must be configured into the POM.xml
 
@@ -815,6 +815,51 @@ java -cp fitStat-1.0-SNAPSHOT.jar:./tmp/fit-20.85.0.jar:./tmp/commons-math3-3.6.
 
 
 Repository Stuff
+
+*Configuring Alternative Repositories
+
+	By default, mvn will look to {{https://repo.maven.apache.org/maven2}} for its dependencies.  This does not even need to be configured in; the tool just knows where to go.
+
+	However, sometimes some other, perhaps private repository, will need to be used. In theswe circumstances the additional repository will need to be configured into the configuration settings file. Either:
+
+		* locally : usually <<<~/.m2/settings.xml>>>
+
+		* globally : usually <<</usr/local/Cellar/maven/3.6.2/libexec/conf/settings.xml>>>
+
+		[]
+
+	The repository location is specified as part of a <<<profile>>>, and that profile needs to be a active before its settings come into effect.
+
+---
+	<profile>
+		<id>default</id>
+		<repositories>
+			<repository>
+				<id>default</id>
+				<name>Mvn Repository</name>
+				<url>https://mvnrepository.com/artifact</url>
+			</repository>
+		</repositories>
+	</profile>
+
+	<activeProfiles>
+		<activeProfile>default</activeProfile>
+	</activeProfiles>
+---
+
+	Not also that a username/password or some other form of authentication may need to be configured in to give access.
+
+---
+	<server>
+		<id>default</id>
+		<username></username>
+		<password></password>
+	</server>
+---
+
+
+
+*Installing Local Jars
 
 	Sometimes we will wish to work with third part jars which aren't available in a mvn repository somewhere. Perhaps it will be supplied just as a native <<<zip>>> file or <<<jar>>> file. It is still really useful to access these artefacts in the same way that we would the repository based ones.
 

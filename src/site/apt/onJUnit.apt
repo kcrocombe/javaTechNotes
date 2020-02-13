@@ -1,17 +1,21 @@
 JUnit5 and predecessors
 
+*History
+
   JUnit5 is composed of modules from 3 different sub-projects:
 
-  * JUnit Platform : is the foundation for the Testing Framework, and provides a command line launcher, and a JUnit 4 based runner to allow JUnit5 to run in a JUnit4 environment.
+    * JUnit Platform : is the foundation for the Testing Framework, and provides a command line launcher, and a JUnit 4 based runner to allow JUnit5 to run in a JUnit4 environment.
 
-  * JUnit Jupiter : this is the new programming model and extension model for writing tests and extensions in JUnit5. It provides a <<<TestEngine>>> for running JUnit5 based tests on the platform.
+    * JUnit Jupiter : this is the new programming model and extension model for writing tests and extensions in JUnit5. It provides a <<<TestEngine>>> for running JUnit5 based tests on the platform.
 
-  * JUnit Vintage : provides a <<<TestEngine>>> for running JUnit3 and JUnit4 based tests.
+    * JUnit Vintage : provides a <<<TestEngine>>> for running JUnit3 and JUnit4 based tests.
 
+    []
 
-  The following Git project hosts a number of useful sample for demoing Junit5
+  This {{{https://github.com/junit-team/junit5-samples}git project}} demonstrates how use Junit5 in a number of contexts.
 
-  junit5-jupiter-starter-maven
+=====
+*Configuring into Maven
 
   Key dependency to include in your pom:
 
@@ -24,9 +28,11 @@ JUnit5 and predecessors
   </dependency>
 ---
 
-
   JUnit Jupiter is the new programming model implemented by Junit5.
 
+
+=====
+*Framework Behaviour
 
   Junit runs as a Framework.  Classes that we create as test units that conform to the pattern required by the Framework will become registered as test classes within that framework and be manipulated by it.
 
@@ -34,19 +40,19 @@ JUnit5 and predecessors
 
   During a test run, the framework will then instantiate instances of those classes and invoke their methods.
 
-
-*Platform
-
-  the framework can be built into most popular build tools, ingluding Maven, gradle, ant
+  The framework can be built into most popular build tools, including Maven, gradle, ant etc via specific product plugins.
 
   Both:
 
     * Maven Surefire - designed for running unit tests;
 
-    * Maven FailSafe - designed for running unit tests;
+    * Maven FailSafe - designed for running integration tests;
 
-  provide a jupiter engine
+  provide a jupiter engine.
 
+
+=====
+*Command Line Runner
 
   It is also available as a command line console. This takes the form of a Uber jar, ( i.e. containing all dependencies) and is available from Maven Central ( amongst) others.
 
@@ -54,28 +60,43 @@ JUnit5 and predecessors
 
     {{{https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.5.2/junit-platform-console-standalone-1.5.2.jar}junit-platform-console-1-5-2.jar}}
 
-
   Looks as though using it might need a bit of working out though...
 
 
+=====
+*IDE Support
+
   Support is also built in to popular IDEs like Eclipse, Intellijet etc
 
+
+=====
 *Test Objects
 
-  The framework recognises the classes and methods that are to be treated as test objects via the presence of particular annotations attached to the method/class. The basic test objects are defined and recognised via:
+  The framework recognises the classes and methods that are to be treated as test objects via the presence of particular annotations attached to the method/class. The basic test objects are:
 
-    a <<<Test Class>>>: is any top-level class, static member class, or <@Nested> class that:
+    * Test Classes;
 
-      * contains a least one <<<Test Method>>>;
+    * Test Methods;
 
-    They must:
+    * LIfecycle methods.
 
-      * have a single constructor;
+  They are defined and recognised as follows:
 
-      * must not be abstract;
+**Test Classes
 
+  A <<<Test Class>>>: is any top-level class, static member class, or <@Nested> class that:
 
-    a <<<Test Method>>> : These are the actaul tests themselves, and basically will either succeed of fail. A method will be treated by as a test method by the framewok is it is annotated with either:
+    * contains a least one <<<Test Method>>>;
+
+    * has a <<single>> constructor;
+
+    * is <<not>> be abstract.
+
+    []
+
+**Test Methods
+
+   <<<Test Methods>>> are the actual tests themselves, and basically will either succeed of fail. A method will be treated by as a test method by the framework is it is <<annotated>> with either:
 
       * <@Test>:
 
@@ -87,7 +108,9 @@ JUnit5 and predecessors
 
       * <@TestTemplate>
 
-    They must :
+      []
+
+    Additionally, they must :
 
       * not be private;
 
@@ -96,35 +119,37 @@ JUnit5 and predecessors
       * not return a value;
 
 
-    a <<<Lifecycle Method>>> : A lifecycle method does not perform any testing itself, but are used in order to set up the test object prior to running a test or tear down an object post a test.  A method will be treated as a lifecyle method by the framework if it is annotated with either:
+**Lifecycle Methods
 
-      * <@BeforeAll>;
+  A <<<Lifecycle Method>>> method does not perform any testing itself, but are used in order to set up the test object prior to running a test,  or to tear down an object after a test. A method will be treated as a lifecycle method by the framework if it is annotated with either:
 
-      * <@AfterAll>;
+    * <@BeforeAll>;
 
-      * <@BeforeEach>;
+    * <@AfterAll>;
 
-      * <@AfterEach>;
+    * <@BeforeEach>;
 
-    They must :
+    * <@AfterEach>;
 
-      * not be private;
+  Additionally, they must :
 
-      * not be abstract;
+    * not be private;
 
-      * not return a value;
+    * not be abstract;
+
+    * not return a value;
 
 
-* Lifecycle
+=====
+*The Test Lifecycle.
 
-  By default, the order in which test methods are executed is obscure. It is still deterministic, in that repeating a suite of tests will run the tests in the same order; but, by default, Jupiter makes it deliberately difficult to predict ( <@TestInstance(Lifecycle.PER_METHOD)>).
+  By default, the order in which test methods are executed is obscure (deliberately). It is still deterministic, in that repeating a suite of tests will run the tests in the same order; but, by default, Jupiter makes it deliberately difficult to predict (<@TestInstance(Lifecycle.PER_METHOD)>).
 
-  However, if a test class/interfaces is annotated with a <@TestMethodOrder> annotation, then the user can choose to impose a particular order. (e.g. alhabetic order, sequential order, random order etc.)
+  However, if a test class/interfaces is annotated with a <@TestMethodOrder> annotation, then the user can choose to impose a particular order. (e.g. alphabetic order, sequential order, random order etc.)
 
-  By default, and to allow individual tests to be executed essentailly in isolation, Jupiter will create a NEW instance of each test class before it executes a test method, and then will destroy it immediately afterwards.
+  By default, and to allow individual tests to be executed essentially in isolation, Jupiter will create a NEW instance of each test class before it executes a test method, and then will destroy it immediately afterwards.
 
-  If you wish to execute all tests on the SAME instance of an object, tehn the class can be tagged with the <@TestIntance(Lifecycle.PER_CLASS)> annotation. In this case ONE instance of the classs will be created and all methods executed on this ( possibly in a particular order if so annotated.)
-
+  If you wish to execute all tests on the SAME instance of an object, then the class can be tagged with the <@TestIntance(Lifecycle.PER_CLASS)> annotation. In this case <<ONE>> instance of the class will be created and all methods executed on this (possibly in a particular order if so annotated.)
 
   The basic lifecycle method are:
 
@@ -134,7 +159,9 @@ JUnit5 and predecessors
 
     * <@BeforeAll> : Denotes that the annotated method should be executed just once before all @Test, @RepeatedTest, @ParameterizedTest, and @TestFactory methods in the current class. It only has any real usage when the PER_CLASS lifecycle is in force.;
 
-    * <@AfterAll> : Denotes that the annotated method should be executed just once after all @Test, @RepeatedTest, @ParameterizedTest, and @TestFactory methods have been executed in the current class. It only has any real usage when the PER_CLASS lifecycle is in force..
+    * <@AfterAll> : Denotes that the annotated method should be executed just once after all @Test, @RepeatedTest, @ParameterizedTest, and @TestFactory methods have been executed in the current class. It only has any real usage when the PER_CLASS lifecycle is in force.
+
+    []
 
   These are generally used to put the  object under test into the correct state for the test to proceed. This can be done with the individual tests themselves, but often several different test will wish to be initialised in the same way.
 

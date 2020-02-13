@@ -1,0 +1,427 @@
+Bits on Pieces, Tips and Tricks on the Java Language.
+
+
+
+General
+
+*Iteration
+
+**Preferred idiom for iteration over a collection or array...
+
+---
+    for (Element e : someArrayOrCallectionOfElement) {
+      ....
+    }
+---
+
+**Using Iterators
+
+  Should access to some of the specific features offered by an Iterator be required, then the following is an acceptable alternative to the above...
+
+  The Iterator interface is provided by most Collection type classes. It allows cursor-like behaviour over a collection. It only provides 2 additional features over the for() loop over a collection described above:
+
+    * a remove() function to delete the current element;
+
+    * a forEachRemining( someAction) that will allow a given action to be performed on all elements downstream of the current cursor.
+
+  Additionally, the Iterator provides next() and hasNext() functions to move cursor across the Collection.
+
+    for(Iterator\<Element\> i = c.iterator(); i.hasNext;  ) {
+      Element e = i.next()
+      ...
+    }
+
+
+
+Generics
+
+  Generics were introduced in v5.0 and are basically about Abstraction: they allow you to create:
+
+    * Classes
+
+    * Methods
+
+    []
+
+  that work in the same way on <<different types of objects>>.
+
+  A generic type will take the <<Type>>, or a <<hierarchy of types>>, as an explicit parameter.
+
+  They are particular useful in Container Classes, which often won't needed to be <<generally>> concerned about the sort of objects that it holds, just how they are managed, sorted, retrieved etc., <<but do>> want to be able to guarantee that the object it is being asked to store/retrieve is appropriate for that container.
+
+  Note, that it is always possible for Container classes to hold objects of different classes : all objects are subtypes of the Object class, so anything capable of storing an Object will work. However the task of ensuring that ONLY objects of a particular type can get stored in a container then becomes a programmer responsibility, involving lots of checking and casting. Its generally tedious and error-prone.
+
+  This is problem that generics are supposed to solve.
+
+
+  Consider the class declaration:
+
+---
+    public class List\<E\>\{...\}
+---
+
+  \<E\> is a type variable: it requires an Actual javatype when objects of this Class/Interface are declared:
+---
+  List<String> x;
+
+  x = new List<String>;
+---
+
+  (The name of the identifier E is arbitary, but the convention is that single, capital letters are used. It is important to understand that these are NOT variables, so much as tokens or placeholders for a, possibly arbitary, class. It is not make sense, therefore, to think that it would be useful to give them meaningful names. In the above example, for instance, E could represent a simple Integer or an InsurancePolicy, or a Planet. Its hard to think of a meaningful name that covers even just this short list of possibilities.)
+
+  Other Lists, can be assigned to x. e.g.
+
+---
+  x = someOtherList;
+---
+
+  However, <<ONLY>> other <<<List\<String\>>>>s can assigned. <<NOT>> <<<List\<someOtherThing\>>>>.
+
+
+*Generics Work at Compile time not Runtime
+
+  In many ways, Generics are similar to MACROS. They are processed by the compiler NOT the runtime system. The compiler takes the Generic Class and converts it to the most appropriate Non-Generic Class and inserts all the necessary casts() backwards and forwards in order to make it work.
+
+  So, for example, all generic lists actually get re-implemented to use the same the java.util.list under the hood. java.util.list is implemented in terms of storing/manipulating  java.lang.Object. So the compiler re-writes to use this implementation and inserts casting etc where it needs to.
+
+  This process is formally known as erasure.
+
+  Although the compiler is smart, it cannot absolutely guarantee that the code it generates is always type safe: you have may coded something that it is impossible for the compiler to check. In these circumstances the compiler will issue a warning and leave it up to you ensure that there is nothing type unsafe going on.
+
+  This compile time nature explains why sometimes you cannot do things that you would feel naturally would be possible. For example, you can't write a class that implements the following
+
+---
+    public abstract class DualList implements List<String>, List<Date>
+---
+
+  Why? because BOTH List get reduced to the same raw List by the compiler, and so it is impossible to tell them apart.
+
+
+*Inheritance Relationships
+
+  The basic rule is that inheritance can be applied to the Base Type of a Generic, but NOT to the parameterized type.
+
+  So for instance
+
+    List<String> is a subtype of Collection<String>
+
+  But
+
+    List<String> is <<NOT>> a subtype of List<Object>
+
+    (even though String is a subtype of Object)
+
+  There is NO relationship between <<<List\<String\>>>> and <<<List\<Object\>>>>.  Think of them as two classes StringList and ObjectList.
+
+  The reason for this is that there is no way to support this "relationship" WITHOUT undermining the very problem that Generics were invented to overcome. As soon as you can cast between them you lose the type-safeness.
+
+
+
+*How the \<E\> is used within the definition of a generic class.
+
+  Consider the following:
+
+---
+  class Mouse { }
+  class Bear { }
+
+  class InsurancePolicy{}
+  class Planet{}
+
+  class Trap<T> {
+
+    T trapped;
+
+    public void snare( T trapped ) { this.trapped = trapped; }
+    public T release() { return trapped; }
+    }
+---
+
+  Here we create a generic Trap for any arbitary Class/Interface. Remember that T is just a placeholder for a Class/Interface, that is replaced with an Actual Class/Interface by the Compiler at compile time. Consequently WITHIN the class we are defining we can use T in most places where we might use a Class/Interface.
+
+  So, as of here, we can declare and instantiate variables of type T confident in the knowledge that the compiler will substitute the Class/Instance supplied as Actual Parameters at the point of use. In similar vein, we can also define methods that take T as a parameter or return it as a value.
+
+  So, we might want a trap, to trap mice...
+
+---
+  Trap<Mouse> mouseTrap = new Trap<Mouse>();
+
+  mouseTrap.snare( new Mouse() );
+
+  Mouse mouse = mouseTrap.release();
+---
+
+  ...or bears
+
+---
+  Trap<Bear> bearTrap = new Trap<Bear>();
+
+  bearTrap.snare( new Bear() );
+
+  Bear mouse = bearTrap.release();
+---
+
+**What we Can't do with T.
+
+  In defining a generic, although T can be used in most places where you can use a Classname, there are some places where it can't.
+
+***Can't use T in a new T()
+
+  We cannot use T in a new Construct:
+
+---
+  T element = new T();
+---
+
+  Remember at compile time, the compiler effectively eliminates T and reduces the Class using it as a generic parameter to a raw Class. So in other words:
+
+    Trap<T> ---> Trap.
+
+  Therefore T will not exist as a thing in our compiled version, so new T is completely meaningless.
+
+***Can't use T in a static Context
+
+  We can't use it within any <<<static>>> parts of the class. Remember, <<<static>>> parts exist as one implementation for the entire Class, so it can't simoultaneos be Mouse/Bear/Planet)
+
+
+*Putting Bounds on T
+
+  Because T is absolutely generic we can also use it our Trap, as defined above, on completely arbitary things:
+
+---
+  Trap<InsurancePolicy> weirdTrap = new Trap<InsurancePolicy>();
+
+  Trap<Planet> weirdTrap = new Trap<Planet>();
+---
+
+  Perhaps we would prefer to make our Trap more discriminatory. We can do that by restricting the Classes that T can represent. Consider the following:
+
+---
+  class Animal{ }
+
+  interface Mammal{}
+
+  class Mouse extends Animal implements Mammal{ }
+  class Bear extends Animal implements Mammal{ }
+
+  class InsurancePolicy{}
+  class Planet{}
+
+  class AnimalTrap<T extends Animal> {
+
+    T trapped;
+
+    public void snare( T trapped ) { this.trapped = trapped; }
+    public T release() { return trapped; }
+  }
+---
+
+  Here we have introduced a SuperClass Animal of which Mouse and Bear are sub-classes. Also, out trap has a new signature:
+
+---
+  class AnimalTrap<T extends Animal> {
+---
+
+  It is important to understand that Parameter we are using has NOT changed. It is still T (not T extends Animal), and so we continuer to use T in the Class definition exactly as before.
+
+  However, what we have done is place restrictions, formally known as Bounds, on the type of Class/Instance that can be applied used when we create instances of our Generic Class/Interface.
+
+  In this case we can only use classes/interfaces that either are, or extend, the Animal Class. So:
+
+---
+  AnimalTrap<Bear> bearTrap = new AnimalTrap<Bear>();      OK
+  AnimalTrap<Mouse> mouseTrap = new AnimalTrap<Mouse>();    OK
+  AnimalTrap<Animal> animalTrap = new AnimalTrap<Animal>();  OK
+---
+
+---
+  AnimalTrap<Planet> bearTrap = new AnimalTrap<Planet>();  DOESN'T WORK
+  AnimalTrap<InsurancePolicy> bearTrap = new AnimalTrap<InsurancePolicy>();     DOESN'T WORK
+---
+
+  Likewise, with we can create a generic Trap that is restricted to Classes that implement a particular Interface
+
+    class MammmalTrap<T extends Mammals> {}
+
+---
+  MammalTrap<Bear> bearTrap = new MammalTrap<Bear>();      OK
+  MammalTrap<Mouse> mouseTrap = new MammalTrap<Mouse>();    OK
+  MammalTrap<Animal> mammalTrap = new MammalTrap<Animal>();  DOESN'T WORK
+---
+
+**Multiple Binding
+
+  We are not restricted to binding just a single Interface. We can restrict our trap to  multiple Interfaces by using the '&' operator within the binding clause:
+
+---
+  class Animal{ }
+  interface Mammal{}
+
+  interface FourLegged{};
+  interface Large{};
+
+  class Mouse extends Animal implements Mammal,FourLegged{ }
+  class Bear extends Animal implements Mammal,FourLegged,Large{ }
+
+
+  class LargeMammmalTrap<T extends Mammals & FourLegged &Large>
+---
+
+  Now we are only trapping bears.
+
+---
+  LargeMammalTrap<Bear> bearTrap = new MammalTrap<Bear>();      OK
+  LargeMammalTrap<Mouse> mouseTrap = new MammalTrap<Mouse>();     DOESN'T WORK
+  LargeMammalTrap<Animal> mammalTrap = new MammalTrap<Animal>();  DOESN'T WORK
+---
+
+*Erasure and Bound Types
+
+  Above we talked about how the compiler takes a Generic Object and reduces it to the equivalent raw object during compilation.
+
+    i.e. List<T> --> List
+
+  When using a Binding clause with our Generic, the compiler reduces it the leftmost item in the list e.g.
+
+    List<T extends Mammals & FourLegged &Large> --> ListMammals
+
+
+*Extending a Generic Class/Instance
+
+  Generics can be sub-classed such like any other class/interface. The Sub-class itself can be:
+
+    * non-generic i.e. the generic part of its super-type becomes concrete.
+
+    * generic i.e. the generic part of its super type is inherited either exactly, or in a restricted (bound) form.
+
+
+**Non-generic Sub-Types
+
+  With Non-Generic Subtypes, the generic part of the parent is made concrete by filling out the parameterized part with an appropriate class:
+
+---
+    class Elephant implements Mammals,FourLegged,Large {...}
+
+    class ElephantTrap extends LargeMammalTrap<Elephant> {...}
+
+
+    ElephantTrap elephantsOnly = new ElephantTrap();
+
+    elephantTrap.add( new Elephant());
+---
+
+
+
+**Generic Sub-Types
+
+  Generic Sub-Types inherit the Generic parameter of the parent either directly or in a form which places further restrictions on the set of classes that may be permitted to instantiate that parameter.
+
+***Direct passing up of T
+
+  In this case, our subtype will be able to accept exactly the same Classes/Instances as its parent.
+
+---
+  class Trap<T> {...}
+
+  class  AdjustableTrap<T> extends Trap<T> {...}
+---
+
+  If the parent Class/Instance is restricted, then the parameters passed up must repeat that restriction verbatim
+
+---
+  class AnimalTrap<T extends Animal> {...}
+
+  class AdjustableAnimalTrap<T extends Animal> extends AnimalTrap<T> {...}
+---
+
+  Note that the Class extended is <<<AnimalTrap\<T\>>>> and <<NOT>> <<<Animaltrap\<T extends Animal\>>>>. (The generic type of is all of these classes is still T. The <<<extends>>> clauses that are used with it in certain parts of the syntax are NOT part of the type.
+
+***Further restriction of T
+
+  When inheriting from a generic, the subtype has the opportunity to place further restrictions on the set of classes that can be used as the actual parameter.
+
+---
+  class Bear extends Animal {...}
+
+  class AnimalTrap<T extends Animal> {...}
+
+
+  class AdjustableBearTrap<T extends Bear> extends AnimalTrap<T> {...}
+
+  class AdjustableLargeAnimalTrap<T extends Animal & Large> extends AnimalTrap<T> {...}
+
+---
+
+  Note <<<\<T extends Bear\>>>> is only permissable because Bear is a sub-type of animal.
+
+
+
+*Creating instances of Generics using Wildcards
+
+  When declaring a variable to hold an instance of a generic type, we would normally do so as we have indicated above, e.g.
+
+---
+  Trap<Mouse> mouseTrap = new Trap<Mouse>();
+
+  AdjustableBearTrap<Bear> = new bearTrap AdjustableBearTrap<Bear>();
+---
+
+  The majority of time, this will be fine. However, what if we want to create a variable that can refer to different types of list? For instance:
+
+---
+  Trap<Mouse> someTrap;
+
+  someTrap = mouseTrap;    OK
+
+  someTrap = bearTrap;     FAIL
+---
+
+  In these situations we can declare variables of our Generic using a Wildcard character ? as a parameter.
+
+  e,.g.
+
+---
+  List<?> someList;
+---
+
+  NB. THIS DOES NOT MEAN THAT someList IS A LIST HOLDING DIFFERENT OBJECTS. IT MEANS THAT someList CAN BE REFERING TO A LIST OF JUST STRINGS (List<String>), OR A LIST OF JUST BEARS (List<Bear>), OR A LIST OF JUST ANIMALS,(List<Animal>)...
+
+  So, going back to our example
+
+---
+  Trap<?> someTrap;
+
+  someTrap = mouseTrap;    OK
+
+  someTrap = bearTrap;     OK
+---
+
+**Restricting a WildCard.
+
+  Just as it is possible to restrict the values that the parameters in our Generic types can take, so its is possible to restrict the values that a variable of a Generic Type can hold. The syntax is the same:
+
+---
+  Trap<?> someTrap  : can hold any ANY Trap
+
+  Trap<? extends Animal> someAnimalTrap   : can hold ANY Trap<Animal>
+
+  Trap<? extends Bear> someBearTrap   : can hold ANY Trap<Bear>
+---
+
+
+  It is also possible to specify multiple restrictions:
+
+---
+  <Trap ? extends Animal && Furry>  : can hold ANY Trap of <Animal> where Animal implements Furry.
+---
+
+  Additionally is is possible to specify a LOWER BOUND in a similar way. Here the variable can hold instances of Traps that work UP the inheritance hierarchy>. Here the variable can hold instances of Traps that work UP the inheritance hierarchy.
+
+---
+  Trap<? super Animal> someAnimalTrap   : can hold ANY Trap<Animal>, or any Trap<Object>, BUT NOT ANY Trap<Bear>
+---
+
+
+*Generic Methods
+
+  Whole Different Ball game. Need to read up on this.
