@@ -473,6 +473,16 @@ The Git Version Control System
 	Glob patterns are like simplified <<<regexp>>>s.
 
 
+	Note that a .gitignore file will NOT ignore files that are already managed by git. If you want git to  stop managing a file, then use the
+
+---
+	git rm --cached --dryrun
+---
+
+	command.
+
+
+
 	[[1]] Viewing Changes made to trees or to single files/directories.
 
 	By default, diff will show all changes  between the Working Directory and the HEAD commit...

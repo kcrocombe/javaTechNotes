@@ -88,7 +88,7 @@ JUnit5 and predecessors
 
     * contains a least one <<<Test Method>>>;
 
-    * has a <<single>> constructor;
+    * has a <<single>> constructor. (In previous versions of JUnit, constuctors were not allowed to have arguments, but that changed in Junit5);
 
     * is <<not>> be abstract.
 
@@ -140,6 +140,59 @@ JUnit5 and predecessors
     * not return a value;
 
 
+  How these fit into a standard Test Class is indicated below:
+
+---
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+class StandardTests {
+
+  @BeforeAll
+  static void initAll() {
+  }
+
+  @BeforeEach
+  void init() {
+  }
+
+  @Test
+  void succeedingTest() {
+  }
+  @Test
+  void failingTest() {
+    fail("a failing test");
+  }
+
+  @Test
+  @Disabled("for demonstration purposes")
+  void skippedTest() {
+  // not executed
+  }
+
+  @Test
+  void abortedTest() {
+  assumeTrue("abc".contains("Z"));
+  fail("test should have been aborted");
+  }
+
+  @AfterEach
+  void tearDown() {
+  }
+
+  @AfterAll
+  static void tearDownAll() {
+  }
+}
+---
+
+
 =====
 *The Test Lifecycle.
 
@@ -157,7 +210,7 @@ JUnit5 and predecessors
 
     * <@AfterEach> : Denotes that the annotated method should be executed after each @Test, @RepeatedTest, @ParameterizedTest, or @TestFactory method in the current class;
 
-    * <@BeforeAll> : Denotes that the annotated method should be executed just once before all @Test, @RepeatedTest, @ParameterizedTest, and @TestFactory methods in the current class. It only has any real usage when the PER_CLASS lifecycle is in force.;
+    * <@BeforeAll> : Denotes that the annotated method should be executed just once before all @Test, @RepeatedTest, @ParameterizedTest, and @TestFactory methods in the current class. It only has any real usage when the PER_CLASS lifecycle is in force.
 
     * <@AfterAll> : Denotes that the annotated method should be executed just once after all @Test, @RepeatedTest, @ParameterizedTest, and @TestFactory methods have been executed in the current class. It only has any real usage when the PER_CLASS lifecycle is in force.
 
@@ -170,7 +223,30 @@ JUnit5 and predecessors
 
 **Repeated Tests
 
-**Paramaterised Test
+**Parameterised Test
+
+  Parameterised Tests make it possible to run the same test multiple times, but with different arguments.
+
+
+
+  In setting up the paramterised test, an argument source must be provided. Here you have several option:
+
+    * @ValueSource  : Simplest form. Just provide the list of literal values you wish to use
+
+        @ValueSources(ints = {1,2,3,4})
+
+    * @NullSource and @EmptySource: provides a sinlge null argument, or single empty argument to the test.
+
+    * @EnumSource: Basically the test will be called for all values of a given Enumerator
+
+    * CsvSource and @CsvFileSource
+
+    * MethodSource : Allow you to define Factory methods that define a Stream of arguments. The test will be performed for each set of arguments in the stream.
+
+    * ArgumentSource : Basically a class that implements the ArguymentSource Interfacve.
+
+
+
 
 **DynamicTests
 
@@ -180,9 +256,12 @@ JUnit5 and predecessors
 
   Assertions is a collection of utility methods that support asserting conditions in tests.
 
+  An assertion method is silent when its proposition succeeds, but throws an exception if the proposition fails. In general, if an assertion fails, method execution will not continue past that point and the test will fail.
+
 
   Unless otherwise noted, a failed <assertion> will throw an AssertionFailedError or a subclass thereof.
 
+  If all assertions within a test method succeed then the test passes.
 
   The various assertTimeoutPreemptively() methods in this class execute the provided executable or supplier in a different thread than that of the calling code. This behaviour can lead to undesirable side effects if the code that is executed within the executable or supplier relies on ThreadLocal storage.
 
@@ -227,11 +306,172 @@ JUnit5 and predecessors
   Even though the assertion facilities provided by JUnit Jupiter are sufficient for many testing scenarios, there are times when more power and additional functionality such as matchers are desired or required. In such cases, the JUnit team recommends the use of third-party assertion libraries such as AssertJ, Hamcrest, Truth, etc. Developers are therefore free to use the assertion library of their choice.
 
 
+
+  An example of the use of the most basic assertions is shown below.
+
+---
+import static java.time.Duration.ofMillis;
+import static java.time.Duration.ofMinutes;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import example.domain.Person;
+import example.util.Calculator;
+import org.junit.jupiter.api.Test;
+
+
+class AssertionsDemo {
+  private final Calculator calculator = new Calculator();
+  private final Person person = new Person("Jane", "Doe");
+
+  @Test
+  void standardAssertions() {
+    assertEquals(2, calculator.add(1, 1));
+
+    assertEquals(4, calculator.multiply(2, 2), "The optional failure message is now the last parameter");
+
+    assertTrue('a' < 'b', () -> "Assertion messages can be lazily evaluated -- " + "to avoid constructing complex messages unnecessarily.");
+  }
+
+  @Test
+  void groupedAssertions() {
+    // In a grouped assertion all assertions are executed, and all
+    // failures will be reported together.
+
+    assertAll("person",
+
+      () -> assertEquals("Jane", person.getFirstName()),
+
+      () -> assertEquals("Doe", person.getLastName())
+    );
+  }
+
+  @Test
+  void dependentAssertions() {
+    // Within a code block, if an assertion fails the
+    // subsequent code in the same block will be skipped.
+
+    assertAll("properties",
+      () -> {
+        String firstName = person.getFirstName();
+
+        assertNotNull(firstName);
+
+        // Executed only if the previous assertion is valid.
+        assertAll("first name",
+
+          () -> assertTrue(firstName.startsWith("J")),
+
+          () -> assertTrue(firstName.endsWith("e"))
+        );
+      },
+
+      () -> {
+        // Grouped assertion, so processed independently
+        // of results of first name assertions.
+
+        String lastName = person.getLastName();
+
+        assertNotNull(lastName);
+
+        // Executed only if the previous assertion is valid.
+        assertAll("last name",
+          () -> assertTrue(lastName.startsWith("D")),
+
+          () -> assertTrue(lastName.endsWith("e"))
+        );
+
+      }
+    );    //Assert All
+  }
+
+  @Test
+  void exceptionTesting() {
+    Exception exception = assertThrows(
+      ArithmeticException.class,
+      () -> calculator.divide(1, 0)
+    );
+
+    assertEquals("/ by zero", exception.getMessage());
+  }
+
+  @Test
+  void timeoutNotExceeded() {
+
+    // The following assertion succeeds.
+    assertTimeout(
+      ofMinutes(2),
+      () -> {
+        // Perform task that takes less than 2 minutes.
+      }
+    );
+  }
+
+  @Test
+  void timeoutNotExceededWithResult() {
+
+    // The following assertion succeeds, and returns the supplied object.
+    String actualResult = assertTimeout(
+      ofMinutes(2),
+      () -> {
+        return "a result";
+      }
+    );
+    assertEquals("a result", actualResult);
+  }
+
+  @Test
+  void timeoutNotExceededWithMethod() {
+
+    // The following assertion invokes a method reference and returns an object.
+    String actualGreeting = assertTimeout(ofMinutes(2), AssertionsDemo::greeting);
+
+    assertEquals("Hello, World!", actualGreeting);
+  }
+
+  @Test
+  void timeoutExceeded() {
+    // The following assertion fails with an error message similar to:
+    // execution exceeded timeout of 10 ms by 91 ms
+
+    assertTimeout(
+      ofMillis(10),
+      () -> {
+        // Simulate task that takes more than 10 ms.
+        Thread.sleep(100);
+      }
+    );
+  }
+
+  @Test
+  void timeoutExceededWithPreemptiveTermination() {
+    // The following assertion fails with an error message similar to:
+    // execution timed out after 10 ms
+
+    assertTimeoutPreemptively(
+      ofMillis(10),
+      () -> {
+        // Simulate task that takes more than 10 ms.
+        Thread.sleep(100);
+      }
+    );
+  }
+
+  private static String greeting() {
+    return "Hello, World!";
+  }
+}
+---
+
 *Assumptions
 
-  Assumptions is a collection of utility methods that support conditional test execution based on assumptions.
+  Assumptions is a collection of utility methods that support <<conditional>> test execution based on assumptions.
 
-  In direct contrast to failed <assertions>, failed <assumptions> do not result in a test failure; rather, a failed assumption results in a test being aborted.
+  In direct contrast to failed <assertions>, failed <assumptions> do not result in a test failure; rather, a failed assumption results in a test being <<aborted>>.
 
   Assumptions are typically used whenever it does not make sense to continue execution of a given test method — for example, if the test depends on something that does not exist in the current runtime environment
 
@@ -248,8 +488,23 @@ JUnit5 and predecessors
 
 Miscellaneos Annotations
 
-@Disable
-@DisplayName
+  * @Disable
+
+  * @DisplayName
+
+    This is more useful than it sounds. It allows a specific description to be displayed in test reports etc rather then the test/classs and test method name which cna be a bit cryptic.
+
+  * @DisplayNmaeGenerator : basically allows a display name to be generated from the anme of the test class/method.
 
 
 HamCrest Functions
+
+
+
+The General Test Process
+
+  arrange : creation of all Objects (except the Subject unfer Test) that are necessary for test execution
+
+  act : execution of the Subject-under-test methods
+
+  assert : verification of test results.

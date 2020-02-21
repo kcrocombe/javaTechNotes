@@ -1,5 +1,155 @@
 Bits on Pieces, Tips and Tricks on the Java Language.
 
+*Checked and Unchecked Exceptions.
+
+  The various exceptions that can be thrown by java are classified as:
+
+**Checked Exceptions.
+
+  Checked exceptions are the exceptions that are checked at Compile time. If some method explicitly declares that it throws a particular checked exception, then it compels the users of that method to explicitly HANDLE that exception or throw it itself (so called, Catch or Specify Requirement).
+
+  A program that does not handle a checked exception WILL NOT compile.
+
+  Checked exceptions are generally ones that might be expected to occur from time to time an from which the program might reasonably expected to recover.
+
+**Unchecked exceptions
+
+  Are the exceptions that are <<not>> checked at compile time. These can be:
+
+    Errors : arising from exceptional circumstances EXTERNAL to the application : Hardware failure etc.
+
+    Runtime Exceptions : arising from exceptional conditions arising from WITHIN the applicaiton : E.g. Divide by zero, Null Pointer exceptions etc.
+
+  These are not subject to the Catch or Specify Requirement described above.
+
+
+===
+*Static Elements in Java
+
+  When you see the static keyword, think 'State'. In some sense, the element carrying the static keyword bestows state upon the Class.
+
+  It can be applied to:
+
+    variables
+
+    methods
+
+    blocks
+
+    nested Classes.
+
+**Static Variables.
+
+  A static variable is one that exists within the Class itself and is shared by ALL instances of the class. If one instance of the class changes a static variable, it will change for ALL.
+
+  We do not NEED an instance of the class in order to access the variable: we can access it by referencing the Class name directly:
+
+---
+      class SomeClass{ static in someStaticVar };
+
+      // Note: no instance required.
+      SomeClass.someStaticVar = 1;
+---
+
+  They are often used:
+
+    * for class constants;
+
+    * for data that you want to share between all instances; e.g. a grand total summing across all instances;
+
+    []
+
+
+
+**Static Methods
+
+  A static variable also belongs to the Class, not to the instance. This means it can also be invoked WITHOUT reference to an individual object.
+
+  Because they are not associated with any particular instance, it does not make sense to attempt to reference instance-specific methods or variables ( i.e. non-static): the method has no way of knowing which object instance you might be referring to.
+
+  Note:
+
+    * static methods can't be over-ridden;
+
+    * cannot use <<<this>>> or <<<super>>> keywords.
+
+    * cannot use instance vairables directly (although they can if they gat passed instance variables as parameters.)
+
+    []
+
+  Static Methods are often associated with Utility classes. The Maths class is a good example.  Maths.sqrt(x) ONLY needs access to its own arguments in order to do its job.
+
+  They are also used in Factory Methods.  e.g.
+
+---
+  Bird bird = Bird.createBird("duck");
+---
+
+  A factory method that needs a pre-existing instance, is obviously of more limited use.
+
+
+**Static Blocks
+
+  Static blocks are sections of code that sit outside any method and are associated with the Class itself. The block executes, just once, <<when the class is first loaded>>. ( NB <<NOT>> when a instance of the class is first created.)
+
+  Typically, they are used to instantiate static variables in circumstances where it is not possible to just directly assign the value of the static variable where it is instantiated.
+
+
+**Static Class.
+
+  Conceptually, this is a little harder to grasp. Here, it is the <<definition>> of the inner class that is providing state to its Parent class.
+
+  class Parent{
+    static NestedClass {...}
+
+    ...
+  }
+
+  By definition, therefore, only NESTED Classes may be declared static: (otherwise, what class is the nested class providing state to?);  you can't have a top level static class.
+
+  A nested static class can be created WITHOUT an instance of its enclosing class.
+
+---
+  ParentClass.NestedClass = nested2 new ParentClass.NestedClass();
+---
+
+  As a consequence, the static nested class can't have access to any instance specific data: it can only access its parent classes <<static>> content.
+
+  There is  NO real link between a nested static class and the instance that created it (if indeed, there is a creating instance).
+
+  In other words, in the below, <<<nested1>>> and <<<nested2>>> are equally related to the instance <<<parent>>>
+
+---
+  ParentClass.NestedClass nested1 = new ParentClass.NestedClass();
+
+
+  ParentClass parent = new ParentClass();
+  ParentClass.NestedClass nested2 = new parent.NestedClass();
+---
+
+  Static inner classes behave just like normal, top level classes in all respects.
+
+
+***In many ways, static nested classes are just a packaging convenience.
+
+  By convention, static nested classes are used to conveniently package together 'helper' classes, that provide certain functionality that their enclosing class requires, but is unlikely to be of much use to any other class.
+
+  It is also often commonly used to guarantee that classes are created as a Singleton.
+
+---
+  public class Singleton  {
+      private Singleton() {}
+
+      private static class SingletonHolder {
+          public static final Singleton instance = new Singleton();
+      }
+
+      public static Singleton getInstance() {
+          return SingletonHolder.instance;
+      }
+  }
+---
+
 
 
 General
@@ -9,9 +159,9 @@ General
 **Preferred idiom for iteration over a collection or array...
 
 ---
-    for (Element e : someArrayOrCallectionOfElement) {
-      ....
-    }
+  for (Element e : someArrayOrCallectionOfElement) {
+    ....
+  }
 ---
 
 **Using Iterators
@@ -49,7 +199,7 @@ Generics
 
   They are particular useful in Container Classes, which often won't needed to be <<generally>> concerned about the sort of objects that it holds, just how they are managed, sorted, retrieved etc., <<but do>> want to be able to guarantee that the object it is being asked to store/retrieve is appropriate for that container.
 
-  Note, that it is always possible for Container classes to hold objects of different classes : all objects are subtypes of the Object class, so anything capable of storing an Object will work. However the task of ensuring that ONLY objects of a particular type can get stored in a container then becomes a programmer responsibility, involving lots of checking and casting. Its generally tedious and error-prone.
+  Note, that it is always possible for Container classes to hold objects of different classes : all objects are subtypes of the Object class, so anything capable of storing an Object will work. However the task of ensuring that <<ONLY>> objects of a particular type can get stored in a container then becomes a programmer responsibility, involving lots of checking and casting. Its generally tedious and error-prone.
 
   This is problem that generics are supposed to solve.
 
@@ -60,7 +210,7 @@ Generics
     public class List\<E\>\{...\}
 ---
 
-  \<E\> is a type variable: it requires an Actual javatype when objects of this Class/Interface are declared:
+  \<E\> is a type variable: it requires an Actual java type when objects of this Class/Interface are declared:
 ---
   List<String> x;
 
@@ -82,11 +232,11 @@ Generics
 
   In many ways, Generics are similar to MACROS. They are processed by the compiler NOT the runtime system. The compiler takes the Generic Class and converts it to the most appropriate Non-Generic Class and inserts all the necessary casts() backwards and forwards in order to make it work.
 
-  So, for example, all generic lists actually get re-implemented to use the same the java.util.list under the hood. java.util.list is implemented in terms of storing/manipulating  java.lang.Object. So the compiler re-writes to use this implementation and inserts casting etc where it needs to.
+  So, for example, all generic lists actually get re-implemented to use the same the java.util.list under the hood. java.util.list is implemented in terms of storing/manipulating  java.lang.Object. So the compiler re-writes to use this implementation and <<inserts casting>> etc where it needs to.
 
-  This process is formally known as erasure.
+  This process is formally known as <<erasure>>.
 
-  Although the compiler is smart, it cannot absolutely guarantee that the code it generates is always type safe: you have may coded something that it is impossible for the compiler to check. In these circumstances the compiler will issue a warning and leave it up to you ensure that there is nothing type unsafe going on.
+  Although the compiler is smart, it <<cannot>> absolutely guarantee that the code it generates is always type safe: you have may coded something that it is impossible for the compiler to check. In these circumstances the compiler will issue a warning and leave it up to you ensure that there is nothing type unsafe going on.
 
   This compile time nature explains why sometimes you cannot do things that you would feel naturally would be possible. For example, you can't write a class that implements the following
 
@@ -99,7 +249,7 @@ Generics
 
 *Inheritance Relationships
 
-  The basic rule is that inheritance can be applied to the Base Type of a Generic, but NOT to the parameterized type.
+  The basic rule is that inheritance applies to the Base Type of a Generic, but NOT to the parameterized type.
 
   So for instance
 
@@ -177,16 +327,16 @@ Generics
 
     Trap<T> ---> Trap.
 
-  Therefore T will not exist as a thing in our compiled version, so new T is completely meaningless.
+  Therefore <<T will not exist as a thing in our compiled version>>, so new T is completely meaningless.
 
 ***Can't use T in a static Context
 
-  We can't use it within any <<<static>>> parts of the class. Remember, <<<static>>> parts exist as one implementation for the entire Class, so it can't simoultaneos be Mouse/Bear/Planet)
+  We can't use it within any <<<static>>> parts of the class. Remember, <<<static>>> parts exist as one implementation for the entire Class, so it can't simultaneously be Mouse/Bear/Planet)
 
 
 *Putting Bounds on T
 
-  Because T is absolutely generic we can also use it our Trap, as defined above, on completely arbitary things:
+  Because T is absolutely generic we can also use it in our Trap, as defined above, on completely arbitrary things:
 
 ---
   Trap<InsurancePolicy> weirdTrap = new Trap<InsurancePolicy>();
@@ -239,7 +389,7 @@ Generics
   AnimalTrap<InsurancePolicy> bearTrap = new AnimalTrap<InsurancePolicy>();     DOESN'T WORK
 ---
 
-  Likewise, with we can create a generic Trap that is restricted to Classes that implement a particular Interface
+  Likewise, we can create a generic Trap that is restricted to Classes that implement a particular Interface
 
     class MammmalTrap<T extends Mammals> {}
 
@@ -267,7 +417,7 @@ Generics
   class LargeMammmalTrap<T extends Mammals & FourLegged &Large>
 ---
 
-  Now we are only trapping bears.
+  Now we are only trapping bears (i.e. Four-legged, Large Mammals).
 
 ---
   LargeMammalTrap<Bear> bearTrap = new MammalTrap<Bear>();      OK
@@ -277,11 +427,11 @@ Generics
 
 *Erasure and Bound Types
 
-  Above we talked about how the compiler takes a Generic Object and reduces it to the equivalent raw object during compilation.
+  Above we talked about how the compiler takes a Generic Object and reduces it to the equivalent <<raw>> object during compilation.
 
     i.e. List<T> --> List
 
-  When using a Binding clause with our Generic, the compiler reduces it the leftmost item in the list e.g.
+  When using a Binding clause with our Generic, the compiler reduces it the <<leftmost>> item in the list e.g.
 
     List<T extends Mammals & FourLegged &Large> --> ListMammals
 
@@ -314,7 +464,7 @@ Generics
 
 **Generic Sub-Types
 
-  Generic Sub-Types inherit the Generic parameter of the parent either directly or in a form which places further restrictions on the set of classes that may be permitted to instantiate that parameter.
+  Generic Sub-Types inherit the Generic parameter of the parent either <<directly>> or in a form which places <<further restrictions>> on the set of classes that may be permitted to instantiate that parameter.
 
 ***Direct passing up of T
 
@@ -358,7 +508,8 @@ Generics
 
 *Creating instances of Generics using Wildcards
 
-  When declaring a variable to hold an instance of a generic type, we would normally do so as we have indicated above, e.g.
+  Normally, when we instantiate a object of a Generic Class we would 'fill in' the generic Token with an actual class
+  e.g.
 
 ---
   Trap<Mouse> mouseTrap = new Trap<Mouse>();
@@ -376,7 +527,7 @@ Generics
   someTrap = bearTrap;     FAIL
 ---
 
-  In these situations we can declare variables of our Generic using a Wildcard character ? as a parameter.
+  In these situations, we can declare variables of our Generic using a Wildcard character ? as a parameter.
 
   e,.g.
 
@@ -395,6 +546,16 @@ Generics
 
   someTrap = bearTrap;     OK
 ---
+
+  Again, because ? is essentially a place holder it does not make sense to use it in a <<new>> statement:
+
+---
+  BadGeneric<?>  bad = new BadGeneric<?>   // Doesn't Work
+---
+
+
+
+
 
 **Restricting a WildCard.
 
@@ -420,6 +581,46 @@ Generics
 ---
   Trap<? super Animal> someAnimalTrap   : can hold ANY Trap<Animal>, or any Trap<Object>, BUT NOT ANY Trap<Bear>
 ---
+
+
+  Note that the bare wildcard <<<?>>> is equivalent to the bounded wildcard <<<? extends Object>>>
+
+**Writing to a lower-bounded Wildcard instantiated object isn't possible!
+
+  Consider List<? extends Date> someDateList = newArrayList<MyDate>();
+
+  What do we know about the elements of x? We know that they are Dates OR subtypes of Dates. Consequently ANY function that returns the Generic type MUST be a valid Date either a Date itseld, myDate, your Date.., but all can be represented as a Date.
+
+  Consequently
+
+    Date = someDateList.get(0)   will be read as a Date.
+
+  The compiler knows that whatever actual E that comes out of the List it will be a Date type of some kind, and so is <<directly assignable>> to a Date ( or, indeed any supertype of Date if we so whish e.g. Object)
+
+  All well and good.
+
+  However, consider writing to someDateList.
+
+    If someDateList can be a list of Date or myDate, the compiler <<can't know at COMPILE time which List someDateList actually refers to>>.
+
+      someDateList.add(new Date())      //COMPILE TIME ERROR!
+
+      someDateList.add(new myDate())   //COMPILE TIME ERROR!
+
+  Consequently, we <<can not write>> to the List of Dates because we don't know the exact type of Date we are writing. (It could be written as a Date, but then that is not necessarily a MyDate, and we'd end up with a List<Date> NOT a List<MyDate>)
+
+
+**Reading from an upper bounded Wildcard instantiated object is not possible.
+
+  If a Wildcard is upper bounded
+
+    List<? super MyDate> someDateList = newArrayList<MyDate>();
+
+  then the above logic is reversed. Now we don't know whether what we read from the List IS a MyDate, because the List could be list of any number of different supertypes of MyDate, and so necessarily represented as a MyDate.
+
+  Conversely, we can write a myDate because we know that the list can only be is a list of one of its supertypes, and we can ALWAYS cast myDate to any of its supertypes.
+
+
 
 
 *Generic Methods

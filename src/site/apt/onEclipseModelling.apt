@@ -160,7 +160,7 @@ Re-Opening the properties Window
 		*/
 ---
 
-		You can do likewise with @extends, ( although since the generated class always will extend the and a class can only extend a single Class) then this seems to be of limited value.
+		You can do likewise with @extends, ( although since the generated class always will probably be forced to extend one of the standard Ecore classes, then, (since a class can only extend a single superclass),this seems to be of limited value.)
 
 		I DO NOT THINK this ends up in the model files anywhere: I think it must be read from the java source files following regeneration - not absolutely sure on this however.
 
@@ -277,57 +277,6 @@ Delegating and Forwarding
 
 
 
-		[[1]] Some Documentation Stuff
-
-	To see Documentation Boxes on the diagram editor, you need to have the documentation layer enabled.
-
-	Documentation can be unattached ( ie. not associated with any particular element)
-
-		- This makes its way into the <<<ecore>>> Model file as a GenModel annotation of the Package with KEY = documentation and VALUES "Whatever documentation is".
-
-		 NB - It seems you can only have ONE piece of unattached Documentation. However, it does not stop you creating another, in which case it OVERWRITES the previous one WITHOUT WARNING!.
-
-
-	Documentation elements can be attached to the high level objects:
-			Classes
-			DataTypes
-			Enumerations
-
-	but not the lower level constructs ( operations, attributes etc.)
-
-		- These make their way into the <<<ecore>>> Model file as a GenModel annotation of the Class/Enum/DataType, again with the KEY=documentation
-		and VALUES "Whatever documentation is"
-
-	Again if you attempt to create a SECOND note attached to a CLASS it will OVERWRITE the first WITHOUT warning!
-
-	These get translated into the <!-- begin-model-doc-->   <!--end-model-doc --> section of the generated code
-
-	( Note you can stick some annotations in here ( @extends, @inherits etc, so this is a potentially useful thing
-	 to know about.)
-
-
-	Documentation for attributes/operations can be specified as
-		properties on the GUI modelling tool
-			- These get reflected as 'GenModel' Annotations in the <<<ecore>>> model in the same way as Entities above..
-
-
-	Note where snippets of code are entered: these do not form part of the <<<ecore>>> file but as part of the .genModel file. Documentation
-	of code snippets also ends up here.
-
-
-
-	[[1]] The GenModel map is described by a URL
-		http://www.eclipse.org/emf/2002/GenModel   ( which doesn't seem to exist as a browsable thing?)
-
-		However it specifies what Key --> Value Mappings are valid for that GenModel Map.
-
-		The key 'Documentation' is valid within the scheme ( with its value being whatever the documentation is).
-
-		I don't know what other keys are legitimate.
-
-		NB KEY is unique you can't have two element with the same key attached to the element.
-
-		Nor can you make up arbitrary KEYS, they must be drawn from the domain specified by http://www.eclipse.org/emf/2002/GenModel.
 
 
 
@@ -386,29 +335,82 @@ Backing out changes to Java Source.
 
 Eclipse Model Generator and JavaDoc.
 
-	The generator will generate default javadoc for each class/attribute/operation in the interfaces (
-	not much documentation seems to get auto-generated for the implementation classes.
+*Adding Documentation via the Modelling Tool
 
-	Documentation stored in the .genModel file ( NOT the <<<ecore>>> file) is what get populated the
-	java doc. Although documentation in the <<<ecore>>> file is not included directly, the tool does
-	copy the .core documentation --> .genModel file by default ( if the equivalent .GenModel documentation
-	does not already exist).
+	Documentation can be added to the diagrams via specific Documentation Elements that you can attach to particular Classes/Interfaces/Relationships/Datatypes etc. To see documentation elements on the diagram editor, you need to have the documentation layer enabled.
+
+	Note: You can attach just one Documentation Elemant only. if you attempt to create a SECOND note attached to a CLASS it will OVERWRITE the first WITHOUT warning!
+
+	Documentation can also be unattached on the diagram (ie.not associated with any particular element), and this will be interpreteted as describing the overall Package that the diagram is modelling.
+
+	Documentation elements can be attached, on the diagram, to the high level objects:
+			Classes
+			DataTypes
+			Enumerations
+			Relationships
+
+	Documentation can be associated with operation/attributes too, but these don't show on the diagram. They can be specified within the <<<properties>>> view available alongside the GUI modelling tool.
+
+
+*Representation within the ecore model and genmodel files.
+
+	Documentation is represented in the <<<ecore>>> model file as  GenModel annotations with the KEY = documentation and VALUES "Whatever documentation is". It will be attached to whatever element of the model that it describes (Package/Class/Operation...)
+
+	It does appear as if documentation can also be attached in the GenModel file too. However, this is a bit obscure, so best not worried about I think. It LOOKS like the documentation from the Ecore File gets copied into the genmodel file. However it CAN be overridden in there, I think. It is this version that makes its way into the code. Don't bother playing with this).
+
+
+**Some notes on annotations generally...
+
+	[[1]] The GenModel map is described by a URL: http://www.eclipse.org/emf/2002/GenModel   ( which doesn't seem to exist as a browsable thing?)
+
+	[[1]] The Schema  specifies what Key --> Value Mappings are valid for that GenModel Map.
+
+	[[1]] The key 'Documentation' is valid within the scheme (with its value being whatever the documentation is). I don't know what other keys are legitimate.
+
+	[[1]] NB KEY is unique you can't have two element with the same key attached to the element.
+
+	[[1]] You cannot make up arbitrary KEYS, they must be drawn from the domain specified by http://www.eclipse.org/emf/2002/GenModel.
+
+*Representation within the generated Code.
+
+	Documentation from the model seems to get primarily represented within the Interface Elements generated from the model. Relatively little get generated in the implementation of the Interface (This assumes the default GenModel setting is in force (not <<<Suppress Interfaces>>>)).
+
+	Documentation get translated into elements embedded within {{{./onJavaDoc.html}JavaDoc}} comments in the JavaCode. A JavaDoc Formatted Comment will be generated for each element in the model. Amongst other things, this will contain the various EMF annotations that are used to handle mapping JavaCode backwards and forwards into the Ecore modes (@model, @generated etc.) It will also contain some of the standard JavaDoc annotations, and, where it can, it will have attached appropriate elements from the model to those annotations (@see, @return, @parameter etc.).
+
+	Documentation from the model will get included within the JavaDoc comment embedded within specific markers:
 
 ---
-	<!---begin-model-doc -->
-			Contains Documentation entered under:
-					Properties --> Generation --> Documentation
+	<!-- begin-model-doc-->
+
+		Documentation from the model appears here!
+
+		Custom documentation written in here will be destroyed during regeneration.
 
 	<!--end-model-doc -->
 ---
 
-	Documentation within <!---begin-user-doc --> <!--end-user-doc --> Constructs does not get overwritten
-	when the models are regenerated.
+	Because what we are adding is JavaDoc, we can include other syntactically correct annotation within here, and they will be faithfully reproduced.
+
+	(Note you can stick some annotations in here such as @extends, @inherits etc, which can influence the generational behaviour. So this is a potentially useful thing to know about.???)
 
 
-Generating the HTML
+*Retaining Comments within Generated Code.
 
-	* From eclipse
+	The JavaDoc comment is regenerated each time the model is generated. <<Customisation that you have made to the JavaDoc comment within the java code will be lost UNLESS it is included within the following markers:>>
+
+---
+	<!---begin-user-doc -->
+
+		Custom documentation written in here WILL be retained during regeneration
+
+	<!--end-user-doc -->
+---
+
+	Any standard comments written OUTSIDE of the JavaDoc sections will be retained.
+
+*Generating the Javadoc as HTML
+
+	* From eclipse (with the Java Perspective active)
 			Projects --> Generate Javadoc
 
 	* From the command line
@@ -472,7 +474,6 @@ Rebuilding my IDE
 
 
 Created a copy of the ~/eclipseWorkspace ~eclipse-workspace.2019-12
-
 
 
 *Building a Modelling Environment on top of an existing Maven / Project.
@@ -1355,17 +1356,21 @@ Why having our implementaion inherit from the MinimalEObjectImpl.Container is po
 
 			* indirectly extend the MinimalEObjectImpl.Container Class,  by extending a class that itself extends MinimalEObjectImpl.Container.
 
-	Note: MinimalEObjectImpl.Container is the default object that will be extended. There are other Classes available within the Ecore Library that also extend the EObject Object, so could conceiveably be used in its stead.
+	Note: MinimalEObjectImpl.Container is the default object that will be extended. There are other Classes available within the Ecore Library that also extend the EObject Object, so could conceivably be used in its stead.
 
 	{{{https://download.eclipse.org/modeling/emf/emf/javadoc/2.5.0/org/eclipse/emf/ecore/package-summary.html}org.eclipse.emf.core}}
 
 
 	Because inheritance works in one direction (children inherit from parents, but parents can't inherit from children), all the code generator needs to do is identify the all the leaf nodes (i.e those classes/interfaces that don't inherit from any other), and use <<THOSE>> to directly extend EObject/MinimalEObjectImpl.Container.
 
-	All other nodes on the model are then guaranteed to inherit the ECore functionalty, directly or indirectly, from every leaf node to which it has a route. The generator will choose ONE route to a leaf node and implement it is series of direct 'extends' through the intermediate Class Node. The other inheritance paths will be represented as additional interfaces that are to implemented.
+	All other nodes on the model are then guaranteed to inherit the ECore functionality, directly or indirectly, from every leaf node to which it has a route. The generator will choose ONE route to a leaf node and implement it is series of direct 'extends' through the intermediate Class Node. The other inheritance paths will be represented as additional interfaces that are to implemented.
 
 	This is no different from the way the generator resolves {{#Multiple Inheritance}} situations, in general.
 
+
+*Customising the Root (Leaf) Classes that get inherited.
+
+	If necessary you can add your OWN classes/interfaces for Leaf nodes to inherit from. These can only be specified within the  genmodel model / package level. The generation will assume that the packages that you stick in here THEMSELVES extend/inherit from the Ecore bases classes/interfaces EObject,  MinimalEObjectImpl.Container.
 
 
 
@@ -1501,6 +1506,9 @@ CAREFUL THIS ISNT WORKING AS EXPECTED.
 	[[1]] The list interface should now be generated with all the operations present in it. Note that he data types will have been converted into Ecore Model ddata types, and a few more DataTypes may have been added to support the types held in the List.
 
 
+	Aargh!   Needs more work! The Model that is captured Java --> Ecore does not quite translate back Ecore --> Java in a way that fully compiles. More work needed.
+
+
 
 Making Model Components Read Only.
 
@@ -1591,7 +1599,7 @@ Sharing Project Objects
 
 		When a new representation file is created, it can be associated either with the local genmodel file or the local ecore model file. Normally, associating the ecore file with the genmodel would be the recommended choice, becuase that enables code generateion funtionality form within the diagramming tool. However, in hese circumstances it may be better to base it on teh e.core file and so diable code generateion. THe reason for that is this.
 
-		When we create new represntations with the representation file, it will ask us to bbase teh representation on one of the packages, either the local or remote package. Regardless as to which we choose, the model can still represent object form both packages (although some will be local and some remote objects. Which way round depends on which package we chose to base out representation on.). However, if generate functionality is enabled from within the graphical tool, it will initiate generation on the model upon which it has been based. That means it can kick off generation in the non-local package.
+		When we create new represntations with the representation file, it will ask us to bbase teh representation on one of the packages, either the local or remote package. Regardless as to which we choose, the model can still represent object form both packages (although some will be local and some remote objects. Which way round depends on which package we chose to base out representation on.). However, if generate functionality is enabled from within the graphical tool, it will initiate generation on the model upon which it has been based. That means it can kick off generation in the non-local package.  (It is possible this only happens if the genmodels are added AFTER the representation has been created)
 
 		This may or may not be a problem. If we are using the remote packages as a remote library, we are probably not internding to make changes to it. And since it is likely to be a resource shared amongst possibly many projects accidentally changeing it might have unintended consequence!.
 
@@ -1603,7 +1611,7 @@ Sharing Project Objects
 
 
 
-*Accidnetall corrupting linked model files
+*Accidentally corrupting linked model files
 
 	Consequently,  when you open a single ecore file with some of the editors, you may see details from 2 (or more) files. However, if the remotely refernced file is from a project that is not open, various problems will be indicated BUT it is not immediately clear from the messaging what the problem is.
 
@@ -1654,10 +1662,141 @@ Sharing Project Objects
 
 
 
-	Representation Model Diagram will wrap a genmodel that references both model local and remote models.
-
-	When a generation is kicked off, it will attempot to generate code in BOTH models.
-
-
 
 	Project Dependencies
+
+
+
+
+
+
+Manually Splitting a Project into Model and Implemention Parts
+
+
+	Can do this several ways:
+
+		One Project:
+
+			One Package/Ecore file covering model and implementation
+
+				Here I guess we would create seperate diagrams for the Model and Implemention Parts????
+
+				There can only be one genmodel, and it would therefore generate all objects in both model and implemention, each time it ran.
+
+
+			Two or more Ecore Files representing Tow or more packages, but BOTH controlled by the same GenModel File.
+
+				Here we generate 2 different packages.
+
+					Each package will be generated each time genmodel is run
+
+					They package direcories will sit under the same overall src directory.
+
+
+			Two or more Ecore Files each with their own genModel File. In theory, each package will control their own package.
+
+				The two packages can now be generated independently, with differeent paramters (NB it is importatnt to specify 'Suppress Interfaces' for both Ecore Models.)
+
+				Once the genmodel file are in place, we can build representations on each mopdel seperately, and we can configure builds of each part of the model seperately too.
+
+
+
+
+
+		Two Projects : one for Model, One for implemention.
+
+
+
+
+
+		Differnt Packages for the Model and Implementation.
+
+
+
+
+	The idea of this is to see whether there are any advantages in turning OFF the Interface/Class generation behaviour and doing the modelling explicitly in Classes and Interfaces.
+
+	If you create a model entirely of explicity specified interfaces:
+
+		* These will get implemented Entirely as Interfaces.
+
+		* The 'Leaf' Interfaces will implement EObject
+
+		* Non-Leaf Nodes will implement the interfaces of all other parents.
+
+		* javaDoc will be generatef for all features.
+
+
+	If you generate a model entirely as Classes:
+
+		* These will get imlemented Entirely as Classes
+
+		* The Leaf Classes will extend MinimalEObjectImpl.Container
+
+		* Non-Leaf CLasses will extend their parent Class and implement their modelled Interface
+
+		* javadoc will be generated for all featrues.
+
+		* Any interfaces will still get modelled as interfaces.
+
+
+	The advantages I can see are:
+
+		* Ability to document classes more fully from the model : if classes and interfaces are generated together, then the interfaces get reasonably well documented, but not the classes.
+
+		* Ability to choose your own class names etc.
+
+		* Allows you to model implementation detail etc in the classes (rather than just modelling things at the interface level.)
+
+
+
+
+
+
+
+
+
+
+You Can't Turn OFF default Generation Functionality.
+
+	I have tried to play with various genmodel options in order to to try and stop the framework from generating ANY if the EMF artifacts, and just generating exactly what has been modelled.
+
+	THIS DOES NOT SEEM TO BE POSSIBLE
+
+	The models will <<always>> import extend emf objects and generate artefacts that take advantage of them.
+
+
+Inner Classes
+
+	You cannot represent nested classes/inner classes in Ecore.  The closest the you can get is to model the nested inner class as a Data-type.  This only really works if there is containment reference to that inner class (i.e. it is represented as a attribute in your top lavel class); often that will be the case. If your inner class is just instantiated in a class method, then you can't model it at all.
+
+
+Runtime platforms
+
+	genmodel has specific support for generating code targeted at the following execution environments:
+
+
+		* RAP - Rich Ajax Platform;
+
+		* GWT - Google Web Toolkit;
+
+		* IDE - Eclipse IDE;
+
+		* RCP - Rich Client Platform - e.g. Spring;
+
+		[]
+
+
+Synchronising Maven and Eclipse.
+
+	Maven and eclipse each have their own mechanism for resolving dependencies within the projects that they are controlling. If you are relying on Maven to do your building, then, if the search paths are not properly synchronised, have the situation where something compiles and builds fine under maven, but the source you are editing within Eclipse is littered with Red Error indications.
+
+	This is annoying and reduces the effectivness of the tool.
+
+	The easiest way to sort the majority of these problems is to use the maven eclipse plugin, as follows:
+
+	This will update your eclipse Build Path and add in the eclipse liraries refenced in the POM to the 'Libraries Section' of teh Build path. (These also are visible under the Refernces Libraries tree iun the project explores.).
+
+---
+	mvn eclipse:eclipse
+---

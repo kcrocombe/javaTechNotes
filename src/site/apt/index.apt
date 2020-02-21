@@ -66,6 +66,15 @@ Development
 
   []
 
+*Persistence
+
+  * {{{./onJPA.html}On the Java Persistence Architecture}}
+
+  * {{{./onHibernate.html}On Hibernate}} 
+
+  []
+
+
 *Spring
 
   * {{{./onSpring.html}On Spring}}
