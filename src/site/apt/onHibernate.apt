@@ -1,0 +1,75 @@
+On Hibernate.
+
+
+Modelling Considerations.
+
+  According to Eric Evans ( {{{./onDomainDrivenDesign.html} Domain Driven Design}}), persistence is best represented within a model by explicitly modelling it via Repository Classes.
+
+  In a layered architecture, these repository classes will NOT form part of the same layer that the Domain Model occupies.
+
+
+  These Repository Classes will not form
+
+  A repository is a service athat provides trhe illusion of an inmemory collection of all objects of an Aggregate Object'r root type. It will contein methods to add/remove/query objects. It will act a bit like a Factory, returning instatiated objects based on particular selection criteria. The objects may be:
+
+  * fully instantiated
+
+  * contain proxy's that give the illusion of a fully intantiated object. (Lazy instatiation). Proxy's will not be resolved into a fully instantiated object unless they are actually referenced.
+
+  Not all classes in teh model will have a repository. Not even Entity Classes will all have their own repository. Only Aggregate Entitities will have their own Repository.
+
+  Transaction management IS NOT a function of either Repository OR the Aggregate Entity that it holds, but the client object that is using it.
+
+
+  Entities are Objects that are charactereised by:
+
+    * having an Identity (i.e. are not defined the values of its attributes. 2 objects with the same ID but different attributes are STILL the same object (albeit in a different state))
+
+    * having a lifecyle; they are created, move through a series of states, and are enventually destroyed.
+
+
+  Aggregates are clusters of Entities that are constituently related, and that have important consistency criteria that needs to be maintained (i.e. There will be cross-entity aggregate invariants). One entity within the aggregate will be the Aggregate Root and <<all>> access to members of the aggregate will be made via the Aggregate Root. No references are allowed to any member of an aggregate EXCEPT the root.
+
+  It is effectively the controlling class for the aggragate.
+
+  Aggragates define clear ownership and boundaries: they define where an object that is made up of aother objects begins and ends. We treat it as a unit for the purposes of data change.
+
+
+  Aggragate boundaries will be used to, e.g.
+
+    * define transactions
+
+    * define object distrubion
+
+
+  Only aggragate roots can be obtained directly with database queries.
+
+  A delete operation must remove everything within the aggragate boundary.
+
+
+  Generally speaking the client object, the entity being persisted and the repository will be in different layers of the modes (e.g Application, Domain, Infrastucture respectivly.)
+
+
+
+
+
+Misc Problems
+
+  Whewre do the various Configuration Files go??
+
+  And How Many do you actually need
+
+
+  The org.hibernate.PersistentObjectException: detached entity passed to persist  Problem
+
+  The Entities to Scan problem with the persistence.xml file
+
+  The USerEntity Problem
+
+  The Schema and Owner  problem
+
+
+  JPA versus Hibernate Instantiation.
+
+  Maven test profile and H2 database
+  

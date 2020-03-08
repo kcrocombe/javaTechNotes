@@ -975,7 +975,7 @@ How Providing Instance Names for Modelled Classes and Interfaces affect the arte
 
 **Datatypes
 
-	Datatypes are a simple way for external objects to be referenced in the model. The fully qualified object name (Class/Interface) is associated with the named Datatype. The datatype name tehn just acts as a proxy and the actual class name will get 'expanded out' within the generated Classes/Interfaces.
+	Datatypes are a simple way for external objects to be referenced in the model. The fully qualified object name (Class/Interface) is associated with the named Datatype. The datatype name then just acts as a proxy and the actual class name will get 'expanded out' within the generated Classes/Interfaces.
 
 ***Principle Restriction
 
@@ -993,7 +993,7 @@ How Providing Instance Names for Modelled Classes and Interfaces affect the arte
 
 ***Using GenModel with Default Settings (i.e. Interface plus Implementing Class).
 
-****Standalone (unextended) Classes/Interfaces
+****Standalone (un-extended) Classes/Interfaces
 
 	The following describes how standalone, unextended classes/interfaces (i.e. no inheritance relationships) are likely to represented. The
 
@@ -1047,7 +1047,7 @@ How Providing Instance Names for Modelled Classes and Interfaces affect the arte
 *---------------------------------+-----------------*----------------*------------------*----------------*
 | Generated Interface             |       X (1)     |        -       |       * (2)      |      X(5)      |
 *---------------------------------+-----------------*----------------*------------------*----------------*
-| Generating Class Implementation |       * (7)     |     X (11)     |       * (8)      |      X (12)    |
+| Generated Class Implementation |       * (7)     |     X (11)     |       * (8)      |      X (12)    |
 *---------------------------------+-----------------*----------------*------------------*----------------*
 
 	Generated Signatures:
@@ -1509,14 +1509,31 @@ CAREFUL THIS ISNT WORKING AS EXPECTED.
 	Aargh!   Needs more work! The Model that is captured Java --> Ecore does not quite translate back Ecore --> Java in a way that fully compiles. More work needed.
 
 
+*Eclipse Editors
+
+	The eclipse editor provides forwarding method support.
+
+	This is really useful, however it doesn't always generate all the methods that need to be generated...
+	Some methods it just seems to ignore... don't know why.
+
+	Actually, I think it only generates functions that CAN delegate. If you are not getting the full list of functions that you are expecting then look check that you have defined member you are delegating too correctly. Pay particular attention if there Are GEWNERICS involved.
+
+
+
 
 Making Model Components Read Only.
 
-	At the level of the File (Resource, in Eclipse Parlance) Elipse has the ability to restrict the ability to change that Resource. (These settings can be viewed under <<<Properties>>>.)
+	At the level of the File (Resource, in Eclipse Parlance) Eclipse has the ability to restrict the ability to change that Resource. (These settings can be viewed under <<<Properties>>>.)
 
 	There are 2 mechanisms:
 
-	 	* File Permissions.
+	 	* File Permissions;
+
+		* By Marking resource Locked.
+
+		[]
+
+	These are explained more fully below.
 
 
 *Permission.
@@ -1531,7 +1548,7 @@ Making Model Components Read Only.
 
 	It basically will stop a Resource being changed through the Eclipse Workbench and the tools plugged into it.
 
-	However, that is not to say that <<ALL>> tools that are plugged into the Workbench will necessarily <<handle>> the fact that a resource is Locked particularly well. For instance:
+	However, that is not to say that <<ALL>> tools that are plugged into the Workbench will necessarily <<handle>> the fact that a resource is Locked particularly well. For instance, the following tools have at least some difficulty:
 
 
 **The Syrius editor
@@ -1556,118 +1573,158 @@ Making Model Components Read Only.
 
 Sharing Project Objects
 
+*Introduction
+
+	In your modelling, periodically you will wish to reference objects that are EXTERNAL to your current project. If these are true library objects, then this is relatively straightforward, and has been discussed previously. However, the situation where you wish to include interfaces/classes that you have modelled yourself in another project may need to be handled differently.
+
+	In these situations, we would wish to be able to model with the objects as if they were local to the project (i.e. participate in Relationships, be extended etc.).
+
+	There are several ways to do it. None of these methods, however, is without its problems. Briefly, we can:
+
+		* Represent the external object as a DataType on the diagram. This only works in a fairly limited way; such items cannot be represented within ANY relationships, but will work as Contained classes/interfaces when expressed as attributes of their container class;
+
+		* Represent the external object as an External Interface (i.e. one with the fully qualified classname/instance name provided). This works quite well in many situations; in the generated code, no interface/implementation class is produced (which is what we want; we want the the actual external classes to be found at runtime along the class path, not built within the project).  The drawback from this method is that the code generator is unaware that external classes we are referencing are <<THEMSELVES>> generated, and will <<ALREADY>> be implementing the interfaces required by the EMF framework. Consequently, any classes that extend our external classes won't work; they will unnecessarily extend the various EMF objects in preference to extending our External class. This means we have to manually implement the behaviour we were trying to inherit.
+
+		* We can reference the external object DIRECTLY within the remote eclipse project. However this is only possible if the remote project is <<open>> at the time. However, as described elsewhere, there can be some quite unpleasant side effects if we then try to access that remote object is the project is <<NOT OPEN>>; it can lead to corruption and data loss.
+
+		* We can reference the external Object INDIRECTLY. This is the method that is described below. Although it is relatively complicated, it probably offers the fullest range of modelling features.
+
+		[]
+
+
 *Sharing By Copying
 
-	This is a means of pulling a <<copy>> of an ecore model somewhere else in the workspace and then working with it alongside the primary model of the project. The project will therefore contain two or more .ecore model files: the \<primary\>.core and a \<copy\>.ecore file.
+**Description
 
-	There will be a SINGLE .genmodel file that wrappers both files, and will control generation of java objects from both models as if they were contained within a single .ecore file. Since each .core file represents a different package, the code will be generated into different Java Packages. However, all objects are generated under the same genmodel, and are thus controlled by the same gen-model parameters.
+	This is a means of pulling a <<copy>> of an Ecore model somewhere else in the workspace and then working with it alongside the primary model of the project. The project will therefore contain two or more .ecore model files: the \<primary\>.core and a \<copy\>.ecore file.
 
-	We can create Representations on either of the 2 models ( \<primary\>.ecore, \<copy\>/.ecore). Regardless of the choice, objects from both .ecore files can be represented on the diagrams. If a representation is based on on one .ecore model, objects from teh other .core models will be decorated with a tage indicating that they are remote.
+	There will be a <<SINGLE>> .genmodel file that wrappers both files, and will control generation of java objects from both models as if they were contained within a single .ecore file. Since each .ecore file wrappers a different package, the code will be generated into different Java Packages. However, all objects are generated under the same genModel, and are thus controlled by the same gen-model parameters:
 
-	NOTE: No relationship is maintained between the original imported .ecore file and its copy; they are free to diverge without restriction.
+		* They will share the same base class (e.g. uk.co.pegortech.baseClass);
 
-**Creating
+		* They will share the same source/destination direcories with regard to source code (e.g. /projectName/src-gen);
 
-	[[1]] Create a new empty local .ecore file (as described earlier) and amend it to give it a name, namespace etc.
+		* Generation parameters governing, for example,  Model/Implementation Splits;
 
-	[[1]]	Create a .genmodel file to wrapper it. At the point where the wrappered data sources are chosen, load both the local .ecore AND the .ecore you wish to copy.
+		* Files from <<both>> models will be generated from a <<single>> invocation of the genmodel tool.
+
+		[]
+
+	We can create diagrammatic Representations based on either of the 2 models ( \<primary\>.ecore, \<copy\>/.ecore). Regardless of the choice, objects from both .ecore files can be presented on the diagrams. If a representation is based on on one .ecore model, objects from the other .ecore models will be decorated with a tag indicating that they are remote.
+
+	<<NOTE: No relationship is maintained between the original imported .ecore file and its copy; they are free to diverge without restriction. If you do not want this to happen, you must put additional steps in place to ensure that cannot happen. For example, you can make the files Read-Only as described above)>>
+
+	If the intention is to modify the objects contained in the package in some way, care must be taken to ensure that they do not subsequently get confused with the original objects, particularly during jar packaging and distribution. The easiest way to ensure that does not happen is to change the <<BasePackage>> of the package. (If the genModel has a reasonable configuration, the base package is likely to be different anyway.)
+
+	Another possibility is to change the actual package name. This would tend to disguise the origins of the original package. This may or may not be useful, depending on how significantly the copied is to be changed from the original.
+
+**Creating a copied .ecore file setup.
+
+	The following describes the general process of wrappering 2 or more .ecore files within the same
+
+	[[1]] Create a new empty local .ecore file (as described earlier) and amend it to give it a name, namespace etc. If you already have an ecore file containing objects that you have already modelled, then you can skip this step.
+
+	[[1]]	Create a .genmodel file to wrapper it. At the point where the wrappered data sources are chosen, load both the local .ecore AND the .ecore you wish to copy. If you already have a genModel file that you wish to keep, then the genmodel file can be <<reloaded>> instaed.
 
 	[[1]] On the Package Selection specify <<BOTH>> packages as Root packages. Do not select Any referenced Data models.
 
-	[[1]] On completion, and remote .ecore files will be copied to the local project.
+	[[1]] On completion, any remote .ecore files will be copied to the local project.
 
-	[[1]] The local copyi .ecore and the original .ecore file are now fully free to diverge.
+	[[1]] The local copy .ecore and the original .ecore file are now fully free to diverge.
 
 
-*Sharing By Referencing
+*Sharing By Referencing Remote Ecore Files
 
-	With this means of sharing, no duplicate ecore files are created. Each ecore file will be referenced via its parent  project. <<This has an immediate important consequence; if the parent project is not open then the data items within its .ecore file can not be referenced either. Some of the tools don't handle this situation particularly well. In particular, the Siris graphical editor will not show any remote objects if the remote objects is not availbale, but it will not give any indication that it is doing so: the items will just silently disappear from the representation. If the representation file is edited in any way, then the loss is permanent ( Although teh underlying data model does seem to remin intact.) >>
+**Description
 
-	It can be a little tricky to set up code generation across ecore files that are you want to share by referencing, particularily if one of the ecore files already contains references to remote objects. It does help, however, if you think carefully about how the data is structured within the ecore files that you are attempting to share.
+	With this means of sharing, no duplicate Ecore files are created. Each Ecore file will be referenced in its parent  eclipse project, and can ONLY be referenced if that project is open. <<This has an immediate important consequence; if the parent project is not open then the data items within its .ecore file can not be referenced either. Some of the tools don't handle this situation particularly well. In particular, the Sirius graphical editor will not show any remote objects if the remote objects is not available, but it will not give any indication that it is doing so: the items will just silently disappear from the representation. If the representation file is edited in any way, then the loss is permanent (although the underlying data model does seem to remain intact.)>>
 
-	An .ecore file is normally based on a particular Package, and it will store data about objects contained within that Package. Should one of its objects reference an object in a different package, the a reference to the ecore model file that contains that remote package will also be held. (This has consequences should you ever try to use the model file WITHOUT the referenced project also being open within eclipe (see later!))
+	It can be a little tricky to set up code generation across Ecore files that are you want to share by referencing, particularly if one of the Ecore files already contains references to remote objects. It does help, however, if you think carefully about how the data is structured within the Ecore files that you are attempting to share.
 
-	When you attempt to wrapper a SINGLE ecore file within a new genmodel file, it will realise that there are 2 or more more packages involved in code generation, and provides you with two different options:
+	An .ecore file is normally based on a single Package, and it will store data about objects contained within that Package. Should one of its objects reference an object in a different package, then a reference to the Ecore model file that contains that remote package will also be held.
+
+	When you attempt to wrapper a SINGLE Ecore file within a new genmodel file, it will realise that there are 2 or more more packages involved in code generation, and provides you with two different options:
 
 		[[a]] the codegen model can manage code generation across BOTH packages. Whatever parameters that are configured for the genmodel will be applied to both packages, and code for both packages will be generated WITHIN THE LOCAL Project. This now means you have two copies of the generated code, one of which does not contain any the custom coding which that was in the original. <<This is almost certainly NOT what you want.>>
 
-
-		[[a]] The local codegen can be configured to manage the local package, but reference the remote generator model that manages that remote package. In those circumstances, invoking codegen will only ever build the local package. It will not build the remote package, either locally or remotely. (However see below, re reresentations.)
-
-
-	Creating Representation Files in shared files.
-
-		When a new representation file is created, it can be associated either with the local genmodel file or the local ecore model file. Normally, associating the ecore file with the genmodel would be the recommended choice, becuase that enables code generateion funtionality form within the diagramming tool. However, in hese circumstances it may be better to base it on teh e.core file and so diable code generateion. THe reason for that is this.
-
-		When we create new represntations with the representation file, it will ask us to bbase teh representation on one of the packages, either the local or remote package. Regardless as to which we choose, the model can still represent object form both packages (although some will be local and some remote objects. Which way round depends on which package we chose to base out representation on.). However, if generate functionality is enabled from within the graphical tool, it will initiate generation on the model upon which it has been based. That means it can kick off generation in the non-local package.  (It is possible this only happens if the genmodels are added AFTER the representation has been created)
-
-		This may or may not be a problem. If we are using the remote packages as a remote library, we are probably not internding to make changes to it. And since it is likely to be a resource shared amongst possibly many projects accidentally changeing it might have unintended consequence!.
+		[[a]] The local codegen can be configured to manage the local package, but reference the remote generator model that manages that remote package. In those circumstances, invoking codegen will only ever build the <<local>> package. It will not build the remote package, either locally or remotely. (However see below, re representations.)
 
 
+**Invoking genmodel from within model Representations where remote ecore models are involved.
+
+	When a new Sirius representation file is created (e.g. an Entity mode), it can be associated either with the local genModel file or the local Ecore model file. Normally, associating the Ecore file with the genModel would be the recommended choice, because that enables code generation functionality from within the diagramming tool. However, in these circumstances it may be better to base it on the Ecore file and so disable code generation. The reason for that is as follows.
+
+	When we create a new Representation, it will ask us to base it on ONE of the packages, either the local or remote package. Regardless as to which we choose, the model can still represent object from both packages: it is just that some object will be represented as <local> and others as <remote>. (Which way round depends on which package we chose to base out representation on).
+
+	However, if generate functionality is enabled from within the graphical tool, it will initiate generation on the particular model upon which it has been based. That means it <<can>> kick off generation in the non-local package, if the representation has been based on the non-local package.
+
+	<<What is more, the java files from the Representation based on a remote file will generated in the remote repository.>>
+
+	This will almost certainly be undesirable. If we are using the remote packages as a remote library, we are probably <<not>> intending to make changes to it. And since it is likely to be a resource shared amongst possibly many projects, accidentally changing it might have unintended consequence for all projects that share it!.
+
+**Accidentally corrupting linked model files
+
+	When you open a single Ecore file with some of the Ecore editors, you may see details from 2 (or more) Ecore files. However, if one of the Ecore files is remotely referenced, the project holding that Ecore file MUST be open.
+
+	If it is not, then various problems will be indicated BUT it is not immediately clear from the messaging what the problem is.
+
+***Sample Ecore Editor
+
+	The Sample Ecore editor doesn't seem to cope with the situation at all well, and throws up lots of Java type Errors. However, because it basically crashes out, it does at least deny you the opportunity introduce any real corruption via  attempted 'fixes' of a problem which does not really exist. Once the remote project is opened, the problem does seem to go away.
+
+***Ecore Editor
+
+	The Ecore Editor on the other hand does not crash. It realises that it can't resolve some of its links, and gives you a 'helpful' drop down boxes for you to fix the problem by choosing something which is 'valid'. <<Should you take that opportunity, either deliberately or accidentally, then you will have introduced corruption into your model.>>
+
+***The Sirius Graphical Editor
+
+	The Sirius editor does not handle remote data at all well. If the parent project is not open, then the data items within its referenced .ecore file won't be reachable either. The Sirius graphical editor will <<not>> show any remote objects if the remote objects are not available. However, it will not give any indication that it is failing to do so; the items will just silently disappear from the representation.
+
+	If the representation file is edited/saved in any way, then the loss of those objects from the diagram is permanent.i The items will need to be re-added back to the diagram, but this is dependent on the user actually noticing that some of the objects have gone missing, which is unlikely.
+
+	Fortunately, though, the underlying data model does seem to remain intact.
 
 
-		Representations based on the Remote File will generate in teh remote repository.
+**Creating a referenced .ecore file setup.
+
+	The following describes the general process of setting up a genModel file that can reference a remote .ecore file:
+
+		[[1]] Create a new empty local .ecore file (as described earlier) and amend it to give it a name, namespace etc.
+
+		[[1]]	Create a .genmodel file to wrapper it. At the point where the wrappered data sources are chosen, load both the local .ecore AND the .ecore you wish to copy.
+
+		[[1]] On the Package Selection page, specify the local packages as a Root packages only. Elect to add a referenced Data models for the remote ecore dataset, choosing the .genmodel file that manages it in the remote system.
+
+	The referenced Ecore file is now shared between 2 systems any changes made by either system will affect BOTH.
 
 
+*A Combined Approach to Sharing - the best of both worlds.
 
+	Ideally, we would prefer to guarantee that all of our model will always be available, and so avoid the possibility of corruption which might be introduced when we open a project when objects referenced from a remote closed project are not available. This implies working with a local copy of remote ecore file is preferred.
 
-*Accidentally corrupting linked model files
+	Ideally, we would prefer NOT to generate objects from the copy ecore files. Instead we wish to reference their objects from library jars on our classpath at runtime, rather than compiling local copies into out build. This implies that we want local and remote to be under the control of different genmodel files.
 
-	Consequently,  when you open a single ecore file with some of the editors, you may see details from 2 (or more) files. However, if the remotely refernced file is from a project that is not open, various problems will be indicated BUT it is not immediately clear from the messaging what the problem is.
+	We can achieve this by creating a local copy of the remote ecore file we wish to reference, but then wrappering it in a different genmodel to the rest of the model. We can then:
 
-	The Sample Ecore editor doesn't seem to cope with the situation at all well, and throws up lots of Java type Errors. However, becasue it basically crashes out it does not give yot the opportunity introduce real corruption by attempoting to 'fix' a problem which does not really exist.
+	 	* adjust the properties on the genmodel file to ensure that files from the copied model are never generated, or;
 
-	The Ecore Editor onthe other hand does not crash. It realises that it can't resolve some of its links, and gives you a 'helpful' drop down boxes for you to fix the problem by choosing something which is 'valid'. Should you take that opportunity, either deliberately or accidentally, tehn you will have introduced corruption into your model.
+		* generated under a different class base name or class name than the original classes;
 
+		* written to a different source code directory to the rest of the application so that, even if they do get generated, they wonlt get built into the applicaion itself.
 
+		* File permissions on the remote ecore and genmodel files can be set to ensure that these are not inadvertently changed.
 
+		[]
 
+	For projects set up this way, it should be possible to:
 
+	 	* safely include objects from BOTH ecore files on any modelling diagram;
 
+		* embed and extend referenced classes as we would if they were local, and have the generated code that references correctly embed the EMF functionality in the right classes and interfcaes.
 
+		[]
 
-**Creating
-
-	[[1]] Create a new empty local .ecore file (as described earlier) and amend it to give it a name, namespace etc.
-
-	[[1]]	Create a .genmodel file to wrapper it. At the point where the wrappered data sources are chosen, load both the local .ecore AND the .ecore you wish to copy.
-
-	[[1]] On the Package Selection,
-
-	 specify the local packages as a Root packages only. Elect to add a referenced Data models for the remote ecore dataset, choosing the .genmodel file that manages it in the remote system.
-
-	[[1]] On completion, and remote .ecore files will be copied to the local project.
-
-	[[1]] The local copyi .ecore and the original .ecore file are now fully free to diverge.
-
-
-
-
-
-
-
-	Requires BOTH projects to be open
-
-
-	IS done by creating a genModel which references 2 or more models. Can do this TWO ways.
-
-		a) by refercing BOTH ecore Models in hte one genModel
-
-
-			During generation, the code in the remote model will not be touched
-
-		b) By referncing the local ecore model AND refernceing the fenmodel of the remote model
-
-
-
-
-
-
-	Project Dependencies
-
-
-
-
+============
 
 
 Manually Splitting a Project into Model and Implemention Parts
@@ -1791,12 +1848,22 @@ Synchronising Maven and Eclipse.
 
 	Maven and eclipse each have their own mechanism for resolving dependencies within the projects that they are controlling. If you are relying on Maven to do your building, then, if the search paths are not properly synchronised, have the situation where something compiles and builds fine under maven, but the source you are editing within Eclipse is littered with Red Error indications.
 
-	This is annoying and reduces the effectivness of the tool.
+	This is annoying and reduces the effectiveness of the tool.
 
 	The easiest way to sort the majority of these problems is to use the maven eclipse plugin, as follows:
 
-	This will update your eclipse Build Path and add in the eclipse liraries refenced in the POM to the 'Libraries Section' of teh Build path. (These also are visible under the Refernces Libraries tree iun the project explores.).
+	This will update your eclipse Build Path and add in the eclipse libraries referenced in the POM to the 'Libraries Section' of the Build path. (These also are visible under the References Libraries tree and the Project Explorer).
+
+	These seem to 'disappear' are regular intervals, but can be repaired once more my running the mvn eclipse:eclipse plugin.
 
 ---
 	mvn eclipse:eclipse
 ---
+
+Enabling Git functionality.
+
+	The way I have been using is to:
+
+	[[1]] use git to init a repository as described in {{{./onGit.htlm}Git Notes.}}
+
+	[[1]] With Eclipse ,  From the Context Menu ( Right Click) select the  Team --> Share Project option.

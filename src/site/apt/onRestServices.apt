@@ -1,0 +1,65 @@
+
+Sources|:
+
+  Start with Restful Web Services and Spped Read.
+
+
+  Addressable Resources (via a URL)
+
+    But there’s one aspect of REST that most developers still don’t understand: hypermedia.
+
+    But there’s one aspect of REST that most developers still don’t understand: hypermedia.
+
+    I did it this way because hypermedia is the single most important aspect of REST, and
+the least understood.
+
+
+Principl of Addressability
+
+  The principle of addressability just says that every resource should have its own URL. If something is important to your application, it should have a unique name, a URL, so that you and your users can refer to it unambiguously.
+
+
+Short Session
+
+  But as far as the server is concerned, Alice isn’t anywhere. The server has already
+forgotten about her. HTTP sessions last for ONE request. Compare this to an SSH session which can last for hours.
+
+  This principle is sometimes called statelessness.The term “statelessness” is getting at the fact that the server doesn’t care what state the client is in.
+
+  The GET method - It means “give me a representation of this resource.”
+
+  small number of standard methods; GET, HEAD, POST, PUT, and DELETE ( plus 3 others that are not used to ofter)
+
+  Status code 303 tells Alice’s browser to automatically make a fourth HTTP request, to
+the URL given in the
+header. Without asking Alice’s permission, her browser
+Location
+does just that:
+
+
+Because HTTP sessions are so short, the server doesn’t know anything about a client’s
+application state. The client has no direct control over resource state—all that stuff is
+kept on the server. And yet, the Web works. It works through REST—representational
+state transfer.
+Application state is kept on the client, but the server can manipulate it by sending representations—
+HTML documents, in this case—that describe the possible state transitions.
+Resource state is kept on the server, but the client can manipulate it by sending
+the server a representation—an HTML form submission, in this case—describing the
+desired new state.
+
+The unprecedented flexibility of the Web comes from the principles of REST. In the
+1990s, we discovered that the Web works better than its competition. In 2000, Roy T.
+Fielding’s Ph.D dissertation1 explained why this is, coining the term “REST” in the process
+
+The Fielding dissertation also explains a lot about the problems of web APIs in the 2010s
+
+
+
+The HTTP standard says that a GET request is a request for a representation.Your GET request won’t do something disastrous like
+delete all the data. We say that GET is a safe method
+
+HTTP response can be split into three
+parts
+response code - a 3 digit code summarizing the outcome of the requeset
+the body - basically some document ( hson, html, xml). The payload
+the response headers - A series of key-value paires describing the body and the HTTP response in general ( The most important one in sthe Content-Type)

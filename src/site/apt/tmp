@@ -1,0 +1,110 @@
+*==>{{{#Sources}Sources}}
+
+*==>{{{#Introduction}Introduction}}
+
+*==>{{{#Principle_Concepts_within_the_API}Principle Concepts within the API}}
+
+**====>{{{#Entities}Entities}}
+
+***======>{{{#Entity_Metadata}Entity Metadata}}
+
+**====>{{{#Transient_Annotations}Transient Annotations}}
+
+**====>{{{#Primary_Keys.}Primary Keys.}}
+
+***======>{{{#Automatic_Generation}Automatic Generation}}
+
+**====>{{{#Relationships}Relationships}}
+
+**====>{{{#The_Entity_Manager}The Entity Manager}}
+
+*==>{{{#Persistence_Unit,_PersistenceContexts_and_Entity_Managers}Persistence Unit, PersistenceContexts and Entity Managers}}
+
+**====>{{{#The_Persistence_Unit_Configuration}The Persistence Unit Configuration}}
+
+***======>{{{#Persistence.xml_location}Persistence.xml location}}
+
+**====>{{{#Types_of_Entity_Manager}Types of Entity Manager}}
+
+**====>{{{#Container-Managed/Transaction-Scoped_Entity_Managers.}Container-Managed/Transaction-Scoped Entity Managers.}}
+
+**====>{{{#Container-Managed/Extended_Entity_Managers.}Container-Managed/Extended Entity Managers.}}
+
+**====>{{{#Application_Managed_Entity_Managers}Application Managed Entity Managers}}
+
+*==>{{{#JPA_Transactions}JPA Transactions}}
+
+**====>{{{#JTA_Transactions}JTA Transactions}}
+
+**====>{{{#Resource_Local_Transactions}Resource Local Transactions}}
+
+*==>{{{#Principle_Operations}Principle Operations}}
+
+**====>{{{#Persist}Persist}}
+
+**====>{{{#Find}Find}}
+
+**====>{{{#Remove}Remove}}
+
+*==>{{{#Cascading.}Cascading.}}
+
+*==>{{{#Clearing_the_Persistence_Context.}Clearing the Persistence Context.}}
+
+*==>{{{#Synchronisation_with_the_Database.}Synchronisation with the Database.}}
+
+*==>{{{#Detachment_and_Merging}Detachment and Merging}}
+
+**====>{{{#Working_with_Detached_Entities.}Working with Detached Entities.}}
+
+**====>{{{#Avoiding_Detachment}Avoiding Detachment}}
+
+*==>{{{#Lazy_Fetching}Lazy Fetching}}
+
+*==>{{{#Lazy_Relationships}Lazy Relationships}}
+
+*==>{{{#Embedded_Collections.}Embedded Collections.}}
+
+**====>{{{#Lists}Lists}}
+
+*==>{{{#Java_Persistence_Query_Language_(JPQl)}Java Persistence Query Language (JPQl)}}
+
+**====>{{{#Fuller_Details}Fuller Details}}
+
+**====>{{{#Introduction_to_JPQL}Introduction to JPQL}}
+
+**====>{{{#Defining_Queries}Defining Queries}}
+
+***======>{{{#Query_Interfaces}Query Interfaces}}
+
+***======>{{{#Dynamic_and_Non-Dynamic_Queries}Dynamic and Non-Dynamic Queries}}
+
+****========>{{{#Dynamic_Queries}Dynamic Queries}}
+
+****========>{{{#Named_Queries}Named Queries}}
+
+***======>{{{#Executing_Queries}Executing Queries}}
+
+***======>{{{#Working_with_Query_Results.}Working with Query Results.}}
+
+***======>{{{#Misc_Query_Topics}Misc Query Topics}}
+
+****========>{{{#Database_queries_that_hit_Entities_that_are_currently_sitting_in_the_PersistenceContext.}Database queries that hit Entities that are currently sitting in the PersistenceContext.}}
+
+****========>{{{#Blocking_and_Timeouts.}Blocking and Timeouts.}}
+
+****========>{{{#Bulk_updates}Bulk updates}}
+
+****========>{{{#Inheritance_and_Polymorphism.}Inheritance and Polymorphism.}}
+
+****========>{{{#Collection_Expressions}Collection Expressions}}
+
+*==>{{{#The_Criteria_API}The Criteria API}}
+
+**====>{{{#Outline}Outline}}
+
+**====>{{{#Join_Objects}Join Objects}}
+
+**====>{{{#Predicate_Objects}Predicate Objects}}
+
+*==>{{{#When_do_you_use_JP_QL_over_the_Criteria_API_and_vice_versa.}When do you use JP QL over the Criteria API and vice versa.}}
+

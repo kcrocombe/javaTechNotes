@@ -18,12 +18,34 @@ Bits on Pieces, Tips and Tricks on the Java Language.
 
     Errors : arising from exceptional circumstances EXTERNAL to the application : Hardware failure etc.
 
-    Runtime Exceptions : arising from exceptional conditions arising from WITHIN the applicaiton : E.g. Divide by zero, Null Pointer exceptions etc.
+    Runtime Exceptions : arising from exceptional conditions arising from WITHIN the application : E.g. Divide by zero, Null Pointer exceptions etc.
 
   These are not subject to the Catch or Specify Requirement described above.
 
 
 ===
+
+*Constructors calling other Constructors
+
+  Often you will want to implement a constructor in terms of another constructor. Probably all you will do is call that other constructor, but pass additional arguments on to it. Often this is just a means of providing 'default' parameters.
+
+  There is a hndy contruct to achive this.
+
+---
+  protected ForwardingMapImpl() {
+  this(new HashMap<K1,V1>());
+  }
+
+  protected ForwardingMapImpl(Map<K1,V1> implementation ) {
+  super();
+  this.delegate = implementation;
+  }
+---
+
+  Note the <<<this( )>>> construct as a way of calling the other constructor.
+
+===
+
 *Static Elements in Java
 
   When you see the static keyword, think 'State'. In some sense, the element carrying the static keyword bestows state upon the Class.
@@ -73,7 +95,7 @@ Bits on Pieces, Tips and Tricks on the Java Language.
 
     * cannot use <<<this>>> or <<<super>>> keywords.
 
-    * cannot use instance vairables directly (although they can if they gat passed instance variables as parameters.)
+    * cannot use instance variables directly (although they can if they gat passed instance variables as parameters.)
 
     []
 
@@ -99,11 +121,13 @@ Bits on Pieces, Tips and Tricks on the Java Language.
 
   Conceptually, this is a little harder to grasp. Here, it is the <<definition>> of the inner class that is providing state to its Parent class.
 
+---
   class Parent{
     static NestedClass {...}
 
     ...
   }
+---
 
   By definition, therefore, only NESTED Classes may be declared static: (otherwise, what class is the nested class providing state to?);  you can't have a top level static class.
 
@@ -176,10 +200,12 @@ General
 
   Additionally, the Iterator provides next() and hasNext() functions to move cursor across the Collection.
 
+---
     for(Iterator\<Element\> i = c.iterator(); i.hasNext;  ) {
       Element e = i.next()
       ...
     }
+---
 
 
 
@@ -217,7 +243,7 @@ Generics
   x = new List<String>;
 ---
 
-  (The name of the identifier E is arbitary, but the convention is that single, capital letters are used. It is important to understand that these are NOT variables, so much as tokens or placeholders for a, possibly arbitary, class. It is not make sense, therefore, to think that it would be useful to give them meaningful names. In the above example, for instance, E could represent a simple Integer or an InsurancePolicy, or a Planet. Its hard to think of a meaningful name that covers even just this short list of possibilities.)
+  (The name of the identifier E is arbitrary, but the convention is that single, capital letters are used. It is important to understand that these are NOT variables, so much as tokens or placeholders for a, possibly arbitrary, class. It is not make sense, therefore, to think that it would be useful to give them meaningful names. In the above example, for instance, E could represent a simple Integer or an InsurancePolicy, or a Planet. Its hard to think of a meaningful name that covers even just this short list of possibilities.)
 
   Other Lists, can be assigned to x. e.g.
 
@@ -249,7 +275,7 @@ Generics
 
 *Inheritance Relationships
 
-  The basic rule is that inheritance applies to the Base Type of a Generic, but NOT to the parameterized type.
+  The basic rule is that inheritance applies to the Base Type of a Generic, but NOT to the parameterised type.
 
   So for instance
 
@@ -287,7 +313,7 @@ Generics
     }
 ---
 
-  Here we create a generic Trap for any arbitary Class/Interface. Remember that T is just a placeholder for a Class/Interface, that is replaced with an Actual Class/Interface by the Compiler at compile time. Consequently WITHIN the class we are defining we can use T in most places where we might use a Class/Interface.
+  Here we create a generic Trap for any arbitrary Class/Interface. Remember that T is just a placeholder for a Class/Interface, that is replaced with an Actual Class/Interface by the Compiler at compile time. Consequently WITHIN the class we are defining we can use T in most places where we might use a Class/Interface.
 
   So, as of here, we can declare and instantiate variables of type T confident in the knowledge that the compiler will substitute the Class/Instance supplied as Actual Parameters at the point of use. In similar vein, we can also define methods that take T as a parameter or return it as a value.
 
@@ -447,7 +473,7 @@ Generics
 
 **Non-generic Sub-Types
 
-  With Non-Generic Subtypes, the generic part of the parent is made concrete by filling out the parameterized part with an appropriate class:
+  With Non-Generic Subtypes, the generic part of the parent is made concrete by filling out the parameterised part with an appropriate class:
 
 ---
     class Elephant implements Mammals,FourLegged,Large {...}
@@ -502,7 +528,7 @@ Generics
 
 ---
 
-  Note <<<\<T extends Bear\>>>> is only permissable because Bear is a sub-type of animal.
+  Note <<<\<T extends Bear\>>>> is only permissible because Bear is a sub-type of animal.
 
 
 
@@ -535,7 +561,7 @@ Generics
   List<?> someList;
 ---
 
-  NB. THIS DOES NOT MEAN THAT someList IS A LIST HOLDING DIFFERENT OBJECTS. IT MEANS THAT someList CAN BE REFERING TO A LIST OF JUST STRINGS (List<String>), OR A LIST OF JUST BEARS (List<Bear>), OR A LIST OF JUST ANIMALS,(List<Animal>)...
+  NB. THIS DOES NOT MEAN THAT someList IS A LIST HOLDING DIFFERENT OBJECTS. IT MEANS THAT someList CAN BE REFERRING TO A LIST OF JUST STRINGS (List<String>), OR A LIST OF JUST BEARS (List<Bear>), OR A LIST OF JUST ANIMALS,(List<Animal>)...
 
   So, going back to our example
 
@@ -589,13 +615,15 @@ Generics
 
   Consider List<? extends Date> someDateList = newArrayList<MyDate>();
 
-  What do we know about the elements of x? We know that they are Dates OR subtypes of Dates. Consequently ANY function that returns the Generic type MUST be a valid Date either a Date itseld, myDate, your Date.., but all can be represented as a Date.
+  What do we know about the elements of x? We know that they are Dates OR subtypes of Dates. Consequently ANY function that returns the Generic type MUST be a valid Date either a Date itself, myDate, your Date.., but all can be represented as a Date.
 
   Consequently
 
-    Date = someDateList.get(0)   will be read as a Date.
+---
+  Date = someDateList.get(0)   will be read as a Date.
+---
 
-  The compiler knows that whatever actual E that comes out of the List it will be a Date type of some kind, and so is <<directly assignable>> to a Date ( or, indeed any supertype of Date if we so whish e.g. Object)
+  The compiler knows that whatever actual E that comes out of the List it will be a Date type of some kind, and so is <<directly assignable>> to a Date ( or, indeed any super-type of Date if we so wish e.g. Object)
 
   All well and good.
 
@@ -603,9 +631,11 @@ Generics
 
     If someDateList can be a list of Date or myDate, the compiler <<can't know at COMPILE time which List someDateList actually refers to>>.
 
-      someDateList.add(new Date())      //COMPILE TIME ERROR!
+---
+  someDateList.add(new Date())      //COMPILE TIME ERROR!
 
-      someDateList.add(new myDate())   //COMPILE TIME ERROR!
+  someDateList.add(new myDate())   //COMPILE TIME ERROR!
+---
 
   Consequently, we <<can not write>> to the List of Dates because we don't know the exact type of Date we are writing. (It could be written as a Date, but then that is not necessarily a MyDate, and we'd end up with a List<Date> NOT a List<MyDate>)
 
@@ -614,11 +644,13 @@ Generics
 
   If a Wildcard is upper bounded
 
+---
     List<? super MyDate> someDateList = newArrayList<MyDate>();
+---
 
-  then the above logic is reversed. Now we don't know whether what we read from the List IS a MyDate, because the List could be list of any number of different supertypes of MyDate, and so necessarily represented as a MyDate.
+  then the above logic is reversed. Now we don't know whether what we read from the List IS a MyDate, because the List could be list of any number of different super-types of MyDate, and so necessarily represented as a MyDate.
 
-  Conversely, we can write a myDate because we know that the list can only be is a list of one of its supertypes, and we can ALWAYS cast myDate to any of its supertypes.
+  Conversely, we can write a myDate because we know that the list can only be is a list of one of its super-types, and we can ALWAYS cast myDate to any of its super-types.
 
 
 

@@ -1,0 +1,105 @@
+
+*Using with Maven within Eclipse IDE
+
+  There are various ways to enable the Maven building functionality within Eclipse
+
+**How a maven project is configured.
+
+  The simplest is just to create the project as a Maven Project right at the outset (New --> Other --> Maven --> Maven Project). It will allow you to search any number of configured catalogs to find a Archetype to bases the projects on, e.g maven-archetype-quickstart, maven-archetype-site.
+
+  It will create a projects:
+
+    * With 2 Builders configured:
+
+      * Java Builder;
+
+      * Maven Project Builder;
+
+      []
+
+    * With A Java Build Path Configured:
+
+      * with 2 sources configured
+
+        * src/main/java  : with target/classes as its output folder
+
+        * src/test/java : with target/test-classes as its output folder, and marked as holding test sources.
+
+        []
+
+      * Libraries configured:
+
+        * JRE System Library
+
+        * Maven Dependencies
+
+        []
+
+      * Order and Export
+
+        * src/main/java
+
+        * src/test/java
+
+        * JRE System Library
+
+        * Maven Dependencies
+
+        []
+
+      []
+
+    * With Project Natures Configured as:
+
+      * Java Nature
+
+      * Maven Nature
+
+      []
+
+    []
+
+  The obvious drawback with this method is that you might prefer to create the project using a wizard geared to other functionality ( e.g. a Modelling project, Java Project etc., Spring projects) .
+
+
+**Convert to Maven Project
+
+    By selecting an existing project and selecting Configure --> Convert to Maven Project.
+
+    This will give the opportunity to create a basic Maven POM, but not give the opportunity to create on via Archetype selection.
+
+    It will configure some some of the project properties, but NOT as extensively as if it had been set up as a Maven Project at the outset:
+
+      * The Libraries and Order etc will be configured as above, but NOT the Source path configuration.
+
+      * Maven Nature will be configured.
+
+      []
+
+
+**Manual Configuration of the Maven Nature.
+
+  All of the above can be configured by manually configuring the Project properties.
+
+  It is important that the Builders are correctly configured. If not, then eclipse will not pick up the required dependencies from the POM. The IDE will fallback on only the libraries that it knows about and will start showing errors etc in perfectly good code. (This can be seen: code will compile fine via maven OUTSIDE the IDE but not compile inside the IDE)
+
+  It also ensures that the things use the same Builders inside the IDE and outside the IDE.
+
+
+**Using the mvn eclipse:eclipse plugin
+
+  Maven has also got a little utility that will help configure IDE to use maven.
+
+    You can create a your eclipse project as e.g. a modelling project.
+
+    Within the project directory, you can then create your maven project with an archetype, copy it etc or anything you want: the important thin is to get generate yourself a properly functioning pom.xml.
+
+    This will generate a new:
+
+      * .classpath file;
+
+      * .project file;
+
+      []
+
+  In practice, this doesn't seem to work too well. It will generate the 2 files above, but does not see to do all the other configuration, and does at least seem to configure in the source and destination files ok. However, the Builder/Nature/Libraries still need to be configured in manually.

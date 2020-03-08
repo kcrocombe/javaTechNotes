@@ -898,3 +898,8 @@ Test Plugins
 	<scope>test</scope>
 </dependency>
 ---
+
+
+*Maven and the Eclipse IDE
+
+	Information on how to configure Maven to work with the Eclipse IDE is available {{{./onEclipse.html#Using with Maven within Eclipse IDE} here}}.

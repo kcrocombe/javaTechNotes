@@ -56,6 +56,8 @@ Development
 
   * {{{./onJavaLanguage.html}Notes and Snippets on Java}}
 
+  * {{{./onEclipse.html}Notes and Snippets on the Eclipse IDE}}
+
   []
 
 *Testing:
@@ -70,7 +72,7 @@ Development
 
   * {{{./onJPA.html}On the Java Persistence Architecture}}
 
-  * {{{./onHibernate.html}On Hibernate}} 
+  * {{{./onHibernate.html}On Hibernate}}
 
   []
 
@@ -119,6 +121,10 @@ Infrastructure
   []
 
 *Microservices and Web Hosting Stuff
+
+**Services
+
+  * {{{./onRestServices.html}On Rest based Web Services}}
 
 **CoreOs Platform
 

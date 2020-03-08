@@ -1,0 +1,21 @@
+#!/usr/bin/perl
+
+while(<>) {
+
+	chomp();
+
+	if( $_ =~ m/^\*.*/ ) { 
+
+		($headLevel, $text) = /(^[\*]*)(.*)/;
+
+		$indent = $headLevel;
+
+		$indent =~ s/\*/==/g;
+
+		$anchor=$text;
+
+		$anchor =~ s/ /_/g;
+
+		print "$headLevel$indent>\{\{\{\#$anchor\}$text\}\}\n\n";
+	}
+}
