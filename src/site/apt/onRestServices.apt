@@ -1,7 +1,7 @@
 
 Sources|:
 
-  Start with Restful Web Services and Spped Read.
+  Start with Restful Web Services and Speed Read.
 
 
   Addressable Resources (via a URL)
@@ -37,29 +37,325 @@ Location
 does just that:
 
 
-Because HTTP sessions are so short, the server doesn’t know anything about a client’s
-application state. The client has no direct control over resource state—all that stuff is
-kept on the server. And yet, the Web works. It works through REST—representational
-state transfer.
-Application state is kept on the client, but the server can manipulate it by sending representations—
-HTML documents, in this case—that describe the possible state transitions.
-Resource state is kept on the server, but the client can manipulate it by sending
-the server a representation—an HTML form submission, in this case—describing the
-desired new state.
+  Because HTTP sessions are so short, the server doesn’t know anything about a client’s
+  application state. The client has no direct control over resource state—all that stuff is
+  kept on the server. And yet, the Web works. It works through REST—representational
+  state transfer.
+  Application state is kept on the client, but the server can manipulate it by sending representations—
+  HTML documents, in this case—that describe the possible state transitions.
+  Resource state is kept on the server, but the client can manipulate it by sending
+  the server a representation—an HTML form submission, in this case—describing the
+  desired new state.
 
-The unprecedented flexibility of the Web comes from the principles of REST. In the
-1990s, we discovered that the Web works better than its competition. In 2000, Roy T.
-Fielding’s Ph.D dissertation1 explained why this is, coining the term “REST” in the process
+  The unprecedented flexibility of the Web comes from the principles of REST. In the
+  1990s, we discovered that the Web works better than its competition. In 2000, Roy T.
+  Fielding’s Ph.D dissertation1 explained why this is, coining the term “REST” in the process
 
-The Fielding dissertation also explains a lot about the problems of web APIs in the 2010s
+  The Fielding dissertation also explains a lot about the problems of web APIs in the 2010s
 
 
 
-The HTTP standard says that a GET request is a request for a representation.Your GET request won’t do something disastrous like
-delete all the data. We say that GET is a safe method
+  The HTTP standard says that a GET request is a request for a representation.Your GET request won’t do something disastrous like
+  delete all the data. We say that GET is a safe method
 
-HTTP response can be split into three
-parts
-response code - a 3 digit code summarizing the outcome of the requeset
-the body - basically some document ( hson, html, xml). The payload
-the response headers - A series of key-value paires describing the body and the HTTP response in general ( The most important one in sthe Content-Type)
+  HTTP response can be split into three
+  parts
+  response code - a 3 digit code summarizing the outcome of the requeset
+  the body - basically some document ( hson, html, xml). The payload
+  the response headers - A series of key-value paires describing the body and the HTTP response in general ( The most important one in sthe Content-Type)
+
+
+  What are the web server architectures that can be considered restfule : i.e. get a good score when judged in the criteria set ouit in Roy Fieldings Dissertation.
+
+  There are lots of architectures that ar techniucally restful, but it is most generatlly used in the context of the web and services that are <<resource-orientated>>
+
+    - Method/Action type inforamtion (ie what you want to do on the server/invoke on the server) goes into the HTTP call
+
+    - scoping information goes into the URL ( i.e what resource/group of resources are you targetting)
+
+  If the HTTP method doesn’t match the method information, the service isn’t RESTful. If the scoping information isn’t in the URI, the service isn’t resource-oriented. These aren’t the only requirements, but they’re good rules of thumb.
+
+
+  RPC-style services (e.g. SOAP - Simple Object Access Protocol) still accept envelopes full of data from teh client, and sends a similar envelope of response data back, however, the method/action and scoping info is held <<INSIDE>> the envelope (a SOAP document). Each rpc service defines a new vocabulary: i.e. it defines different methods to do differnt things, just like a normal program.
+
+  Typically, RPC services talk to a single or limited number of endpoints, and generally do everything by posting to that URL, with everything differentiated with the contents of the packet sent.
+
+  In contrast RESTFUL API expose differnt URL for different scopings, and USE gets PUTS and POSTS for reads and writes.
+
+  Java has a numbe rof libraries that will help communication with an HTTP server:
+
+    HTTPurlConnection - not that good
+    HttpClient - from apache - has a better design
+    Restlet - (which is a server library mainly)
+
+
+The key properties of the Resource Oriented Architecture (one of a number of RESTful ones)
+
+  But REST is not an architecture: it’s a set of design criteria.
+
+  * Addressability;
+
+  * Statelessness;
+
+  * connectedness;
+
+  * uniform interface;
+
+  []
+
+
+Resources
+
+  A resource is anything that’s important enough to be referenced as a thing in itself.
+
+  Usually, a resource is something that can be stored on a computer and represented as a stream of bits: a document, a row in a database, or the result of running an algorithm.
+
+  What makes a resource a resource? It has to have at least one URI. The URI is the name and address of a resource.
+
+
+  URIs Should Be Descriptive. URIs should have a structure.Every URI designates exactly one resource
+
+
+Addressability
+
+  An application is addressable if it exposes the interesting aspects of its data set as resources.
+
+  Addressability is one of the best things about web applications. It makes it easy for clients to use web sites in ways the original designers never imagined. Following this one rule gives you and your users many of the benefits of REST.
+
+Statelessness
+
+  Addressability is one of the four main features of the ROA. The second is statelessness.Statelessness means that every HTTP request happens in complete isolation. Statelessness means that every HTTP request happens in complete isolation. The server never relies on information from previous requests.
+
+  Consider statelessness in terms of addressability. Addressability says that every interesting piece of information the server can provide should be exposed as a resource, and given its own URI. Statelessness says that the possible states of the server are <<also>> resources, and should also be given their own URIs.
+
+  On the human web, you often run into situations where your browser’s back button doesn’t work correctly. Often it’s because you’re at a web site that violates the principle of statelessness : it expects you to make requests in a certain order: A, B, then C. It gets confused when you make request B a second time instead of moving on to request C.
+
+  When you ask for a directory of resources about mice or jellyfish, you don’t get the whole directory. You get a single page of the directory:
+
+  The second and subsequent pages are distinct states of the application, and they need to have their own URIs: something like:
+
+---
+  http://www.google.com/search?q=jellyfish&start=10.
+---
+
+  This is a stateless application because every time the client makes a request, it ends up back where it started. Each request is totally disconnected from the others.
+
+  Contrast this to say FTP, which has say, the concept of a working directory, which persists across requests.
+
+  To eliminate state from a protocol is to eliminate a lot of failure conditions. The server never has to worry about the client timing out, because no interaction lasts longer than a single request
+
+  The server never loses track of “where” each client is in the application, because the client sends all neccessary information with each request.
+
+  Statelessness also brings new features. It’s easier to distribute a stateless application across load-balanced servers. Since no two requests depend on each other, they can be handled by two different servers that never coordinate with each other
+
+  A client can process the “mice” directory up to page 50, bookmark page=50, and come back a week later with out
+  having to grind through dozens of predecessor states:
+
+---
+  /search?q=mice&start=50
+---
+
+  The most common way to break statelessness is to use your framework’s version of HTTP sessions. The first time a user visits your site, he gets a unique string that identifies his session with the site. The string may be kept in a cookie, or the site may propagate a unique string through all the URIs it serves a particular client.
+
+  This URI propagates the session ID in a PHP application:
+
+---
+  http://www.example.com/ forums?PHPSESSID=27314962133.
+---
+
+ The important thing is, that that nonsensical hex or decimal number is <<not>> the state. It’s a key into a data structure on the server, and <<that>> data structure contains the state. But those URIs need to contain the state, not just provide a key to state stored on the server. For instance, start=10 means something on its own.
+
+ RESTfulness requires that the state <<stay>> on the client side, and be transmitted to the server for every request that needs it. The server can <<nudge>> the client toward new states, by sending stateful links for the client to follow, but it can’t keep any state of its own.
+
+
+Application State v Resource State
+
+  When we talk about “statelessness,” what counts as “state”? What’s the difference between persistent data, the useful server-side data that makes us want to use web services in the first place, and this state we’re trying to keep off the server?
+
+  I’m going to distinguish between <application state>, which ought to live on the client, and <resource state>, which ought to live on the server.
+
+  A web service only needs to care about your <application state> when you’re actually making a request. The rest of the time, it doesn’t even know you exist. This means that whenever a client makes a request, it <<must>> include <<all>> the application states the server will need to process it.
+
+  Resource state is the same for every client, and its proper place is on the server
+
+  You can fetch, modify, and delete the  application resource through HTTP. It’s there for everybody: I can fetch it too. The application-resource state stays on the server until a client deletes it.
+
+  Having the server dispense with application state has particular advantages for distributed systems. In a non-REST situation, if the service is to be distributed across multiple machines, every machine in the cluster needs to know  your current application state (technical term: session replication), so that every machine knows to process your request appropriately. Alternatively, the load balancer may needs to make sure that every one of your requests goes to the same machine in the cluster (technical term: session affinity).
+
+  If the request ALWAYS includes ALL the necessary session state, these problems don't arise.
+
+
+Representations
+
+  When you split your application into resources, you increase its surface area: your users can construct an appropriate URI and enter your application right where they need to be. There is no navigating around in order to get there.
+
+  The resource, however, is not the actual data. It is a source of representations, where a representation is just some data about the current state of a resource. A single resource can be presented in any number of different representations.
+
+  Representations can flow the other way, too. You can send a representation of a new resource to the server and have the server create the resource.
+
+  If a server provides multiple representations of a resource, how does it figure out which one the client is asking for? The simplest way, and the one I recommend for the Resource-Oriented Architecture, is to give a distinct URI to each representation of a resource.
+
+---
+  http://www.example.com/releases/ 104.en
+---
+ could designate the English representation of the press release, and
+
+---
+   http:// www.example.com/releases/104.es
+---
+
+  could designate the Spanish representation.
+
+  The alternative way is called content negotiation. In this scenario the only exposed URI is the Platonic form URI, http://www.example.com/releases/104
+
+  It’s RESTful to keep this information in the HTTP headers, and it’s RESTful to put it in the URI. I recommend keeping as much of this information as possible in the URI, and as little as possible in request metadata.
+
+
+  Sometimes representations are little more than serialized data structures They’re intended to be sucked of their data and discarded. But in the most RESTful services, representations are hypermedia: documents that contain not just data, but links to other resources.
+
+
+Hypermedia as the engine of application state (HATEOAS)
+
+  HATEOS is central to REST philosophy. If you’ve read about REST before, you might have encountered an axiom from the Fielding dissertation: “Hypermedia as the engine of application state.” This is what that axiom means: the current state of an HTTP “session” is not stored on the server as a resource state, but tracked by the client as an application state, and created by the path the client takes through the Web. The server guides the client’s path by serving “hypermedia”: links and forms inside the hypertext representations that it returns.
+
+  <<This is a crucial concept within RESTful API: it is too easy to think that REST is just about GETS/PUTS/POST on URL's representing resources. THAT ALONE IS NOT ENOUGH. A Restful API, must return MORE than just requested resources, etc. It MUST ALSO return a set of links indicating what Navigations Path / Actions are valid follow-ons from the action just taken>>
+
+  This allows the server to direct the application state without having to maintain any remote record of it.
+
+  For instance, the “next” link on, say, http://www.google.com/search?q=jellyfish is a lever of state: it shows you how to get from the current state to a related one. This is very powerful. A document that contains a URI points to another possible state of the application: “page two,” or “related to this URI,” or “a cached version of this URI.”
+
+  In this note, this quality of having links in the response if termed "connectedness".
+
+  A Client that can interpret the set of links returned from a REST API can react accordingly; e.g. by enabling buttons that correspond to links returned, and disabling others.
+
+
+The Uniform Interface
+
+  All across the Web, there are only a few basic things you can do to a resource. HTTP provides four basic methods for the four most common operations:
+
+  * Retrieve a representation of a resource: HTTP GET;
+
+  * Create a new resource: HTTP PUT to a new URI, or HTTP POST to an existing URI (see the “POST” section below);
+
+  * Modify an existing resource: HTTP PUT to an existing URI;
+
+  * Delete an existing resource: HTTP DELETE;
+
+
+*GET, PUT, and DELETE
+
+  To fetch or delete a resource, the client just sends a GET or DELETE request to its URI. In the case of a GET request, the server sends back a representation in the response entity-body. For a DELETE request, the response entity-body may contain a status message, or nothing at all.
+
+  To create or modify a resource, the client sends a PUT request that usually includes an entity-body. The entity-body contains the client’s proposed new representation of the resource.
+
+  this is the point at which application state moves onto the server and
+becomes resource state.
+
+*HEAD and OPTIONS
+
+  There are three other HTTP methods I consider part of the uniform interface. Two of them are simple utility methods, so I’ll cover them first.
+
+  * Retrieve a metadata-only representation: HTTP HEAD
+
+  * Check which HTTP methods a particular resource supports: HTTP OPTIONS
+
+  A client can use HEAD to check whether a resource exists
+
+  The OPTIONS method lets the client discover what it’s allowed to do to a resource. OPTIONS is a promising idea that nobody uses.
+
+
+*POST
+
+  This method has essentially 2 purposes: one that fits in with the constraints of REST and one that doesn't really.
+
+  In a RESTful design, POST is commonly used to <<create>> subordinate resources: resources that exist in relation to some other “parent” resource. A web-enabled database may expose a table as a resource, and the individual database rows as its subordinate re sources. To create a weblog entry or a database record, you POST to the parent: the weblog or the database table.
+
+  Why can’t you just use PUT to create subordinate resources?
+
+  The difference between PUT and POST is this:
+
+  * the client uses PUT when it’s in charge of deciding which URI the new resource should have;
+
+  * The client uses POST when the server is in charge of deciding which URI the new resource should have;
+
+  []
+
+  The POST method is a way of creating a new resource without the client having to know its exact URI. In most cases the client only needs to know the URI of a “parent” or “factory” resource. The server takes the representation from the entity-body and use it to create a new resource “underneath” the “parent” resource (the meaning of “underneath” depends on context).
+
+  Sometimes when you POST data to a resource, it appends the information you POSTed to its own state
+
+
+*Overloaded POST
+
+  The one use of POST I haven’t explained is the one you’re probably most familiar with, because it’s the one that drives almost all web applications: providing a block of data, such as the result of submitting a form, to a data-handling process.
+
+  The resource accepts POST requests, examines the request, and decides to do... something. Then it decides to serve to the client... some data.
+
+  It’s overloaded because a single HTTP method is being used to signify any number of non-HTTP methods. It’s confusing for the same reason operator overloading can be confusing: you thought you knew what HTTP POST did, but now it’s being used to achieve some unknown purpose. You might see overloaded POST called POST(p), for “process.”
+
+  The POST method is just a directive to the server, saying: “Look inside the HTTP request for the real method information.” The real information may be in the URI, the HTTP headers, or the entity-body. However it happens, an element of the RPC style has crept into the service.
+
+  When the method information isn’t found in the HTTP method, the interface stops being uniform. The real method information might be anything. As a REST partisan I don’t like this very much, but occasionally it’s unavoidable.
+
+  Overloaded POST should not be used to cover up poor resource design. Remember, a resource can be anything. It’s usually possible to shuffle your resource design so that the uniform interface applies, rather than introduce the RPC style into your service.
+
+
+Safety and idempotence
+
+  GET and HEAD requests are <<safe>>.
+
+  GET, HEAD, PUT and DELETE requests are <<idempotent>>.
+
+
+*Safety
+
+  A GET or HEAD request is a request to read some data, not a request to change any server stateThis is not to say that GET and HEAD requests can’t have side effects. Some resources are hit counters that increment every time a client GETs them. Most web servers log every incoming request to a log file.
+
+*Idempotence
+
+  An idempotent operation in math is one that has the same effect whether you apply it once, or more than once.
+
+  Multiplying a number by zero is idempotent:  4x0x0x0 = 0
+
+  As does: 4x0
+
+  PUT and DELETE operations are idempotent. If you DELETE a resource, it’s gone. If you DELETE it again, it’s still gone. If you create a new resource with PUT, and then resend the PUT request, the resource is still there and it has the same properties you gave it when you created it.
+
+
+*Why safety and idempotence matter
+
+  Safety and idempotence let a client make reliable HTTP requests over an unreliable network.
+
+  Making two identical POST requests to a “factory” resource will probably result in two subordinate resources containing the same information. With overloaded POST, all bets are off.
+
+  The important thing about REST is not that you use the specific uniform interface that HTTP defines. REST specifies a uniform interface, but it doesn’t say which uniform interface. GET, PUT, and the rest are not a perfect interface for all time. What’s important is the uniformity: that every service use HTTP’s interface the same way.
+
+
+In Summary
+
+  The Resource-Oriented Architecture contains essentially just four concepts:
+
+  * Resources;
+
+  * Their names (URIs);
+
+  * Their representations;
+
+  * The links between them
+
+  []
+
+  and four properties:
+
+  * Addressability;
+
+  * Statelessness;
+
+  * Connectedness;
+
+  * A uniform interface
+
+
+===
+
+Designing Read-Only Resource Orientated Services

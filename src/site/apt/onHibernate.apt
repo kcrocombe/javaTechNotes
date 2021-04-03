@@ -25,7 +25,7 @@ Modelling Considerations.
 
     * having an Identity (i.e. are not defined the values of its attributes. 2 objects with the same ID but different attributes are STILL the same object (albeit in a different state))
 
-    * having a lifecyle; they are created, move through a series of states, and are enventually destroyed.
+    * having a lifecycle; they are created, move through a series of states, and are eventually destroyed.
 
 
   Aggregates are clusters of Entities that are constituently related, and that have important consistency criteria that needs to be maintained (i.e. There will be cross-entity aggregate invariants). One entity within the aggregate will be the Aggregate Root and <<all>> access to members of the aggregate will be made via the Aggregate Root. No references are allowed to any member of an aggregate EXCEPT the root.
@@ -72,4 +72,3 @@ Misc Problems
   JPA versus Hibernate Instantiation.
 
   Maven test profile and H2 database
-  

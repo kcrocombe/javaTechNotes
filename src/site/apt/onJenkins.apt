@@ -33,7 +33,7 @@ docker run \
   Can then browse to the login page on http://localhost:8080
 
 
-Installing jenins natively on OSX
+Installing jenkins natively on OSX
 
 ---
   brew install jenkins-lts

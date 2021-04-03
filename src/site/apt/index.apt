@@ -79,6 +79,8 @@ Development
 
 *Spring
 
+  * {{{./onSpringBasicConcepts.html}On Spring Basic Concepts}}
+
   * {{{./onSpring.html}On Spring}}
 
   * {{{./onSpringSecurity.html}On Spring Security}}

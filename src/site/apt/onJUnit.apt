@@ -229,13 +229,13 @@ class StandardTests {
 
 
 
-  In setting up the paramterised test, an argument source must be provided. Here you have several option:
+  In setting up the parameterised test, an argument source must be provided. Here you have several option:
 
     * @ValueSource  : Simplest form. Just provide the list of literal values you wish to use
 
         @ValueSources(ints = {1,2,3,4})
 
-    * @NullSource and @EmptySource: provides a sinlge null argument, or single empty argument to the test.
+    * @NullSource and @EmptySource: provides a single null argument, or single empty argument to the test.
 
     * @EnumSource: Basically the test will be called for all values of a given Enumerator
 
@@ -243,7 +243,7 @@ class StandardTests {
 
     * MethodSource : Allow you to define Factory methods that define a Stream of arguments. The test will be performed for each set of arguments in the stream.
 
-    * ArgumentSource : Basically a class that implements the ArguymentSource Interfacve.
+    * ArgumentSource : Basically a class that implements the ArgumentSource Interface.
 
 
 
@@ -471,7 +471,7 @@ class AssertionsDemo {
 
   Assumptions is a collection of utility methods that support <<conditional>> test execution based on assumptions.
 
-  In direct contrast to failed <assertions>, failed <assumptions> do not result in a test failure; rather, a failed assumption results in a test being <<aborted>>.
+  In direct contrast to failed <assertions>, failed <assumptions> do <<not>> result in a test failure; rather, a failed assumption results in a test being <<aborted>>.
 
   Assumptions are typically used whenever it does not make sense to continue execution of a given test method — for example, if the test depends on something that does not exist in the current runtime environment
 
@@ -503,8 +503,184 @@ HamCrest Functions
 
 The General Test Process
 
-  arrange : creation of all Objects (except the Subject unfer Test) that are necessary for test execution
+  arrange : creation of all Objects (except the Subject under Test) that are necessary for test execution
 
   act : execution of the Subject-under-test methods
 
   assert : verification of test results.
+
+
+  Be a little wary Assumptions. Intuitively, these check the pre-conditions prior to execution. Remmeber that if the pre-conditions are NOT satisfied, then the test cannot be evaluated, and it will result in the trest being skipped. This can be harder to spot than if the test fails outright. Consequently consider using an Assertion rather then an Assumption.
+
+
+*Beware the Hashcode
+
+  Two object that are different can legitimately have the same Hashcode.
+
+  Two objects that are .equal() SHOULD have the same hashcode, but that relies on the Class designer ENSURING that it is so. (i.e. obeying the general contract)
+
+
+
+
+
+Dependency Injection for Constructors and Test Methods.
+
+  Prior to V5, constructors and test methods were not permitted to have parameters. This has changed in in the Jupiter (v5) implemention, so providing the capabilty to inject dependencies, or just straight parameters,   into occur test classes.
+
+
+  This is achieved via a custom object (one that implements ParameterResolver), which is registered within our test class. The framework will invoke methods on this object in order to inject the required Object (or data) into our test class.
+
+  Generally resolvers work on the basis of three pieces of information:
+
+    on the basis of the NAME given to the argument
+    on the basis of the Type of the Object
+    on the basis of an Annotation attached to the Method, or Parameter.
+
+  I will describe an Annotation based resolver, which seems the most flexible, but ones working on the basis of name/type will work on a similar principle.
+
+
+Define a Annotation to use to mark your injected parameter.
+
+  This bit is not covered too well in the Documentation, and it took me a while to figure it out.
+
+  The annotation must be defined with certain properties other wise it will be completely ignored by the test Runner. Examples below show annotations that can be used against a Parameter and a method (which are likely to the commonest uses.)
+
+  For a method annotation:
+
+---
+  package junitTest.tests;
+
+  import java.lang.annotation.ElementType;
+  import java.lang.annotation.Retention;
+  import java.lang.annotation.RetentionPolicy;
+  import java.lang.annotation.Target;
+
+  @Target(value= {ElementType.TYPE,ElementType.METHOD})
+  @Retention(RetentionPolicy.RUNTIME)
+  public @interface methodAnnotation {
+		   String name();
+}
+---
+
+  and for a parameter annotation:
+
+---
+  package junitTest.tests;
+
+  import java.lang.annotation.ElementType;
+  import java.lang.annotation.Retention;
+  import java.lang.annotation.RetentionPolicy;
+  import java.lang.annotation.Target;
+
+  @Target(value= {ElementType.TYPE, ElementType.PARAMETER})
+  @Retention(RetentionPolicy.RUNTIME)
+  public @interface parameterAnnotation {
+
+  }
+---
+
+  Note the Target and Retention parameters are vital. If they are not there, they will not work.
+
+Define your Parameter Resolver
+
+  Your parameter resolver is a custom object that implements the ParameterResolver interface. This interface has 2 methods:
+
+---
+    boolean supportsParameter(...)
+
+    Object resolveParameter(...)
+---
+
+  supportsParameter() returns a boolean  which the test Framework will use to determine whether the ParameterResolver can be used to supply a particular parameter.
+
+  resolveParameter is called to generate the actual value to inject.
+
+  A typical resolver is shown below
+
+---
+  package junitTest.tests;
+
+  import java.lang.annotation.Annotation;
+
+  import org.junit.jupiter.api.extension.ExtensionContext;
+  import org.junit.jupiter.api.extension.ParameterContext;
+  import org.junit.jupiter.api.extension.ParameterResolver;
+  import org.junit.platform.commons.util.ReflectionUtils;
+
+  public class TestClassConstructorResolver implements ParameterResolver {
+
+	@Override
+	public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+		// We invoke parameterContext.isAnnotated() instead of parameterContext.getParameter().isAnnotationPresent()
+		// in order to verify support for the convenience method in the ParameterContext API.
+		//return parameterContext.isAnnotated(TestClassConstructor.class);
+	  return parameterContext.isAnnotated(parameterAnnotation.class);
+}
+
+	@Override
+	public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+		//return ReflectionUtils.newInstance(parameterContext.getParameter().getType());
+		return "tester";
+	}
+
+}
+---
+
+  ParameterContext is the most useful Object in determining whether the ParameterResolver is useful in a given context. It contains a bunch of metadata describing the parameter that Resolver is attempting.
+
+  Here the parameter is queried to see whether it has been decorated with the  parameterAnnotation annotation, as below:
+
+---
+
+  @Test
+  final void testAdd(@parameterAnnotation String name) {
+  assertEquals(name, "tester");
+  }
+
+---
+
+  and, if it does, in this simple case it returns a simple string.
+
+  For more complicated objects, the ReflectionsUtil factory method or some other such factory method can be used to construct and return the necessary object for injection into the method/constructor.
+
+  Other descriptive pieces of information about the parameter can also e used to determine applicability ( name, type, enclosing method, enclosing class). Or, indeed, any combination of these.
+
+Register your ParameterResolver with your Test Object
+
+  This is a simple matter of annotating the appropriate item within your test class as shown below:
+
+---
+  @ExtendWith(TestClassConstructorResolver.class)
+  class CalculatorTest2 {
+
+	   public CalculatorTest2(@parameterAnnotation String name){
+
+     ...
+
+   }
+---
+
+    alternatively an individual method within the class can be annotated, and so the scope of applicability reduced.
+
+
+
+
+
+
+Built in Extensions
+
+  These replace @rules under JUnit4
+
+
+
+
+
+
+Gotchas
+
+    Be careful not to specify TWO test annotations, e.g.
+
+      @Test
+      @ParameterizedTest
+
+    This can lead to the intended one being ignored, and an error message that is not particularily indicative of the cause of the failure.

@@ -1,13 +1,87 @@
+Using Eclipse
 
-*Using with Maven within Eclipse IDE
 
-  There are various ways to enable the Maven building functionality within Eclipse
+*Using Maven within Eclipse IDE
+
+**Building
+
+  Frankly I am a little bit confused by the Build Process. What follows below is what I think is happening.
+
+  The eclipse toolset, as configured for java, will have its own java compiler.  Configuring in Maven, will add a second one, so there is it is probably useful to understand which compiler you are actually using under what circumstances.
+
+  Note that this is not invoking the same mvn executable that you might run OUTSIDE of eclipse : it just invokes a maven plugin built into eclipse.
+
+  And since the build process needs to resolve dependencies etc, we need to be aware that we need to keep the two resolution mechanisms aligned too. Otherwise, we may have circumstances where a build will be successful under one process, but not another. Or, possibly more insidiously, we may get two builds that complete successfully, but build in different versions of particular libraries etc.
+
+
+**Invoking a build
+
+  There are a number of buttons/menu options on the main task bar (Build All, Build Project, Build Working Set) which are clearly involved in the compilation process. And there is also an automatic process, too, which will seek to classes compiled up automatically as their source code changes.
+
+  It seems that these Project Build options DO just invoke the 'Java Builder'
+
+    Properties --> Builders --> Java Builder
+
+  If you disable this builder then above menu buttons/option don't seem to work anymore.
+
+  If we are wanting to have maven be in-charge/involved in the build, is it possible to configure that? Do date, I have not found a way.
+
+  It seems Maven Builds (or other build processes) have to be invoked manually, via a Build Configuration.
+
+
+**Maven Build Configurations in Eclipse
+
+  There do seem to be some Maven build processes that get built in automatically when a Maven Nature is enabled. However these don't seem to sit terribly conveniently in terms of accessing them :
+
+    Project Right Click --> Run As --> Maven Clean/Build/install etc
+
+  These seem to come as built ins, whenever the Maven Nature is enabled.
+
+
+  However it is possible to configure your own via by configuring a Run Configuration.
+
+  Note that Run Configurations are Global to the Workspace NOT the Project. However, because the configuration accept project variables as parameters, it is easy enough to ensure invocation will build the current project rather than anything else.
+
+  The output from any build will appear in the console, so make sure that is open.
+
+  There are run configurations available for the various parts of the maven lifecycle, e.g.
+
+    mvn compile:compile
+    mvn test
+    mvn package
+
+
+**Resolving Build Dependencies.
+
+  The pom is the way that Maven resolves and builds in its dependencies.
+
+  In an Eclipse project without Maven, the Java Build Path is the configuration item which controls dependency resolution. This allows individual jars, folders etc to be configured in, as well as various libraries. This get reflected in the filesystem as updates to the Manifest File.
+
+  As various plugins as configured into the Eclipse, they will bring their own set of dependencies to support that plugin functionality (e.g. the Eclipse Modelling Framework classes, classes to support Junit Runner functionality etc.)
+
+  These will appear with the Plugin Dependencies
+  The pom is the way that Maven resolves and builds in its dependencies.
+
+  In an Eclipse project without Maven, the Java Build Path is the configuration item which controls dependency resolution. This allows individual jars, folders etc to be configured in, as well as various libraries.
+
+  As various plugins as configured into the Eclipse, they will bring their own set of dependencies to support that plugin functionality (e.g. the Eclipse Modelling Framework classes, classes to support Junit Runner functionality etc.)
+
+  These will appear with the Plugin Dependencies Library.
+
+  There is also the option to add other external libraries that Eclipse knows about. The availability of these also seems to be configured in when particular Eclipse plugins are to the toolset. ( So, for instance, a Junit Library is usually available)
+
+  One of the Library that is available is the Maven Dependencies. This basically make all the Dependencies configured into the POM available to the Eclipse Java Builder.  With this configured in, anything buildable my Maven ought to be buildable by the Eclipse Compiler.
+
+  However, the reverse may NOT be the case. Maven, externally at any rate, will use just the pom.  Not sure about the m2e maven plugin; this is what will be invoked if you ask for a maven build within Eclipse, so, in principle, could be aware of stuff configured in by other routes.
+
 
 **How a maven project is configured.
 
+  There are various ways to enable the Maven building functionality within Eclipse.
+
   The simplest is just to create the project as a Maven Project right at the outset (New --> Other --> Maven --> Maven Project). It will allow you to search any number of configured catalogs to find a Archetype to bases the projects on, e.g maven-archetype-quickstart, maven-archetype-site.
 
-  It will create a projects:
+  It will create a project:
 
     * With 2 Builders configured:
 
@@ -86,15 +160,17 @@
   It also ensures that the things use the same Builders inside the IDE and outside the IDE.
 
 
-**Using the mvn eclipse:eclipse plugin
+**Using the mvn eclipse:eclipse plugin NB, NO LONGER SUPPORTED
+
+  <<This plugin, for the external version of maven, is no longer supported.  If it is to be used, it should be used cautiously. There may be options available with the m2e maven eclipse plugin that better do what you want.>>
 
   Maven has also got a little utility that will help configure IDE to use maven.
 
     You can create a your eclipse project as e.g. a modelling project.
 
-    Within the project directory, you can then create your maven project with an archetype, copy it etc or anything you want: the important thin is to get generate yourself a properly functioning pom.xml.
+    Within the project directory, you can then create your maven project with an archetype, copy it from somewhere else etc, or anything you want: the important thing is to get or  generate yourself a properly functioning pom.xml.
 
-    This will generate a new:
+    Running mvn eclipse:eclipse will generate a new:
 
       * .classpath file;
 
@@ -103,3 +179,54 @@
       []
 
   In practice, this doesn't seem to work too well. It will generate the 2 files above, but does not see to do all the other configuration, and does at least seem to configure in the source and destination files ok. However, the Builder/Nature/Libraries still need to be configured in manually.
+
+
+**Beware of using the eclipse:clean plugin.
+
+  This plugin will DELETE eclipses .project, .classpath, .setting folder.  So, you will lose all the configuration you currently have, such as configured natures etc..
+
+  This will stop the project behaving as a 'Modelling' project (i.e the objects under model just get displayed as files, rather than being interpreted as things you can open with particular tools.)
+
+  This can be restored by
+
+      Right Click --> Configure --> Convert to Modelling Project
+
+
+**Recovering Maven Dependencies.
+
+  Occasionally, it may be that the Maven Dependencies Library gets deleted from under the Libraries available under the projects build bath:
+
+    Properties --> Java Build Path --> Libraries --> Maven Dependencies
+
+  When this happens, the libraries become unavailable to eclipse and it stats flagging source code as being in error because it can't resolve various class references.  A maven build, being aware of the libraries, will work just fine.
+
+  Adding this lost dependency in is not as intuitive as it might be seem.
+
+  ADDING IT BACK VIA THE PROPERTIES DIALOG DOES NOT WORK
+
+    Properties --> Jave Build Path --> Libraries --> Add Library --> Maven Dependencies.
+
+  THIS JUST REFERS YOU TO THE MAVEN PROPERTIES PANE AND NOTHING MUCH OF INTEREST IS AVAILABLE.
+
+  You can check the 'Resolve dependencies in Workspace projects'.. and this sometimes seems to work.
+
+
+  Instead...
+
+    Project --> Maven --> Update Project
+      Ensure 'update project configuration' from pom is selected.
+
+
+
+
+
+
+
+*Eclipse access restrictions
+
+  Eclipse has a mechanism called Access Restrictions to prevent you using classes which Eclipse thinks are NOT part of the public API.
+
+  Usually Eclipse is RIGHT.
+
+
+*Debugging and Running

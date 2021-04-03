@@ -1,5 +1,25 @@
 Bits on Pieces, Tips and Tricks on the Java Language.
 
+
+*Initial values of local variables and class variables
+
+    For class variables i.e. member variables:
+
+      These are always initialised by the compiler to some sensible value:
+
+        Objects --> null;
+
+
+        Primitive int, double, long etc --> 0
+        Primitive boolean --> false
+        Primitive char --> '\u0000'  (i.e. 0)
+
+    For local variables:
+
+      They CAN be unassigned on initialisation. However, any attempt to use them in their uninitialised state will cause a COMPILE time error.
+
+
+
 *Checked and Unchecked Exceptions.
 
   The various exceptions that can be thrown by java are classified as:
@@ -658,3 +678,55 @@ Generics
 *Generic Methods
 
   Whole Different Ball game. Need to read up on this.
+
+=====
+
+
+On Equals() and Hashcode()
+
+  These are two fundamantal methods which will be defined on EVERY object.
+
+  For each, there is a default implementation available on the Object Class, which will be inherited unless it is specifically overridden. Most subordinate classes WILL have overridden it at somepoint in their inheritance tree.
+
+*Object.equals()
+
+  Object.equals() essentially defines 2 objects as equal if they have the same memory address, i.e. They are actually the SAME object. Objects with identical attributes are NOT equal by this definition.
+
+  Most Classes will refine this notion of equality to one which makes logical sense in respect to that class.
+
+  For example, two Lists are considered identical if they are both Lists, have the same size, and each pair of elements in the corresponding positions are also considered equal (by their own definition).
+
+  The equals() method is EXTREMELY important to haow classes will be handled generally, so, if overriding, it is ESSENTIAL to pay respect to the GENERAL CONTRACT for equals ( See documentation for this, but
+
+    * Reflexivity: an object must be equal to itself
+
+    * Symetric : a=b ==> b=a
+
+    * Transitive : a=b and b=c ==> a=c
+
+    * consistent: if a=b then  a=b will remain true until such a point a either a or b changes
+
+    * Null comparion : a.equals(NULL) is ALWAYS FALSE.
+
+  It is necessary to think about equals() needs to be redefined whenever a class is extended, or maybe just used in a specific context. Even so, it is probably best to avoid it if you can and to make use of IDE tools designed for that purpose when you do have to.
+
+
+*Object.hashcode()
+
+  The hashcode is a computed integer on an object, whose value (by the GENERAL CONTRACT) obeys certain rules.
+
+    * If 2 objects are .equal(), then their hashcodes must be equal.
+
+    * The hash code of an object must remain consistent throughout a programs execution (although CAN change between executions)
+
+    * It is <<NOT>> guaranteed to be unique: differnt objets CAN share the same hashcode even if they are not .equal().
+
+  However, as much as is reasonably practical, implementers do try to return distinct integers fro distinct objects. ( Null objects and the like aside)
+
+  The Object.hashcode() is usually implemented as some function of its memory location.
+
+  Most non-trivial objects will override the Object.hashcode() : This is usually necessary to enforce the rule that
+
+    a=b > a.hashcode() = b.hashcode()
+
+  <<IT is a general rule that hashcode() MUST be overridden whenever .equals() is overridden>>

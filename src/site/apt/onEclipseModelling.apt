@@ -11,9 +11,6 @@ Bits and Pieces re eclipse
 	A description of the ecore Model structure is available at {{{https://download.eclipse.org/modeling/emf/emf/javadoc/2.5.0/org/eclipse/emf/ecore/package-summary.html}org.eclipse.emf.core}}
 
 
-
-
-
 *Creating a Modelling Project.
 
 	The
@@ -38,18 +35,15 @@ Bits and Pieces re eclipse
 		Right Click on Project --> Viewpoint Selection
 
 
-
-
-
 	This creates 3 Models under the model folder:
 
 		\<projectName\>.aird
-		\<projectName\><<<ecore>>>
+		\<projectName\><<<.ecore>>>
 		\<genModel\>.genmodel
 
 
-	Underneath the 	\<projectName\>.aird:
-		Represenations per Category
+	Underneath the 	\<projectName\>.aird, the hierarchy appears:
+		Representations per Category
 			Design
 				Entities in a Class Diagram
 					<Diagram Name>
@@ -57,12 +51,82 @@ Bits and Pieces re eclipse
 	This diagram needs to be opened with the
 		Sirius Diagram editor
 
+*The Sirius Diagraming Tool
 
-	When you are creating stuff in the diagraming tool, it is useful to have the Properties exposed in the Pane below.
+Domumentation
+
+https://www.eclipse.org/sirius/doc/
+
+http://www.eclipse.org/sirius/doc/user/diagrams/Diagrams.html
+
+
+*Standard Mode/ Visibility Mode/ Layouting Mode
+
+	Standard Mode -   In this mode, every action is available to the user. So it is possible to define additional elements, and move attributes etc around; Draging and Dropping them between element.
+
+	Layouting mode - Most operations that change the Meaning og the model are Disabled. In this mode you can't drag and drop, re-name things etc.  But you can move things around. The mode is intended to allow you to prettty things up without fear of inadvertently changing the meaning of the mode.
+
+	Visibility Mode - Any Hidden elements on the Diagram will become semi-visible. While in theis mode it is posible to Hide/Unhide elements by double clicking on them.
+
+
+*The Diagram Layers
+
+	*Documentation Layer - Exposes the documentation tools, and displays any documented elements.
+
+			ANy NON-DOCUMENTED ELEMENTS WILL TURN RED.
+
+	* Validation Layer -
+
+			ANY Elements with perceived problems will highligh in Red.
+
+			The problems will be displayed when you Float over that Element
 
 
 
-	Choosing Data Types
+*Pinning
+
+	Pinning an object does NOT lock it in position. Instead it makes immune from the effect of Auto-Arrange.
+
+
+
+*Use the Properties Window
+
+	When you are creating stuff in the diagraming tool, it is useful to have the Properties exposed in the Pane below. If it is not visible, the following should bring it up:
+
+			Window --> Show View --> Properties
+
+	The Editor is not the best when it comes to adding detail to the model. Double clicking does not bring up too many particularly useful dialog boxes. Consequently most detail will need to be added by amending the Ecore properties within this view.
+
+	Presumably, is adding detail into the .ecore model file.
+
+	Most of the initial model information will be added into the
+
+			Ecore ---> Semantic sub-pane
+
+
+*Shortcuts
+
+	The above not withstanding, there are some useful shortcuts however:
+
+		* Typing 1 on an attribute will change its cardinality --> 1:1 (required)
+
+		* Typing * on an attribute will change its cardinality to 1:*
+
+		* Typing :EInt on attribute can be used to set its type.
+
+
+*Beware of Empty Strings
+
+	In many places on the in the modelling tools (diagram editors, modelling editors), an attribute that is set to null and an attribute that is set to an empty string appear identically.
+
+	HOWEVER THEY ARE NOT TREATED IDENTICALLY DURING MODEL GENERATION.
+
+	It is easy to accidentally set a value to the empty string, e.g. by giving it a value, then changing you mind later on, and then just deleting it using the keyboard. This will set it to the empty string and can have unwelcome and difficult to debug consequences further down the line.
+
+	INSTEAD, TO RESET A VALUE BACK TO NULL, RIGHT CLICK AND SELECT "RESTORE DEFAULT VALUE"
+
+
+Choosing Data Types
 
 		For primitives, choose the corresponding E'Type'
 
@@ -83,18 +147,18 @@ Bits and Pieces re eclipse
 			Choose Design --> Entities in a class Diagram --> Then Choose the <<<ecore>>> Model you wish to base the representation on.
 
 
-*Validation Layer
+*The Validation Layer
 
-	If the Validation Layer is active, then any object on the diagram that has something dodgy about it will be shown in RED.
+	If the Validation Layer is active, then any object on the diagram that has something dodgy about it will be shown in RED. (Note that is the Documentation Layer is active, any objects without documentation attached will also show in
+	RED)
 
+	The Validation is not something that is performed continously. It is exececuted on request:
 
-*Shortcuts
+			Right Click --> Validate Diagram
 
-	Typing 1 on an attribute will change its cardinality --> 1:1 (required)
+	(Not to be confused with Validate - which, I think, is to do with the structure of the model file rather than the structure of the model)
 
-	Typing * on an attribute will change its cardinality to 1:*
-
-	Typing :EInt on attribute can be used to set its type.
+	When Validation is complete, the elements with queries or errors will be decorted with an 'i' or 'x' respecively (Not this shows regardless of whether the validation layer is active.)
 
 
 Constraints.
@@ -135,7 +199,7 @@ Re-Opening the properties Window
 
 *The Tool Pallet
 
-	It is not always that easy to use the diagramming tool. I struggled for ages once trying to workout haw to add relationships and could not work out why this was proving so hard. The reason was that the tool pallet had become hidden, and it was not immediately obvious how to reinstate it. (The tool palette contains all the goodies you would expect). It was no immediately obvious either that there are was anything missing, because there were other ways of adding other things.
+	It is not always that easy to use the diagramming tool. I struggled for ages once trying to workout haw to add relationships and could not work out why this was proving so hard. The reason was that the tool pallet had become hidden, and it was not immediately obvious how to reinstate it. (The tool palette contains all the goodies you would expect). It was not immediately obvious, either, that there are was anything missing, because there were other ways of adding other things.
 
 	<<The palette is hidden/unhidden by clicking a tiny arrow in the top right corner of the drawing canvas.>>
 
@@ -165,6 +229,7 @@ Re-Opening the properties Window
 		I DO NOT THINK this ends up in the model files anywhere: I think it must be read from the java source files following regeneration - not absolutely sure on this however.
 
 
+
 		[[1]] Classes drawn upon the diagram are normally:
 
 		a. implemented as an Interface
@@ -181,12 +246,12 @@ Re-Opening the properties Window
 	It seems that this will cause ALL modelled classes to be implemented as CLASSES. I have not found a way to allow just individual classes to be modelled as CLASSES: although I suspect is ought to be possible with some further clever annotations.
 
 
-	[[1]] IF you put code snippets in your model they HAVE to be syntactically correct code ; otherwise the generation will bomb out!.
+	[[1]] If you put code snippets in your model they HAVE to be syntactically correct code ; otherwise the generation will bomb out!.
 
 
-	[[1]] It is possible to sensibly represent External Interfaces ( i.e. interfaces supplied as part of the standard libraries, or third party libraries) on the diagrams. As long as these are marked as 'Interfaces', then the generator will not attempt any code generation for them, just the implementing/extending class.
+	[[1]] It is possible to sensibly represent External Interfaces (i.e. interfaces supplied as part of the standard libraries, or third party libraries) on the diagrams. As long as these are marked as 'Interfaces', then the generator will not attempt any code generation for them, just the implementing/extending class.
 
-	IF you DO put a external class on the diagram, the generated code:
+	It is harder to represent external classes on the diagram. The generated code:
 
 		DOES NOT generate an INTERFACE for it.
 
@@ -197,6 +262,7 @@ Re-Opening the properties Window
 				( The <MinimalEObjectImpl.Container> Class is needed for other internal workings of the model).
 
 				In other words, the construct can't work.
+
 
 	IF you put an Internal Class on the Diagram, the generated code:
 
@@ -275,7 +341,7 @@ Delegating and Forwarding
 
 		It generally can be fixed by deleting the previously generated java files, HOWEVER be careful to save any custom code in these FIRST!
 
-
+		Shutting down and restrating Eclipse often helps here too.
 
 
 
@@ -330,6 +396,355 @@ Backing out changes to Java Source.
 
 =====
 
+Modelling a Top Level Application class with a main() method.
+
+	When modelling an actual application from a collection of Classes, it seems to me (perhaps naively), that there is some conceptual value to creating a simple Class which collects together the major Objects that the application will use to form some sort of Application State.
+
+	Generally the class would a containing class for these other objects.
+
+	This provides:
+
+	  	a means by which constraints between the major objects can be expressed;
+
+			a home for the main() function.
+
+
+	i.e. modelled (in text) something like:
+
+---
+	Application::
+			ClassA : attrA
+			ClassB : attrB
+
+	public static void (main args[]){};
+---
+
+
+	Java requires that the main function have the signature:
+
+---
+	public static void (main args[]){};
+---
+
+	This constrains the way that the model can be represented. The main method is static, i.e. it can be called by referencing the Class directly, WITHOUT needing any underlying object. This means it can't access any other member attributes/functions that are not themselves static.
+
+	Obviously it is likely that our main method WOULD want to reference attribute attrA, attrB etc. not least, to initialise them (Remember the main() method WILL be executed before ANY constructors)
+
+	In a situation when where we are manually coding, typically we would get round this need this to be represented in code in one of 2 ways:
+
+
+Approach 1
+
+	Ensure that the attrA and attrB are themselves static, e.g.
+
+---
+		class Application {
+
+			static ClassA attrA;
+			static ClassB attrB;
+
+			private static void main( String args[]) {
+				attrA = new ClassA();
+				attrB = new ClassB();
+				...
+			}
+		}
+---
+
+	In a ecore modelling envionment, this is problematic; you can't specify in the modelling tool that you want particular member attributes to be static. You would have to include them as non-generated attributes/methods and ideally to get the most out of the tool, we want to minimise this.
+
+
+Approach 2
+
+	Create an instance of our Application Class within main, and then manipulate its variables. This looks a bit strange, because it we are defining an instance of Application within the Application class itself, but this is a pretty standard approach.
+
+---
+		class Application {
+
+			ClassA attrA;
+			ClassB attrB;
+
+			private static void main( String args[]) {
+
+				Application app = new Application();
+
+				app.attrA = mkClassA();
+				app.attrB = mkClassB();
+				...
+			}
+		}
+---
+
+	In the above, we are using Factory Methods rather than constructors for ClassA and ClassB, but the approach works for both.
+
+	In the ecore modelling environment, this works pretty well. The one aspect that has to be manually crafted is the main() function itself. This has to have the signature
+
+---
+		public static void main( String args[] ) {..}
+---
+
+	and I haven't found a way (yet) of generating this out of the model.
+
+	If you wanted to put everything into the model, it is pretty straightforward just to delegate the work that might have been done with main() to a second function ( run() in our example below).
+
+	All the main() function has to do is create and instance of the Class and invoke its run() method.
+
+---
+		@generated NOT
+		static public void main(String args[]) {
+
+	 		Application app= new ApplicationImpl();
+
+	 		app.run(args);
+	 	}
+---
+
+	The run() method can then do the rest.
+
+
+Factory Methods rather than Constructors
+
+	One of the things the code generator does for you is build a factory method for every class defined in your package. A factory method is just a method that returns a fully formed instance of your class.
+
+	When handcrafted, these are often created as static method, so you don't need an existing object to invoke them. However, our auto-generated factory methods are plain, public methods on a xxxxFactory class. We get one xxxxFactory class for each package (xxxx).
+
+	Factory methods have several advantages over constructor, and the reader is referred to Effective Java for a description of these.
+
+	 	- unlike constructors, they have names, so can be named according to the what you want them to do.
+
+		- the names don't change if we decide to change the classes by which we implement
+
+		- different factory methods, can have identically typed parameters
+
+		- they are not required to create a NEW object each time. You can force them to return a pre-existing object.
+
+		- they can return any SUBTYPE of their stated return type, and indeed the return type can vary based on the parameters of the call.
+
+
+	So our example above, assuming a package name Package:
+
+---
+		@generated NOT
+		static public void main(String args[]) {
+
+	 		Application app= new PackageFactoryImpl().createApplication();
+
+	 		app.run(args);
+---
+
+	and much like a constructor, we would use createApplication() to shape what we want our object to look like when it is initialised:
+
+---
+		public Application createApplication() {
+			ApplicationImpl app = new ApplicationImpl()
+
+	 		PackageFactory factory = new PackageFactoryImpl();
+
+			app.attrA = factory.createClassA();
+			app.attrB = factory.createClassA();
+
+		}
+---
+
+
+
+
+The Generated constructors and Factory Methods
+
+	By default, the generated constructors are:
+
+		PROTECTED : so can only be invoked by Sub-classes and Other Elements in the same package.
+
+	While the generated factory methods are PUBLIC.
+
+	This means that the clients from OTHER packages are forced to use the factory methods ( which is good), but allows other Classes from within our package to by-pass the factory methods and GO direct.
+
+	We want to discourage this because factory methods make it easy to change the actual class implementing a piece of functionality just my getting the factory method to return a different Class instance ( remember the return signature of a factory method specifies the interface a Class must implement NOT the class itself.)
+
+	If we wanted to lock the constructors down further, we can; but it has its inconveniences:
+
+		We can't easily change this to PRIVATE because this would lock out the Factory Methods, which sit in a <<different>> class in the same package. We would need to create our own factory method in the same class as the constructor. This is do-able but inconvenient.
+
+		We can change it to PACKAGE: i.e. accessible to other members of the package but not anything which sub-classes it, so we CAN tighten it further if that is required.
+
+	Note that changing the signature on the generated methods (private, protected) etc. is fine providing we remember to mark it as @Generated NOT
+
+
+Location of the Logic for Object Building
+
+	Given the co-existence of Constructors and Factory methods, we have a choice as to where we place the logic.
+
+	My feeling is that this should STIll be in the constuctor. THis is becuase:
+
+		- it keeps the logic within the Class itself which I think its important. It means the class is responsible for ensuring its own integrity.
+
+		- it minimises the risks, should something manage to bypass the factory methods and create an object directly.
+
+		- it is more visible
+
+	Instead, I think the Factory methods should be principly for:
+
+		- giving more meaningful names where certain speciality objects are reuired
+
+		- BEING THE SOLE PLACE WHERE ACTUAL IMPLENTATION OF A PARTICULAR INTERFACE IS CONFIGURE. Ideally, we can change an application to use implementation B of an Interface rather than implementation A just by amending the factory method so it returns implemention B rather than A.
+
+
+
+
+	This is the method that will work best
+
+	USe the Factory Methods
+
+
+So:
+
+		1.  Don't put the main() function in the model.   It can't be generated properly
+
+		2. I cannot find a way to make CodeGen generate class attributes as static. Therefore, we cannot use Approach 1 without disabling the generation of this part of the model.
+
+		3. It is probably better to use Approach 2.
+
+
+
+Implementing Singleton Classes
+
+	A singleton class is one where just a single instance is allowed.
+
+	It seems to be relatively easy to implement this feature WITHOUT having to actually model anything; it acn all be done in the implementing class.
+
+	The following seems to be a relatively standard way of doing it ( From Effective Java).
+
+	It needs :
+
+		1. a public static final field to hold and instance of itself;
+
+		2. A private constructor.
+
+---
+	public ClassImpl {
+		public static final ClassImpl SINGLETON = new ClassImpl();
+
+		private ClassImpl() { set up some stuff };
+		...
+	}
+
+	The class can then be referenced anywhere as ClassImpl.INSTANCE
+---
+
+	The factory method that CodeGen will within the package's Factory class canbe implemented:
+
+---
+	public Class1 createClass1() { return Class1Impl.SINGLETON; }
+---
+
+
+
+
+Building and invoking
+
+		mvn package
+
+		remember to include the main class nme in the jar manifest
+
+		execute
+
+	java -jar  /Users/kevin/dvl/gitReps/fitStats/target/FitStats-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+
+
+
+
+Modelling Arrays
+		Define a  Data type  e.g. StringArray to mean java.lang.String[]
+
+
+
+
+Ecore Model Properties - Attributes
+
+
+	Default seems to be Ordered, Unique, Changeable.
+
+*Unsettable
+	This causes additional functions to be generated in the implemented class that are geared toward the possiblity that the attribute in question will not have a value. So, as well as the usual getAttribute() and setAttribute(), we get:
+
+			unsetAttribute()
+
+			isSetAttribute()
+
+*Changeable
+	When unset, this prevents the function  setAttributAe() from being generated.
+
+
+*Unique
+	Indicates whether the same value can occur for more than one Object within the Class
+	Although it does not seem to affect any generated code in the Class itself, it does set the @model attribute Unique=false in the Interface
+
+
+*Volatile
+	When set, no storage will be allocated for the field i.e. <<NO FIELD WILL BE GENERATED>>. Instead, just the get() and set() methods are created. These are completely empty functions for the user to implement as desired.
+
+	This is generally used for fields that are simply derived from other fields in the object.
+
+*Derived
+	Similar to volatile in concept, I think, except that a field, getters() and setters() are generated. Could not find any difference in the code so generated, but I suspect it might be present in any generated code that saves the object to Disk etc.   I suspect the field will not be included.
+
+	However it does not seem to effect anything in the code.
+	Although it does not seem to affect any generated code in the Class itself, it does set the @model attribute derived=true in the Interface
+
+*Transient
+	This does not seem to effect anything in the generated code in any way.
+	Although it does not seem to affect any generated code in the Class itself, it does set the @model attribute transient=true in the Interface
+
+*ID
+	This only seems to have relevance for objects that sit in Containers (Set, List etc). It determines whether the attribute can be used to uniquely identify the object WITHIN that container.
+
+	Although it does not seem to affect any generated code in the Class itself, it does set the @model attribute Id=true in the Interface
+
+*With each of the above...
+
+	With each of the above, the generated class  XxxxPackageImpl is also impacted, with the Boolean flags set or cleared as appropriate. Don't quite know what that does yet.
+
+---
+	FitStatsPackageImpl.java
+
+		initEAttribute(
+				getDecoderClient_MainFactory(),
+				this.getMainFactory(),
+				"mainFactory",
+				null,
+				0,
+				1,
+				DecoderClient.class,
+				!IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED
+			);
+---
+
+
+Refactoring
+
+	It is relatively straightforward to move model components around into different classes, packages etc. just by dragging and dropping in the various editors.
+
+	However, if there is non-generated code in any of the implemented classes, then this will need to be moved into the new implementation classes OUTSIDE of the modeling tools.
+
+	In these circumstances, the File Comparison tool in the Java Perspective is a fantastic help. Learn how to get the most out of it.
+
+
+Reflective and non-Reflective representtion of Attributes/Refernces in the generated code.
+
+	The generator has the capability to generate code in several different ways. One of these, known as Reflevetive Feature Generation, will generate classes without explicit member attributes and class references. Instead, a model of the class itself is constructed (a meta-model), and the members/references stored within a datastructure within hte class itself.
+
+	Rather than referencing the atributes directly, you are required to access them through the getters and setter function which it generates for that purpose.
+
+	This seems to work reasonably well, although I find the code you need to write generally a but more cumbersome, and less fluent.
+
+	HOWEVER I HAVE ENCOUNTERED SOME SIUTATIONS WHERE CODE GENRATED TO USE REFLECTION DOES NOT WORK PROPERLY AND THROWS ERRORS THAT NON-REFLECTIVE CODE DOES NOT.
+
+	The feature is activeated/deactoveated via the Model --> Feature Delegation property of the GenModel.
+
+	Generally speaking, non-reflecitve code is easier to read, easier to bug and works correctly in more situations. Use it unless you have a good reason not to.
+
+
 
 
 
@@ -361,9 +776,9 @@ Eclipse Model Generator and JavaDoc.
 
 **Some notes on annotations generally...
 
-	[[1]] The GenModel map is described by a URL: http://www.eclipse.org/emf/2002/GenModel   ( which doesn't seem to exist as a browsable thing?)
+	[[1]] The GenModel map is described by a URL: http://www.eclipse.org/emf/2002/GenModel (which doesn't seem to exist as a browsable thing?)
 
-	[[1]] The Schema  specifies what Key --> Value Mappings are valid for that GenModel Map.
+	[[1]] The Schema specifies what Key --> Value Mappings are valid for that GenModel Map.
 
 	[[1]] The key 'Documentation' is valid within the scheme (with its value being whatever the documentation is). I don't know what other keys are legitimate.
 
@@ -375,7 +790,7 @@ Eclipse Model Generator and JavaDoc.
 
 	Documentation from the model seems to get primarily represented within the Interface Elements generated from the model. Relatively little get generated in the implementation of the Interface (This assumes the default GenModel setting is in force (not <<<Suppress Interfaces>>>)).
 
-	Documentation get translated into elements embedded within {{{./onJavaDoc.html}JavaDoc}} comments in the JavaCode. A JavaDoc Formatted Comment will be generated for each element in the model. Amongst other things, this will contain the various EMF annotations that are used to handle mapping JavaCode backwards and forwards into the Ecore modes (@model, @generated etc.) It will also contain some of the standard JavaDoc annotations, and, where it can, it will have attached appropriate elements from the model to those annotations (@see, @return, @parameter etc.).
+	Documentation gets translated into elements embedded within {{{./onJavaDoc.html}JavaDoc}} comments in the JavaCode. A JavaDoc Formatted Comment will be generated for each element in the model. Amongst other things, this will contain the various EMF annotations that are used to handle mapping JavaCode backwards and forwards into the Ecore modes (@model, @generated etc.) It will also contain some of the standard JavaDoc annotations, and, where it can, it will have attached appropriate elements from the model to those annotations (@see, @return, @parameter etc.).
 
 	Documentation from the model will get included within the JavaDoc comment embedded within specific markers:
 
@@ -389,7 +804,7 @@ Eclipse Model Generator and JavaDoc.
 	<!--end-model-doc -->
 ---
 
-	Because what we are adding is JavaDoc, we can include other syntactically correct annotation within here, and they will be faithfully reproduced.
+	Because what we are adding is JavaDoc, we can include other syntactically correct annotationis within here, and they will be faithfully reproduced.
 
 	(Note you can stick some annotations in here such as @extends, @inherits etc, which can influence the generational behaviour. So this is a potentially useful thing to know about.???)
 
@@ -418,6 +833,19 @@ Eclipse Model Generator and JavaDoc.
 
 
 ===
+
+Problems
+
+	Have seen this reasonably frequently
+
+		Exception thrown org.eclipse.emf.common.util.BasicEList$BasicIndexOutOfBounds Exception: index=0, size =0
+
+			Shut down all projects that aren't strictly necessary
+
+			Shutdwon and Reboot Eclipse itself
+
+		This has resolved this in the past.
+
 
 
 
@@ -764,11 +1192,52 @@ A General Warning
 
 *Reloading a model from Annnotated Java Classes.
 
-	This needs to be beefed up...
+	The EMF Code generator can not only generate Java Code from the contents of an ECore model, but it can also populate an ECore model from properly annotated Java Code.
 
-	Provides a means to pull additional stuff into an existing Model.
+	It relies on associations existing between the Ecore model and some filesystem locations that is configured into the .genmodel file.
 
-	Can use a second model (reverseEngineeer say) to pull a copy back from the Annotated classes. Can then cut and paste the bits you want from teh copy model to the primary model.
+	By right clicking on the genmodel file and selecting Reload
+
+		---> Reload
+
+	it is possible to specify one of a number of source types, of which the most useful are likely to be
+
+		* Annotated Java
+
+		* Ecore Model.
+
+
+	At the moment, I am not clear what happens to the stuff in the existing model. I would guess, elements that exist are
+	updated, and elements that don't exit are created.
+
+
+	In order to pull stuff in from an entirely unrelated project, one way of doing it is to:
+
+		1. Create a temporary empty modelling project
+
+		2. copy the required source files into that projects source directory
+
+		3. Reload the GenModel as described above.
+
+		4. Open the Ecore model with the ECore Editor ( NOT the Sample Ecore Model Editor)
+
+		5) Using the little Resource loader icon in the top right of the diagram to open the ecore diagram from the project to which you wish to import the classes.
+
+		6) You can then cut and paste classes between ecore files as necessary
+
+
+	If the files exist in the filespace of the current model, then you can just create a second model file within the
+	project.
+
+	 	File ---> New --> Other --> ECore Model
+
+	Then wrapper it in a new genModel File
+
+	 	File ---> New --> Other --> EMF Generator Model
+
+	The required Files can then be loaded to this, and cut and pasted into thoe old model as required.
+
+	The redundant files can tehn be deleted.
 
 
 
@@ -776,7 +1245,7 @@ A General Warning
 Various Notes derived from the experience of programming with the EMF framework
 
 
-	At the moment, this is just a colleection of various notes and jottings made during experimentation with the tools offered by EMF. It will need to be organised into some sort of coherent structure in due course...
+	At the moment, this is just a collection of various notes and jottings made during experimentation with the tools offered by EMF. It will need to be organised into some sort of coherent structure in due course...
 
 
 *Leverage the refactoring capabilities of Eclipse
@@ -796,7 +1265,7 @@ Various Notes derived from the experience of programming with the EMF framework
 
 	<dependency>
 		<groupId>org.eclipse.emf</groupId>
-	  <artifactId>org.eclipse.emf<<<ecore>>></artifactId>
+	  <artifactId>org.eclipse.emf.ecore</artifactId>
 	  <version>2.20.0</version>
 	</dependency>
 
@@ -869,7 +1338,7 @@ Various Notes derived from the experience of programming with the EMF framework
 
 *Disabling the Generation of the edit/editor/test projects.
 
-	During code generation, the codeGen tool is cabable of generating 4 codesets:
+	During code generation, the codeGen tool is capable of generating 4 codesets:
 
 	 	* code supporting the model itself;
 
@@ -879,7 +1348,12 @@ Various Notes derived from the experience of programming with the EMF framework
 
 		* a Test Project.
 
-	For the majority of the time we are only really interested inthe model, and he rest is just clutter. By default, all 4 components are generated during codeGen. It would be nice to find a way of disabling all but the model generation, but haven;t found a way of doing this yet.
+	For the majority of the time we are only really interested in the model, and he rest is just clutter. By default, all 4 components are generated during codeGen.
+
+	For a long time I struggled to find a way disabling everything but the model generation. Stumbled upon a way to do it almost by accident.
+
+	If you set the OutputDirectory of these component within the GenModel to null, it seems to work. Note: By default this is empty anyway, but seems to default to a particular value. This need to be cleared for it to have an effect.
+
 
 
 
@@ -905,23 +1379,25 @@ How Providing Instance Names for Modelled Classes and Interfaces affect the arte
 
 *Choices in representing Classes/Interfaces in out model
 
-	When modelling an application we will typically want to use objects drawn from two sources:
+	When modelling an application we will typically want to use objects drawn from three sources:
 
-		* Objects created, and contained in the package being modelled; i.e.
+		* Objects created and contained in the package being modelled;
 
-		* Objects created, and contained in other packages in the model
+		* Objects created and contained in other packages within the model;
 
-		* Object created and contained in package external to the project, e.g. the Java Library packages or those from some other provider.
+		* Object created and contained in package external to the project, e.g. standard Java Library packages or those from some other provider.
 
-	The objects modelled, too, will of two types:
+
+	The objects modelled, too, will of two major types:
 
 	  * Classes
 
-		* Interfaces.
+		* Interfaces
+
 
 	In order to model these things, the ECore model provides the following facilities:
 
-		* Choices as to how the Objects are modelled within Ecore. These:
+		* Choices as to how the Objects are modelled within Ecore. These are:
 
 			* As Ecore Classes (Abstract or Concrete)
 
@@ -933,31 +1409,37 @@ How Providing Instance Names for Modelled Classes and Interfaces affect the arte
 
 		* An option to model the Class/Instance as an External Object by providing an Instance Class Name and Instance Type Name;
 
-		* Generator Configuration choices: whether to transform modelled classes into Instance/ImplementationClass combinations (the deafult, and 'right' way to go), or as direct classes alone.
+		* Generator Configuration choices:
+
+			* to transform modelled classes into Instance/ImplementationClass combinations (the default, and 'right' way to go)
+
+			* as direct classes alone.
+
+			[]
 
 		[]
 
 
 	Each of these choices will be reflected in the way that the codeGenerator chooses to represent the model in terms of the actual, generated Java Classes and Interfaces. Since the generated classes/interfaces will need to be fleshed out into a full working application, it is important to ensure that these base building blocks form the best possible starting point for your application.
 
-	A fundamental concept of the EMF modelling process that the ecore model and the generated classes/interfaces are different representations of the SAME underlying model. It should ALWAYS remain possible to generate the code from the model AND the model from the code.
+	A fundamental concept of the EMF modelling process that the ecore model and the generated classes/interfaces are different representations of the SAME underlying model. It should ALWAYS remain possible to both generate the code from the model AND generate the model from the code.
 
 	If we are to respect this principle, it means we do not have the complete freedom to choose and mould the classes/interfaces that implement that model: we have to retain the generated skeleton, and flesh it out. If we don't we will lose the power to go transform code <---> model and vice versa.
 
-	In order to get the best possible starting point for our implementation, it is important to understand how the various choices we make in modelling get reflected in the classes/interfaces that are subsequently generated.
+	Therefore, in order to get the best possible starting point for our implementation, it is important to understand how the various choices we make in modelling get reflected in the classes/interfaces that are subsequently generated.
 
 
 *Issues regarding EMF Functionality included in the generated model.
 
- 	As has been noted elsewhere, the code generated by the EMF framework includes additional functionality 'for free' (Persistence, Notification, Reflective Servicesi, etc.). The price to pay for this is that some supporting infrastructure needs to be built into each of the implementation classes.
+ 	As has been noted elsewhere, the code generated by the EMF framework includes additional functionality 'for free' (Persistence, Notification, Reflective Services, etc.). The price we pay for this is that some supporting infrastructure needs to be built into each of the implementation classes, and some of this infrastructure can be difficult to decipher.
 
-	Objects obtain this infrastructure typically by implementing particular ECore interfaces (and usually the Ecore Interfaces).
+	Objects obtain this infrastructure typically by implementing particular ECore interfaces (and usually the Ecore Interface itself).
 
-			* Where the generator generates Interfaces, the generated interface will specifiy the <<<Ecore>>> interface is implemented
+			* Where the generator generates Interfaces, the generated interface will specify the <<<Ecore>>> interface is implemented ( Do I mean inherited?);
 
-			* Where the generator generates Classes, the generated Class will extend the <<<MinimalEObjectImpl.Container Class>>> ( which implements the EObject Interface).
+			* Where the generator generates Classes, the generated Class will extend the <<<MinimalEObjectImpl.Container Class>>> (which implements the EObject Interface).
 
-	Note that these are the Objects used by default. It is possible to configure objects/interface into the genModel, but only at the level of the whole Model, not individual classes.
+	Note that these are the Objects used by default. Within genModel, it is possible to configure the use of different base objects/interface,  but this can only operate at the level of the whole Model, not at the level of individual classes.
 
 
 	 	EObject
@@ -971,15 +1453,15 @@ How Providing Instance Names for Modelled Classes and Interfaces affect the arte
 
 *Ecore model representation and their generated code form
 
-	The following tries to summarise how the different modelling scenarios will be represented in the code generated. I have looked at the situation firstly with regard to how standalone classes/interfaces are represented, and then how classes involved in Inheritance relationships are modelled.
+	The following paragraphs tries to summarise how different modelling scenarios will be represented in the code generated. I have looked at the situation, firstly, with regard to how standalone classes/interfaces are represented, and then how classes involved in Inheritance relationships are modelled.
 
 **Datatypes
 
-	Datatypes are a simple way for external objects to be referenced in the model. The fully qualified object name (Class/Interface) is associated with the named Datatype. The datatype name then just acts as a proxy and the actual class name will get 'expanded out' within the generated Classes/Interfaces.
+	Datatypes are a simple way for external Classes and Interfaces to be referenced in the model. The fully qualified object name (Class/Interface) is associated with the named Datatype. The datatype name then just acts as a proxy and the actual class name will get 'expanded out' within the generated Classes/Interfaces.
 
 ***Principle Restriction
 
-	The biggest shortcoming with using this as a representation is that it is very limited in the ways it can be related to other components of the model. Specifically:
+	The biggest shortcoming with using this as a representation of a Class/Interface is that it is very limited in the ways it can be related to other components of the model. Specifically:
 
 		* They can't participate in any relationship (other than containment);
 
@@ -1399,7 +1881,7 @@ Modelling the use of Generics within EMF.
 
 	Many of the library Collection type classes (e.g. java.util.List<E>) are implemented as Generic Classes. In order to make proper use of these, they need to be represented correctly in your model. This is not as intuitive as it might be. In this example, we shall model a class that extend the List Interface. However the same principles and processes will apply if all the classes/interface are local.
 
-	Below we describe how to configure Generics using both the Syrious Graphical Modeller and the Sample Ecore Editor.
+	Below we describe how to configure Generics using both the Sirius Graphical Modeller and the Sample Ecore Editor.
 
 *Using the Sirius Modelling Tool
 
@@ -1704,15 +2186,15 @@ Sharing Project Objects
 
 	Ideally, we would prefer NOT to generate objects from the copy ecore files. Instead we wish to reference their objects from library jars on our classpath at runtime, rather than compiling local copies into out build. This implies that we want local and remote to be under the control of different genmodel files.
 
-	We can achieve this by creating a local copy of the remote ecore file we wish to reference, but then wrappering it in a different genmodel to the rest of the model. We can then:
+	We can achieve this by creating a local copy of the remote Ecore file we wish to reference, but then wrappering it in a different genmodel to the rest of the model. We can then:
 
-	 	* adjust the properties on the genmodel file to ensure that files from the copied model are never generated, or;
+	 	* adjust the properties on the genModel file to ensure that files from the copied model are never generated, or;
 
 		* generated under a different class base name or class name than the original classes;
 
 		* written to a different source code directory to the rest of the application so that, even if they do get generated, they wonlt get built into the applicaion itself.
 
-		* File permissions on the remote ecore and genmodel files can be set to ensure that these are not inadvertently changed.
+		* File permissions on the remote Ecore and genmodel files can be set to ensure that these are not inadvertently changed.
 
 		[]
 
@@ -1720,9 +2202,17 @@ Sharing Project Objects
 
 	 	* safely include objects from BOTH ecore files on any modelling diagram;
 
-		* embed and extend referenced classes as we would if they were local, and have the generated code that references correctly embed the EMF functionality in the right classes and interfcaes.
+		* embed and extend referenced classes as we would if they were local, and have the generated code that references correctly embed the EMF functionality in the right classes and interfaces.
 
 		[]
+
+**Example Project
+
+	A couple of Eclipse projects exist to demonstrate how this arrangement will work:
+
+		* forwardingCollection
+
+		* forwardingCollectionClient.
 
 ============
 
@@ -1867,3 +2357,563 @@ Enabling Git functionality.
 	[[1]] use git to init a repository as described in {{{./onGit.htlm}Git Notes.}}
 
 	[[1]] With Eclipse ,  From the Context Menu ( Right Click) select the  Team --> Share Project option.
+
+
+
+Some Useful Documentation
+
+	https://www.eclipse.org/ecoretools/doc/index.html
+
+	http://cedric.brun.io/eclipse/ecore-design-checklist-part1/
+
+	http://cedric.brun.io/eclipse/ecore-design-checklist-part2/
+
+	http://cedric.brun.io/eclipse/ecore-design-checklist/
+
+	https://download.eclipse.org/modeling/emf/emf/javadoc/2.11/org/eclipse/emf/ecore/package-summary.html
+
+
+
+Problems, Bugs and Gotchas modeling and Generating Code.
+
+
+* java.lang.IllegalArgumentException
+
+	I encountered this problem immediately when trying to run an almost completely generated jar.
+
+---
+	java -jar  /Users/kevin/dvl/gitReps/fitStats/target/FitStats-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+	Exception in thread "main" java.lang.ExceptionInInitializerError
+	Caused by: java.lang.IllegalArgumentException: The value '' is invalid.
+		at org.eclipse.emf.ecore.impl.EFactoryImpl.createFromString(EFactoryImpl.java:470)
+		at uk.co.pegortech.FitStats.impl.FitStatsFactoryImpl.createMainFactoryFromString(FitStatsFactoryImpl.java:139)
+		at uk.co.pegortech.FitStats.impl.FitStatsFactoryImpl.createFromString(FitStatsFactoryImpl.java:82)
+		at uk.co.pegortech.FitStats.impl.DecoderClientImpl.<clinit>(DecoderClientImpl.java:98)
+---
+
+	The line causing the failure was:
+
+---
+  protected static final MainFactory MAIN_FACTORY_EDEFAULT = (MainFactory)FitStatsFactory.eINSTANCE.createFromString(FitStatsPackage.eINSTANCE.getMainFactory(), "");
+---
+	and seems to be because the final argument is "".
+
+	The code is trying to set the default initial for an attribute within the class. According to the ecore model, this attribute DOES NOT have a default value.
+
+	However, the code generated for other attributes which also don't have a default value, looks very different, i.e.
+
+---
+	protected static final FtpFactory FTP_FACTORY_EDEFAULT = null;
+
+	protected FtpFactory ftpFactory = FTP_FACTORY_EDEFAULT;
+---
+
+	as opposed to:
+
+---
+  protected static final MainFactory MAIN_FACTORY_EDEFAULT = (MainFactory)FitStatsFactory.eINSTANCE.createFromString(FitStatsPackage.eINSTANCE.getMainFactory(), "");
+
+	protected MainFactory mainFactory = MAIN_FACTORY_EDEFAULT;
+---
+
+	When we similarly define the default method code for our problem attribute, the problem goes away.
+
+---
+	protected static final MainFactory MAIN_FACTORY_EDEFAULT = null;
+---
+
+	Examination of the datamodel with the custom editors ( ECore Editor, Sample Ecore Model Editor), or the .genmodel file with the genmodel editor did not reveal any real differences in the way mainFactory and ftpFactory were modelled.
+
+	However when the xml was examined directly with the xml editor, key differences were apparent:
+
+---
+	<eStructuralFeatures xsi:type="ecore:EAttribute" name="mainFactory" eType="#//MainFactory"
+	    defaultValueLiteral=""/>
+	<eStructuralFeatures xsi:type="ecore:EAttribute" name="ftpFactory" eType="#//FtpFactory"/>
+	<eStructuralFeatures xsi:type="ecore:EAttribute" name="segmentScannerFactory"
+	    eType="#//SegmentScannerFactory"/>
+---
+
+	It seems mainFactory somehow has a default value of an empty string "" and this is NOT the same as null, even though the editors seemingly show these values identically.
+
+	When using the editors it is not intuitively obvious how to set a value back to NULL rather then the empty string. The only way I have found that works is to:
+
+---
+			Right Click ---> Restore Default Value.
+---
+
+	Also in these circumstances, the XML editor is your friend.
+
+
+
+
+*Another Common Error
+
+	org.eclipse.emf.common.util.BasicEList$BasicIndexOutOfBoundsException: index=7, size=7
+		at org.eclipse.emf.common.util.BasicEList.get(BasicEList.java:346)
+
+
+		Seems to happen sometimes when you delete elements from a model that you no longer want...
+
+
+		Sometimes this can be fixed just by shutting down and restarting Eclipse...
+
+
+*<ClassName>PackageImpl Generation
+Generating Java class <ClassName>.impl.<ClassName>PackageImpl failed with unhandled exeception
+	java.lang.reflect.InvocationTargetException
+		java.lang.NullPointerException
+
+	Often this can result simply because the model is,as yet, insufficiently fleshed out to support generation. Maybe some of the attributes/paramters have not been typed?
+
+	Use the 'Validate Diagram'   and Validate options to Highlight where problems might be and resolve them.
+
+
+*Random Compilation Failure
+
+	IF you are using maven for compiling and packaging, it will attempt to compile all java in the source diirecories. If you have deleted redundant classes/interface from teh model, this DOES NOT mean their source files will be deleted from the source directories. So maven will still be compiling them...and eventually they will become inconsistent with the rest of the model and start throwing errors.
+
+	Make sure to manually remove redundnat source code from the source direcories.
+
+
+
+
+
+
+Generating JUnit Test Classes.
+
+	The CodeGen tool has the ability to generated unit test cases.
+
+	By default, a modelling project does NOT enable test case generation.
+
+	It is enable by adding a valid directory to the Tests Properties page using one of the GenModel Editors
+
+	I find this easier to do with the EMF Generator
+
+	If a path is set to NULL, then generation will be disabled.
+
+	Likewise if Edit/Editor dir paths are deleted, generation of that code will be suppressed.
+
+
+	The default directory will be /\<projectName\>.tests/src
+
+	This is specified relative to the current workspace, so the above will create a new project
+
+	Alternatively, it can al so set to within a directory within the current project
+
+
+		/\<projectName\>/src/test/java
+
+	This is where typical maven archetypes will where typical maven archetypes would look for them, so this seems like a sensible place.)
+
+
+JUnit Test Classes generated.
+
+	Even the more recent versions of codegen generates test classes based on JUnit 3 syntax. This is pretty old; version 5 is now the norm. I can find no way of changing this in configuration, and I can find no references to new versions on the web.
+
+	However, as described below, this is not necessarily a problem.
+
+Types of test cases generated.
+
+	The format of the test cases generated will vary, depending on HOW the classes and interfaces have been modelled/generated.
+
+	Where EMF is configured to represent class entities as a interface plus Implementing class (the default):
+
+		A concretes test class will be generated for each class entity modelled, e.g.
+
+---
+		public class DecoderClientTest extends TestCase {...}
+---
+
+		An abstract test case will be generated for each identity modelled directly as an interface e.g.
+
+---
+		public abstract class FileServicesTest extends TestCase {...}
+---
+
+	Where EMF is configured to represent class entities directly as Classes, concrete test classes only will be generated.
+
+	As you might expect, the Abstract Test Classes are not directly runnaable; they need to be extended by concrete test case before that is possible. This is described more fully later.
+
+
+
+	In addition to test cases for each modelled class, the tool will also generate test suite classes to facillitate the easy running of all the tests in a package. Twoi are generated
+
+		\<packageTest\>
+
+		\<packageAllTests\>
+
+	( There is also an example Test Case that can be generated: but this can be turned off with the genModel editor
+
+		<Package> --> Generate Example Class)
+
+
+Running the generated Tests
+
+*In Eclipse
+
+	The Test can be run within Eclipse by, like the debugger, etc. creating a run configuration for it. A junit run configuration does not seem to accept environment variables etc, so you will need at least one for each project. It is possible to specify a directory, though, so multiple tests can be run from a single runConfig.
+
+	Right clicking on the project and selecting 'JUnit Test' will CREATE a run configuration if one does not already exist.
+
+ 	The configuration can be configured to execute the tests using a number of Junit versions (3,4,5). As indicated above, the test cases generated by codegen are junit v3, but legacy support does seem to be available within the Junit5 runner, because the unmodified classes all seem to run fine too.
+
+	The necessary JUnit libraries will need to be added into the Java Build Path (Project Properties).
+
+ 	Once properly configured, the test can be run by selecting the desired run configuration.
+
+*In maven
+
+	The test goal can just be invoked
+
+		mvn test
+
+	Providing codeGen has been configured to generate teh test cases in hte place where maven expects to find them (src/test/java by default), then the test cases will execute just fine.
+
+	In order for the v3 Test Cases built be codegen to run, the Legacy Juliniut libraries will have to be inclused in the POM.
+
+---
+	<dependency>
+		<groupId>org.junit.vintage</groupId>
+		<artifactId>junit-vintage-engine</artifactId>
+		<version>5.7.1</version>
+		<scope>test</scope>
+	</dependency>
+---
+
+	Although we will want to run most of our tests with Junit5, it is still useful to have the ability to understand Junit3 test cases : otherwise maven will reject all generated cases that we haven't yet converted to v5.
+
+
+Generated Test Suites.
+
+	In adddition to Test Cases generated for each class in your package, teh codegen tool will also generate a Test Suit type class (aometimes two.).   THe function of these to provide a conventient way of running all teh tests in a particaul packagee.
+
+	However in practice these are more hinderance thatn help. Both maven and eclipse is capable of running all teh tests in a particular package without this classes being present. And if they ARE present, they will get run as well by eclipse/maven, resulting in every test getting run TWICE.
+
+	It does not seem to be possible to disbale the generation of these tests cases, so they are best disabled by Anniotation as described below.
+
+
+
+
+Converting the Generated V3 Test Classes to accept accept version 5 syntax features.
+
+	It seems relatively easy to adapt the Junit v3 test classes to v5 in a way that DOES NOT get overwritten should the test class be regenerated. Obviously we don't wasnt to have to re-apply these changes each time the test cacse is regenerated.
+
+	The necessary changes can be made in a custome fashion to each class if required, but to facillitate theis I have wtriotten my own little package to support this process.
+
+
+*Add in junit3Stubs
+
+	Ensure the support package is on the build path
+
+---
+		<dependency>
+			<groupId>uk.co.pegortech</groupId>
+			<artifactId>junit3Stubs</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>test</scope>
+		</dependency>
+---
+
+
+*Decorate your Test Class with the Parameter resolver
+
+	The test class needs to be annotated with the name of our custom ParameterResolver (TestClassConstructorResolver). This is to tell it how to inject the required arguments into its constructor.
+
+---
+		/*
+		 * @generated
+ 	 	 */
+		 @ExtendWith(TestClassConstructorResolver.class)
+		 public class CalculatorTest extends TestCase {
+			 ...
+		 }
+---
+
+*Annotate the constructor with our custom annotation
+
+	This indicates that the arguments to the constructor are to be injected by the testing framework. The function that actually does this is provided by my junit3Stub package, as is the definition of the TestClassConstructor annotation.
+
+---
+		@TestClassConstructor(name = "tester")
+		public CalculatorTest(String name) {
+			super(name);
+		}
+---
+
+
+*Disable the classes main() method.
+
+	I'm not sure this is absolutely necessary, but it does make it certain that the tests are being run by the V5 runner, and not somehow using the TestRunner Class
+
+	Comment out the main method call, and set main() as NOT generated. Otherwise, it will get get put back in the next time it is generated.
+
+---
+		/*
+		 * @generaed NOT
+		 */
+			public static void main(String[] args) {
+				//TestRunner.run(CalculatorTest.class);
+			}
+---
+
+
+*Annotate the test class/methods as required by JUnit 5.
+
+	The legacy v3 annotations such as @Ignore can be removed, and the various methods can be decorated with the V5 annotations as required. e.g
+
+		@Test
+		@ParameterizedTest
+		@BeforeAll
+		@Before
+
+	Typically each testXXXX() method will need annotating with @Test
+
+	The setUp method annotating with @BeforeEach
+
+	The tearDown method annotating with @AfterEach
+
+
+*Make sure the relevant packages get imported to the test class
+
+	If eclipse is behaving itself, it will prompt you to import the missing paackages/classes, but you can pre-empt that yourself if you prefer.
+
+---
+	import uk.co.pegortech.junit3Stubs.*;
+---
+
+	The necessary v5 packages are likely to include:
+
+---
+	import static org.junit.jupiter.api.Assertions.*;
+
+	import org.junit.jupiter.api.AfterEach;
+	import org.junit.jupiter.api.BeforeEach;
+	import org.junit.jupiter.api.Test;
+	import org.junit.jupiter.api.extension.ExtendWith;
+---
+
+*Remove the legacy V3 packages
+
+	Typically these will be:
+
+---
+	import org.junit.Ignore;
+	import org.junit.jupiter.api.Disabled;
+	import junit.framework.TestCase;
+	import junit.textui.TestRunner;
+---
+
+*Ensure the junit3Stubs dummies are being used and then set the Class to @Generated NOT
+
+	Confirm that wherever a junit 3 class is referenced ( TestCase, Test etc), that this get resolved to my dummy version (junit3Stub) rather than the pucka 'junit.framework' version.
+
+	Annoyingly, the genmodel tool is very persistent about overriding what I put in here. Even with my own version of TestCase, it will realise that this exist on the build path, and instead substitute the fully qualified class name (junit.framework.TestCase).
+
+	The only way I have found to stop this being overwritten is to annotate the CLASS with @generate NOT.
+
+	so...
+
+---
+	* @generated NOT
+ */
+@ExtendWith(TestClassConstructorResolver.class)
+public class FileServicesImplTest extends TestCase{
+---
+
+	HOWEVER this means that any new methods etc.. that get added to the class/interface DO not get a test case for them generated.
+
+	The easiest way is to temporarily remove the @generate NOT annotation, re-generate the class, and then re-apply the changes that were backed out with the aid of the Compare-With tool. THIS IS REALLY A FANTASTIC TOOL
+
+*Fix the Test Suite Classes
+
+	The plan with these is to get them into a state whereby they don't interfere with anything and then disable them.
+
+	These are fixed similarly to the above although there is less need to mess about with annotations. So:
+
+	Remove the imports of the junit.framework classes:
+
+---
+		//import junit.framework.Test;
+		//import junit.framework.TestSuite;
+		//import junit.textui.TestRunner;
+---
+
+	..and import our own replacements:
+---
+	import uk.co.pegortech.junit3Stubs.Test;
+	import uk.co.pegortech.junit3Stubs.TestSuite;
+---
+
+	...comment out the main method logic
+---
+			TestRunner.run(suite()); --> //TestRunner.run(suite());
+---
+
+	Disable further class generation;  and disable the class for Junit purposes with the @Disable annotation:
+
+---
+		...
+		* @generated NOT
+		*/
+		@Disabled
+		public class MainTests extends TestSuite {
+---
+
+
+
+Be wary of old Junit3 Assertions being used accidentally rather then the Junit 5 ones.
+
+	The TestCase class that is extended by our test classes...
+
+---
+		 public class CalculatorTest extends TestCase {
+---
+
+	...also defines the set of assertions used in V3. These are NOT the same ones that V5 uses, BUT oftern have the same signature AND tend to be get used in prefernce to the V5 ones, which we will be preferring to use
+
+
+	In order t be sure we pick up the correct V5 Assertion ( which are <<Static>>), make sure you provide the CLASSNAME too. e.g.
+
+---
+
+	Assertions.assertAll()
+
+	Assertions.assertTrue()
+
+	...
+---
+
+
+A brief description of the junit3Stub objects I have created
+
+*The Class that does the actual parameter resolving.
+
+	This class (TestClassConstructorResolver) need to implement the ParameterResolver interface. Here we are creating one which just injects the string "tester" into the constructor.
+
+---
+		package uk.co.pegortech.junit3Stubs;
+
+		import java.lang.annotation.Annotation;
+
+		import org.junit.jupiter.api.extension.ExtensionContext;
+		import org.junit.jupiter.api.extension.ParameterContext;
+		import org.junit.jupiter.api.extension.ParameterResolver;
+		import org.junit.platform.commons.util.ReflectionUtils;
+
+
+		public class TestClassConstructorResolver implements ParameterResolver {
+
+			@Override
+			public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+				// We invoke parameterContext.isAnnotated() instead of parameterContext.getParameter().isAnnotationPresent()
+				// in order to verify support for the convenience method in the ParameterContext API.
+
+				return parameterContext.getDeclaringExecutable().isAnnotationPresent(TestClassConstructor.class);
+			}
+
+			@Override
+			public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+				//return ReflectionUtils.newInstance(parameterContext.getParameter().getType());
+
+				return "tester";
+			}
+		}
+
+---
+	The class need to be dropped into the same package as the rest of your test classes.
+
+*The Interface defining the annotation used to mark the constructor
+
+	Codegen generates its Test Classes with a Constructor with one parameter. In general, v5 test classes are expected to have a no argument constructor, and so don't expect to have to supply one.
+
+	This is more verbosely described in my onJUnit documentation.
+
+	This is defined:
+
+---
+		package uk.co.pegortech.junit3Stubs;
+
+		import java.lang.annotation.ElementType;
+		import java.lang.annotation.Retention;
+		import java.lang.annotation.RetentionPolicy;
+		import java.lang.annotation.Target;
+
+		@Target(value= {ElementType.TYPE,ElementType.CONSTRUCTOR})
+		@Retention(RetentionPolicy.RUNTIME)
+		public @interface TestClassConstructor {
+			 String name();
+		}
+---
+
+	Note the @Target and @Retention annotations are important. They control where the annotation is valid. If this is incorrectly spec'ed, the annotation will fail silently at runtime.
+
+
+
+Test Cases for Classes implementing Interfaces.
+
+	If you model an entity explicitly as an Interface, and then model a class that implements that interface, the modelling tool will generate 2 test classes:
+
+		An ABSTRACT class to test the Interface
+
+		A Concrete class to test the implementing class.
+
+
+	The methods in the interface will be present as test methods in each.
+
+	Although the ABSTRACT class is generated, it is not actually RUNNABLE (because it is an abstract class, and NEEDS to be extended.)
+
+
+	The most interesting way to make it runnable, is to have the test case generated for the implementing class EXTEND the abstract class for the interface so...
+
+---
+			...
+			* @generated NOT
+			*/
+			public class FitStatOptionsTest extends OptionSetTest{...}
+---
+
+	When the test runner executes the test is the extending class, it will ALSO LOOK for tests in the extended class and run those also.
+
+	HOWEVER THESE WILL BE LARGELY TESTING THE SAME FUNCTIONALITY.
+
+	Consequently it is required to actually implement the tests ion only one of these place. IT makes sense to do it in the ABSTRACT class rather than the concrete class, because if more than one class implements the interface, the same code can be used to test ALL classes that implement it.
+
+
+	It takes a little more manipulation of the implementing class in order to make this work.
+
+	a)	BOTH test classes get implemented with a Fixture member for holding the object under test. THis need to be REMOVED from the implementing class
+
+---
+		/**
+		 * The fixture for this Fit Stat Options test case.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated NOT
+		 */
+		 //	protected FitStatOptions fixture = null;
+---
+
+
+	b) The getters and setter fro the fixture need to be removed from the Implementing Class
+
+---
+		 * @generated NOT
+		 */
+  //	protected void setFixture(FitStatOptions fixture) {
+	//		this.fixture = fixture;
+	//	}
+
+		 * @generated NOT
+		 */
+	//	protected FitStatOptions getFixture() {
+	//		return (FitStatOptions) super.fixture;
+	//	}
+---
+
+	This is to ensure when the fixture is manipulated by the Extending test case, it is the Fixture member of the Abstract extended class that is manipulated, NOT the local fixture.
+
+	c) Ensure the test methods generated in the Extending test case that DUPLICATE test in the extended class are NOT annotated with @Test. That way they will get eignored by the test runner.
+
+	d) Note that teh super class has no setup/teardown methods. These need to be implemented in the Extending class, nad annotated with @BeforeEach / @afterEach there ( if that is appropriate to the test scenario)
