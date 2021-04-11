@@ -1,0 +1,123 @@
+On Factory Methods And Constructors
+
+	One of the things the code generator does for you is build a factory method for every class defined in your package. A factory method is just a method that returns a fully formed instance of your class.
+
+	When handcrafted, these are often created as static method, so you don't need an existing object to invoke them. However, our auto-generated factory methods are plain, public methods on a xxxxFactory class. We get one xxxxFactory class for each package (xxxx).
+
+	Factory methods have several advantages over constructor, and the reader is referred to Effective Java for a description of these.
+
+	 	- unlike constructors, they have names, so can be named according to the what you want them to do.
+
+		- the names don't change if we decide to change the classes by which we implement
+
+		- different factory methods, can have identically typed parameters
+
+		- they are not required to create a NEW object each time. You can force them to return a pre-existing object.
+
+		- they can return any SUBTYPE of their stated return type, and indeed the return type can vary based on the parameters of the call.
+
+
+	So our example above, assuming a package name Package:
+
+---
+		@generated NOT
+		static public void main(String args[]) {
+
+	 		Application app= new PackageFactoryImpl().createApplication();
+
+	 		app.run(args);
+---
+
+	and much like a constructor, we would use createApplication() to shape what we want our object to look like when it is initialised:
+
+---
+		public Application createApplication() {
+			ApplicationImpl app = new ApplicationImpl()
+
+	 		PackageFactory factory = new PackageFactoryImpl();
+
+			app.attrA = factory.createClassA();
+			app.attrB = factory.createClassA();
+
+		}
+---
+
+
+
+
+The Generated constructors and Factory Methods
+
+	By default, the generated constructors are:
+
+		PROTECTED : so can only be invoked by Sub-classes and Other Elements in the same package.
+
+	While the generated factory methods are PUBLIC.
+
+	This means that the clients from OTHER packages are forced to use the factory methods ( which is good), but allows other Classes from within our package to by-pass the factory methods and GO direct.
+
+	We want to discourage this because factory methods make it easy to change the actual class implementing a piece of functionality just my getting the factory method to return a different Class instance ( remember the return signature of a factory method specifies the interface a Class must implement NOT the class itself.)
+
+	If we wanted to lock the constructors down further, we can; but it has its inconveniences:
+
+		We can't easily change this to PRIVATE because this would lock out the Factory Methods, which sit in a <<different>> class in the same package. We would need to create our own factory method in the same class as the constructor. This is do-able but inconvenient.
+
+		We can change it to PACKAGE: i.e. accessible to other members of the package but not anything which sub-classes it, so we CAN tighten it further if that is required.
+
+	Note that changing the signature on the generated methods (private, protected) etc. is fine providing we remember to mark it as @Generated NOT
+
+
+Location of the Logic for Object Building
+
+	Given the co-existence of Constructors and Factory methods, we have a choice as to where we place the logic.
+
+	My feeling is that this should STIll be in the constuctor. THis is becuase:
+
+		- it keeps the logic within the Class itself which I think its important. It means the class is responsible for ensuring its own integrity.
+
+		- it minimises the risks, should something manage to bypass the factory methods and create an object directly.
+
+		- it is more visible
+
+	Instead, I think the Factory methods should be principly for:
+
+		- giving more meaningful names where certain speciality objects are reuired
+
+		- BEING THE SOLE PLACE WHERE ACTUAL IMPLENTATION OF A PARTICULAR INTERFACE IS CONFIGURE. Ideally, we can change an application to use implementation B of an Interface rather than implementation A just by amending the factory method so it returns implemention B rather than A.
+
+
+
+
+	This is the method that will work best
+
+	USe the Factory Methods
+
+
+So:
+
+		1.  Don't put the main() function in the model.   It can't be generated properly
+
+		2. I cannot find a way to make CodeGen generate class attributes as static. Therefore, we cannot use Approach 1 without disabling the generation of this part of the model.
+
+		3. It is probably better to use Approach 2.
+
+
+===============
+Constructors and Factory Methods
+
+  If you are running in the default configuration (Generating Interfaces and Implementing Classes), do not attempt to create explicit constructors on the diagram : in the context of a interface, they don't work.
+
+
+  I feel there ought to be a way of getting the thing to generate more than just the default constructor...but if there is I haven't worked it out yet!
+
+==============
+*Using the factory methods instead of constructors.
+
+	It is generally considered good practice not to use object constructors directly. Look in 'Effective Java' for all the good reason.
+
+	Instead use the create<Class> factory method. (This does seem to itself call the Constructor). Any logic that you want to put into a Constructor, such as initialising attributes etc can still go in here.
+
+	Note that the genModel tool will only generate a no-parameter Constructor, along with a no parameter factory method. It is obviously possible to customise the object, post-creation, with various setter() methods but this does mean that the  object exists in partially initialised state, at least until these setters etc have been applied.
+
+	If that is not acceptable (and it generally isn't, in my book), then additional factory methods AND Factory methods can be provided. This is just a matter of adding in @model NOT annotated methods with the required signatures. Again, the new factory method should be used in preference to the bare Constructor().
+
+	For even more complicated cases, modelling a Builder helper class may be useful. This would essentially be a nested static member class of the Class in question. See effective Java for details. In this situation, we would effectively be creating our own factory methods, rather than using the the ones generated by the tool.

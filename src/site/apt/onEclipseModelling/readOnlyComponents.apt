@@ -1,0 +1,44 @@
+Making Model Components Read Only.
+
+	At the level of the File (Resource, in Eclipse Parlance) Eclipse has the ability to restrict the ability to change that Resource. (These settings can be viewed under <<<Properties>>>.)
+
+	There are 2 mechanisms:
+
+	 	* File Permissions;
+
+		* By Marking resource Locked.
+
+		[]
+
+	These are explained more fully below.
+
+
+*Permission.
+
+	These just manipulate the underlying Unix File Permissions on the file. Making a file read-only removes write permission on the Unix file, a change which will be picked up and managed by GIT (if under Git control).
+
+	Because it is low level, you can pretty much guarantee that the file WILL be truly read only.
+
+*Resource 'Locked' Attribute.
+
+	You can assign a resource as 'Locked'.  For the Mac at least, locking a file will set a special extension attribute on the file itself that prevents it from bing changed even via the file permmisions. This setting too will be captured within git (er, I think)
+
+	It basically will stop a Resource being changed through the Eclipse Workbench and the tools plugged into it.
+
+	However, that is not to say that <<ALL>> tools that are plugged into the Workbench will necessarily <<handle>> the fact that a resource is Locked particularly well. For instance, the following tools have at least some difficulty:
+
+
+**The Syrius editor
+
+	Manages Readonly/Locked files really badly. The Tool allows you to edit diagrams, Classes etc without restriction AND allows you to save them. If you re-open the diagrams, the changes are <<apparantly>> retained! However if you close the project and re-open it the changes do <<NOT>> persist. This is <<really poor>>
+
+	(Presumably, the Editor is working off cached data for a lat of the time.)
+
+**The Ecore editors
+
+	Doesn't seem to mange the situation brilliantly: it is possible to change properties within the editor, but any saves you make don't stick. They don't get saved to the underlying file. <<HOWEVER>>, it doesn't really give you any warnings that it is not managing to save things, which is a but rubbish.
+
+
+**The Sample Ecore Editor
+
+	The Sample Ecore Editor seems to manage the situation pretty well : all options allowing changes are effectively greyed out.

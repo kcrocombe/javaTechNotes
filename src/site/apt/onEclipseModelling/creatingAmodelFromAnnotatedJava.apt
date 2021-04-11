@@ -1,0 +1,48 @@
+Creating a model from Annnotated Java Classes.
+
+	The EMF Code generator can not only generate Java Code from the contents of an ECore model, but it can also populate an ECore model from properly annotated Java Code.
+
+	It relies on associations existing between the Ecore model and some filesystem locations that is configured into the .genmodel file.
+
+	By right clicking on the genmodel file and selecting Reload
+
+		---> Reload
+
+	it is possible to specify one of a number of source types, of which the most useful are likely to be
+
+		* Annotated Java
+
+		* Ecore Model.
+
+
+	At the moment, I am not clear what happens to the stuff in the existing model. I would guess, elements that exist are
+	updated, and elements that don't exit are created.
+
+
+	In order to pull stuff in from an entirely unrelated project, one way of doing it is to:
+
+		1. Create a temporary empty modelling project
+
+		2. copy the required source files into that projects source directory
+
+		3. Reload the GenModel as described above.
+
+		4. Open the Ecore model with the ECore Editor ( NOT the Sample Ecore Model Editor)
+
+		5) Using the little Resource loader icon in the top right of the diagram to open the ecore diagram from the project to which you wish to import the classes.
+
+		6) You can then cut and paste classes between ecore files as necessary
+
+
+	If the files exist in the filespace of the current model, then you can just create a second model file within the
+	project.
+
+	 	File ---> New --> Other --> ECore Model
+
+	Then wrapper it in a new genModel File
+
+	 	File ---> New --> Other --> EMF Generator Model
+
+	The required Files can then be loaded to this, and cut and pasted into thoe old model as required.
+
+	The redundant files can tehn be deleted.

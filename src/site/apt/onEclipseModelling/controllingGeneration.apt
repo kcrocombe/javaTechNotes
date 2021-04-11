@@ -1,0 +1,87 @@
+Controlling of Generation artifacts
+
+
+*Disabling the Generation of the edit/editor/test projects.
+
+	During code generation, the codeGen tool is capable of generating 4 codesets:
+
+	 	* code supporting the model itself;
+
+		* an Edit project
+
+		* an Editor Projects
+
+		* a Test Project.
+
+	For the majority of the time we are only really interested in the model, and he rest is just clutter. By default, all 4 components are generated during codeGen.
+
+	For a long time I struggled to find a way disabling everything but the model generation. Stumbled upon a way to do it almost by accident.
+
+	If you set the OutputDirectory of these component within the GenModel to null, it seems to work. Note: By default this is empty anyway, but seems to default to a particular value. This need to be cleared for it to have an effect.
+
+======
+
+*Reflective and non-Reflective representation of Attributes/References in the generated code.
+
+  	The generator has the capability to generate code in several different ways. One of these, known as Reflevetive Feature Generation, will generate classes without explicit member attributes and class references. Instead, a model of the class itself is constructed (a meta-model), and the members/references stored within a datastructure within hte class itself.
+
+  	Rather than referencing the atributes directly, you are required to access them through the getters and setter function which it generates for that purpose.
+
+  	This seems to work reasonably well, although I find the code you need to write generally a but more cumbersome, and less fluent.
+
+  	HOWEVER I HAVE ENCOUNTERED SOME SIUTATIONS WHERE CODE GENRATED TO USE REFLECTION DOES NOT WORK PROPERLY AND THROWS ERRORS THAT NON-REFLECTIVE CODE DOES NOT.
+
+  	The feature is activeated/deactoveated via the Model --> Feature Delegation property of the GenModel.
+
+  	Generally speaking, non-reflecitve code is easier to read, easier to bug and works correctly in more situations. Use it unless you have a good reason not to.
+
+====
+
+
+
+*Other Stuff
+
+  	[[1]] Getting the implementation of a class to additionally implement an Interface not specifically modelled on the diagram
+
+  		add an @implement annotation into the user-doc section of the generated java code:
+
+  ---
+  	 /**
+   	 	* <!-- begin-user-doc -->
+  		* An implementation of the model object '<em><b>My User Profile Mesg</b></em>'.
+  		*
+  		* @implements com.garmin.fit.UserProfileMesg NOT
+  		*
+  		* <!-- end-user-doc -->
+  		*/
+  ---
+
+  		You can do likewise with @extends, ( although since the generated class always will probably be forced to extend one of the standard Ecore classes, then, (since a class can only extend a single superclass),this seems to be of limited value.)
+
+  		I DO NOT THINK this ends up in the model files anywhere: I think it must be read from the java source files following regeneration - not absolutely sure on this however.
+
+
+=====
+
+*You Can't Turn OFF default Generation Functionality.
+
+	I have tried to play with various genmodel options in order to to try and stop the framework from generating ANY if the EMF artifacts, and just generating exactly what has been modelled.
+
+	<<THIS DOES NOT SEEM TO BE POSSIBLE>>
+
+	The models will <<always>> import extend emf objects and generate artefacts that take advantage of them.
+
+
+*Runtime platforms
+
+	genmodel has specific support for generating code targeted at the following execution environments:
+
+	* RAP - Rich Ajax Platform;
+
+	* GWT - Google Web Toolkit;
+
+	* IDE - Eclipse IDE;
+
+	* RCP - Rich Client Platform - e.g. Spring;
+
+	[]

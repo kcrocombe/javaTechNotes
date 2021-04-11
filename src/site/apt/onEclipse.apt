@@ -241,3 +241,25 @@ Using Eclipse
 	Have installed this : seems to work ok. Gives the default edit vi-like properties.
 
 =================================
+
+
+Perspectives within Eclipse IDE
+
+	A <<perspective>> within IDE is little more than a saved configuration customises what Tools and Actions are available within the Main IDE window. It customises what is shown:
+
+	text menu con.
+	* Within the toolbar area
+
+		* Within t
+		***via the Aird editorhe Menu Structure
+
+
+		* What actions are triggered by selecting options from those Menu/Toolbars
+
+		* What shortcuts Are Available.
+
+	When you install a IDE particular IDE plugin/tool, they will often come with their own perpective or set of perspectives.
+
+	The Full list of installed perspectives is available form the Perpectives Toolbar button, or form the Window-->Perspectives option.
+
+	You can install commonly used perpectives to the Toolbar, where they sit to the far right. They canbe customised to your hearts content.

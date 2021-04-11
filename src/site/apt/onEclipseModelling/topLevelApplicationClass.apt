@@ -1,0 +1,104 @@
+Modelling a Top Level Application class with a main() method.
+
+	When modelling an actual application from a collection of Classes, it seems to me (perhaps naively), that there is some conceptual value to creating a simple Class which collects together the major Objects that the application will use to form some sort of Application State.
+
+	Generally the class would a containing class for these other objects.
+
+	This provides:
+
+	  	a means by which constraints between the major objects can be expressed;
+
+			a home for the main() function.
+
+
+	i.e. modelled (in text) something like:
+
+---
+	Application::
+			ClassA : attrA
+			ClassB : attrB
+
+	public static void (main args[]){};
+---
+
+
+	Java requires that the main function have the signature:
+
+---
+	public static void (main args[]){};
+---
+
+	This constrains the way that the model can be represented. The main method is static, i.e. it can be called by referencing the Class directly, WITHOUT needing any underlying object. This means it can't access any other member attributes/functions that are not themselves static.
+
+	Obviously it is likely that our main method WOULD want to reference attribute attrA, attrB etc. not least, to initialise them (Remember the main() method WILL be executed before ANY constructors)
+
+	In a situation when where we are manually coding, typically we would get round this need this to be represented in code in one of 2 ways:
+
+
+Approach 1
+
+	Ensure that the attrA and attrB are themselves static, e.g.
+
+---
+		class Application {
+
+			static ClassA attrA;
+			static ClassB attrB;
+
+			private static void main( String args[]) {
+				attrA = new ClassA();
+				attrB = new ClassB();
+				...
+			}
+		}
+---
+
+	In a ecore modelling envionment, this is problematic; you can't specify in the modelling tool that you want particular member attributes to be static. You would have to include them as non-generated attributes/methods and ideally to get the most out of the tool, we want to minimise this.
+
+
+Approach 2
+
+	Create an instance of our Application Class within main, and then manipulate its variables. This looks a bit strange, because it we are defining an instance of Application within the Application class itself, but this is a pretty standard approach.
+
+---
+		class Application {
+
+			ClassA attrA;
+			ClassB attrB;
+
+			private static void main( String args[]) {
+
+				Application app = new Application();
+
+				app.attrA = mkClassA();
+				app.attrB = mkClassB();
+				...
+			}
+		}
+---
+
+	In the above, we are using Factory Methods rather than constructors for ClassA and ClassB, but the approach works for both.
+
+	In the ecore modelling environment, this works pretty well. The one aspect that has to be manually crafted is the main() function itself. This has to have the signature
+
+---
+		public static void main( String args[] ) {..}
+---
+
+	and I haven't found a way (yet) of generating this out of the model.
+
+	If you wanted to put everything into the model, it is pretty straightforward just to delegate the work that might have been done with main() to a second function ( run() in our example below).
+
+	All the main() function has to do is create and instance of the Class and invoke its run() method.
+
+---
+		@generated NOT
+		static public void main(String args[]) {
+
+	 		Application app= new ApplicationImpl();
+
+	 		app.run(args);
+	 	}
+---
+
+	The run() method can then do the rest.
