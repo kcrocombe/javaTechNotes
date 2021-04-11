@@ -230,3 +230,14 @@ Using Eclipse
 
 
 *Debugging and Running
+
+
+
+
+* Using vi in Eclipse
+
+	[[1]] vrapper - a wrapper for vi
+
+	Have installed this : seems to work ok. Gives the default edit vi-like properties.
+
+=================================

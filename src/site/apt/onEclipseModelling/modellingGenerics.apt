@@ -1,0 +1,79 @@
+Modelling Generics within EMF.
+
+	Many of the library Collection type classes (e.g. java.util.List<E>) are implemented as Generic Classes. In order to make proper use of these, they need to be represented correctly in your model. This is not as intuitive as it might be. In this example, we shall model a class that extend the List Interface. However the same principles and processes will apply if all the classes/interface are local.
+
+	Below we describe how to configure Generics using both the Sirius Graphical Modeller and the Sample Ecore Editor.
+
+*Using the Sirius Modelling Tool
+
+	[[1]] Represent the Interface you wish to extend as an Abstract Interface, and provide the Instance Class Name and Instance Type Name.
+
+	[[1]] Do <<NOT>> provide the generic form with in the Instance Type Name (we shall add an EType parameter for this). i.e.
+
+---
+	Name:									List
+
+	Instance Class Name: 	java.util.List
+
+	Instance Type Name:		java.util.List       NOT java.util.List<E>
+---
+
+	[[1]] Add a EtypeParameter to the List Interface. The documentation for java.util.List uses E to represent its generic class. It may be a good idea to follow this convention, if only to avoid confusion.
+
+	[[1]] Add the Class that you wish to Model. Let us assume that we want this to be a Generic too.  So add a ETypeParameter to that too. I have successfully used the same name E, but it might be a godd idea to use a differnt letter, say, T
+
+	[[1]] Make your Class implement the List Interface by making List its Supertype. At this stage, the Relationship will be be annotated: <<<i\<\<bind E \>\> ?>>>, and will be associated with an Error message:
+
+		<<<Error: A generic type in this context must refer to a classifier or a type parameter.>>>
+
+	What this is telling us is that the Generic Type Parameter INHERITED from the Parent must be mapped to something. It can be associated with:
+
+	 	* A concrete class (i.e a 'Classifier' in the EMF parlance) e.g. any of the built in classes, any other classes that we have modelled, defined Datatypes.
+
+		* A Etype Parameter. This will only be relevant if the Sub-type is ITSELF to be generic. If this is the case, the Generic Type inherited from the parent can be associated with the generic type parameter of the child class, say T.
+
+	(Note. The child class can make concrete the class used by the parent class, but remain generic with respect to some DIFFERENT paramter. For example, it can implement List<String>, but itself we generic for sub-type of Fruit. It might be instantiated as Child<Pear>, Child<Apple>. Both of these would also implement List<String>).
+
+	[[1]] I don't think that this can be associateion can be made via the modelling tool; it has to be done with the <<<Sample Ecore Editor>>>
+
+	[[1]] Within the <<<Sample Ecore Editor>>>, first ensure thet the 'Show Generics' option is checked. Otherwise the relevant options will not be available from the Context ('Right Click') menu.
+
+	[[1]] By expanding the Child Class, we will see the parent relationship to the List<?>. The bound item ? need to be amended to represent something legitimate. On the Properties view, there will be 2 fields available for population:
+
+		EClassifier: A pull down list of all classes available. Selecting one of these will make the instantiation concete.
+
+		EType Parameter : If the class is itself generic, we can associate one of its own generic paramters with that of the parent. Again a list of valid options is presented.
+
+	[[1]] Once this field is populated, the diagram will be updated: <<<\<\<bind E\>\> someClass>>> or <<<\<\<bind E\>\>  T>>>
+
+	[[1]] All Done. This construct should now compile.
+
+
+*Using the Sirius Modelling Tool
+
+	It is also possible to use the Ecore Sample Editor to add in the Generic parameters and associate them =with the correct Arguments for our purposes.
+
+	[[1]] Consider 2 classes SuperType and SubType where SubType is subclassing the SuperType. We shall make both generics, and pass up the generic parameter from SubType to the SuperType.
+
+	[[1]] Select the SuperType, right click and select:
+
+	 		New Child --> EType Paramter
+
+		Name it E,T... etc within the Properties.
+
+	[[1]] Similarily, add a Generic Parameter to the SubType
+
+	 		New Child --> EType Parameter
+
+		Name it E,T... etc within the Properties.
+
+	[[1]] Now we need to add a Generic Type Argument to qualify the Relationshi between SubType and SuperType. Select teh relationship under the SubType (called SuperType), rightclick and add the arguments as follows:
+
+			New Child --> EGeneric Type Argument
+
+	[[1]]	Now, within the properties view,  associate the EGeneric Type Argument with the EType Parameter of the subType
+
+	[[1]] All these changes should be reflected on the diagram.
+
+
+=====

@@ -1075,7 +1075,7 @@ The Git Version Control System
 
 ****Building the Depot on a remote servers
 
-	Most depot repositories are likely to be built on remote servers, and this creates and immediate difficulty. It is not possible for native git to create a repository on anything other than the machine it is running on. This means that in setting up our depot repository on a remote machine we need to either:
+	Most depot repositories are likely to be built on remote servers, and this creates an immediate difficulty. It is not possible for native git to create a repository on anything other than the machine it is running on. This means that in setting up our remote depot repository we need to either:
 
 		[[a]] logon to the remote server in some way and run 'git init'  locally there.
 
@@ -1083,7 +1083,7 @@ The Git Version Control System
 
 	The first of these methods has effectively already been covered, since it is little more then the method used to set up a depot server locally. Once the <<<git clone>>> was completed we need to move the <<<sharedProject.git>>> file to it new host server.
 
-	For the rest of this, we will walk through the steps necessary to create a depot repository directly on a particular remote service, namely on GitHub.
+	For the rest of this, we will walk through the steps necessary to create a depot repository directly on a particular remote service, namely on <<GitHub>>.
 
 
 ****Getting init run the Github server.
@@ -1118,7 +1118,7 @@ The Git Version Control System
 
 	* For HTTPS, a Oath2 Token for the repository owners account needs to be generated and this registered with the osxkeychain. This is more fully described elsewhere. git also need to be configured to use the  osxkeychain as its credential helper. This is more fully described {{here}}.
 
-	By default, the <<<hub>>> application looks to use SSH by preference, although for day to day operations HTTPS is the preferred protocol. To avoid difficulties it is probably better to ensure both methods are available before setting up any repositories. Note the below is not a 'per-repository' type configuration. Once configured in for the user it will have effect across all repositories.
+	By default, the <<<hub>>> application looks to use SSH by preference, although for day to day operations HTTPS is the preferred protocol. To avoid difficulties it is probably better to ensure both methods are available before setting up any repositories. Note the below is not a 'per-repository' type configuration. Once configured in for the user it will have effect across all repositories. Note that the hub application DOES NOT use the same osxkeychain helper that git uses
 
 ---
 	git config --global credential.helper 'osxkeychain'
@@ -1148,7 +1148,7 @@ The Git Version Control System
 
 ******Forking a GitHub repository
 
-	This is gitHub concept ( NOT a git on) and will essentially create a copy of an existing repository within GitHub. I don't think that the new repository mainatains any link back to its original repository, although a list of forks <<is>> maintained at the source fork.
+	This is gitHub concept ( NOT a git on) and will essentially create a copy of an existing repository within GitHub. I don't think that the new repository maintains any link back to its original repository, although a list of forks <<is>> maintained at the source fork.
 
 	In general, you would fork a repository rather that create a branch on it if there is no real plan to merge it back; for example, if you wish to extend the work done on a project for your own personal purposes, rather than contributing to the development of the project per-se. (However, that does not mean that work on a fork cannot be merged back: if desired, this is still perfectly possible.)
 
@@ -1381,25 +1381,31 @@ The Git Version Control System
 
 **Enabling Seamless Secure Connection to the Remote ServerSide
 
+***For Git
+
 	In general, connection to the remote server will require to be authenticated. Some operations may not : public access to public repositories for instance, but in general some form of credentials will need to be passed to the server in order for communication to proceed.
 
 	The more widely-used transfer protocols (SSH, HTTPS) will prompt for the necessary credentials ( username/password) before permitting data exchange.  This is inconvenient in a number of ways, not least if you are using long, secure passwords.
 
-	Fortunately, it is possible to configure the client to hold and pass the necessary credentials seamlessly.
+
+	Fortunately, it is possible to configure the git client to hold and pass the necessary credentials seamlessly.
+	<<NB. The authentication mechanism that <<<git>>> uses is DIFFERENT to the one that <<<hub>>>. Should passwords/authentication credentials change, then they need to be changed separately for two clients. Beware: this has caused problems in the past.>> The process for changing the hub credential is described later.
+
+***For SSH
 
 	For SSH, this is done via the usual public/private key pairs, but since we won't be using that I won't discuss it further.
 
-**For HTTPS
+***For HTTPS : Using the git credential-osxkeychain helper and Personal Access Tokens
 
-	Https does not allow authentication via key-pairs - every connection requires a username password. Fortunately, git has a build in credentials system that can hold the username/password and pass them as required automatically. There are a number of systems ( 15min memory cache, plain text store etc) but the one that makes most sense on the Mac is to configure the credentials within the OSX keychain.
+	Https does not allow authentication via key-pairs - every connection requires a username password. Fortunately, git has a build-in credentials system that can hold the username/password and pass them as required automatically. There are a number of systems ( 15min memory cache, plain text store etc) but the one that makes most sense on the Mac is to <<configure the credentials within the OSX keychain>>.
 
-	First tell git that that is the credential mechanism  you wish to use:
+	First, tell git that this is the credential mechanism  you wish to use:
 
 ---
 	git config --global credential.helper 'osxkeychain'
 ---
 
-	This requires the presence of a git helper application git-credential-osxkeychain. This will form part of the git installation if it was installed via <<<brew>>>
+	This requires the presence of a git helper application git-credential-osxkeychain. This will already form form part of the git installation if it was installed via <<<brew>>>
 
 	You can verify it is installed by issuing:
 
@@ -1407,8 +1413,10 @@ The Git Version Control System
 	git credential-osxkeychain
 ---
 
+	It will just respond with a 'Usage:' message, but this is enough for you to know it is there.
 
-	Then create a keychain entry (Internet password) for https://github.comp
+
+	Then create a keychain entry (Internet password) for https://github.com
 
 			Name: github.com
 
@@ -1418,23 +1426,23 @@ The Git Version Control System
 
 			Where: https://github.com
 
-			Password: *******   (but see {{TwoFactorAuthentication}}Two Factor Authentication} below).
+			Password: *******   (but see {{{TwoFactorAuthentication}Two Factor Authentication}} below).
 
 	When saving this it will prompt you for the password of the mac user who is going to use this.
 
 	Now when communicating with the remote server, git will send these credentials.
 
-**Two Factor Authentication.
+***Two Factor Authentication.
 
 		The introduction of 2-factor Authentication mechanisms for Github accounts has added a layer of complication to this process. Under this regime, the normal password for the account is not enough. Additionally the user has to supply a secondary, generated code ( usually via a app on a smart phone.)
 
-		In these circumstances, the standard password will not work. Instead, you must use a personal access token.
+		In these circumstances, the standard password will not work. Instead, you must use a <<personal access token>>.
 
-**Personal Access tokens
+***Personal Access tokens
 
 		Personal Access Tokens are similar to OAuth access tokens, and are generated and managed on the GitHub site itself (under Developer Settings). They are for the exclusive use of one connecting app only.
 
-		This token must be configured into the keychain instead of the password.
+		This token must be configured into the keychain <<instead>> of the password.
 
 		Note that the token issued (Personal Access Token') are endowed with a level of privilege (scopes). Consequently you will not, by default, be able to perform the full range of operations that you would if authenticated directly. However, granting just 2 'scopes' should enable most day to day things to be accomplished. These are:
 
@@ -1442,21 +1450,102 @@ The Git Version Control System
 
 			* delete_rep ( Ability to delete repositories )
 
-		Assuming that you have already configured git to use the credential manager
+****Setting Up
+
+		If you haven't already configured it, set up git to use the credential manager, i.e.
 
 ---
 	git config --global credential.helper 'osxkeychain'
 ---
-		the first time that you use the token, it will be automatically cached within the keychain.
+		then the first time that you use the token, it will be automatically get cached within the keychain. e.g
 
 ---
 	git push
 
 	Username for 'https://github.com': kcrocombe
-	Password for 'https://kcrocombe@github.com': <theTokenCopiedFromGitHub>
+	Password for 'https://kcrocombe@github.com': <thePersonalTokenCopiedFromGitHub>
 ---
 
 	This will then appear in your keychain with a type 'Internet Password' and with Access-Control referencing git-credential-osxkeychain.
+
+****Lifetime
+
+	I am not sure how long personal access tokens last, but I have had them disappear on me. If that happens, you just need to create a new one, and re-register it as above.
+
+****Troubleshooting the osxkeychain helper
+
+ 	There is not a lot of documentation on this helper. The best that I have found is in the {{{https://git-scm.com/book/en/v2/Git-Tools-Credential-Storage} ProGit book}}.
+
+	Occasionally it might be useful to check what credentials the tool is actually bringing back. To do this you can use the get option as described below. Note, however, this is not supposed to be an interactive tool, so using it like this is not completely intuitive.
+
+	Basically, when called it expects certain parameters to be provided to it in order for it to establish which entry in the keychain to use (it does not know automatically).
+
+	In the below, the keychain may well prompt you for a password before continuing.  The credential-osxkeychain DOES NOT get prompted for a password because it is in the list of permitted applications for this particular set of credentials ( Have a look at it through the keychain application on the macfor details)
+
+---
+	echo "\
+	host=github.com
+	protocol=https
+	username=kcrocombe
+
+	" |  git credential-osxkeychain get
+---
+
+	to which it will reply:
+
+---
+
+password=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
+---
+
+	Note: if no paramters are provided, or fewer parameters are provided it will STILL attempt to pull find something appropriate in the keychain. This can lead to it attempting to use the credentials from an entirely inappropriate source ( in my case, it seems to pull back adobe credentials??)
+
+*****How does it choose
+
+	I THINK it selects a password based on the URL being used to access a repository.
+
+	A basic URL will look like
+
+		https:/github.com/kcrocombe/someRep.git
+
+
+	I think it takes, protocol, site, username from this URL
+
+*****Updateing a password
+
+	This can also be done with the credential-osxkeychain application
+
+---
+	echo "\
+	host=github.com
+	protocol=https
+	username=kcrocombe
+	password=<newpassword>
+
+	" |  git credential-osxkeychain store
+---
+
+	However it is probably easier just to do it directly in the keychain manager application.
+
+***For the hub application.
+
+	Things are much simpler for the hub applicaion.  Instead credentials are stored in a simple text file ~/.config/hub
+
+	If this does not exist, then it will be created the first time the application is run.  A typical entry is
+
+---
+github.com:
+- user: kcrocombe
+  oauth_token: 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
+  protocol: https
+---
+
+	If the password changes, teh file can be updated manually ( The oath token is simply the PErsonal Access token issued by GitHub)
+
+	The hub application is aware of a number of environmental variables ( see the man documentation), but a useful one is HUB_VERBOSE. Setting this to any value will cause extended stdout output, and is very useful in debugging any issues.
+
+
+
 
 
 ===
@@ -1856,3 +1945,25 @@ The Git Version Control System
 
 
 	[[1]] Git stores files named not after their filename, but after the SHA1 hash of their contents. So 2 files with diff names but same content will be considered the same object ( and stored just once)
+
+
+
+*Git Hub Configuration
+
+**Users
+
+	I have 2 users configured:
+
+		kcrocombeTst
+
+		kcrocombe
+
+	Both ar configured within LastPass
+
+
+
+**Organisations
+
+	I have one organisation configured:
+
+		peortech - with both the above as members

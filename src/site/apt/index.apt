@@ -58,13 +58,17 @@ Development
 
   * {{{./onEclipse.html}Notes and Snippets on the Eclipse IDE}}
 
+  * {{{https://docs.oracle.com/javase/tutorial/index.html}Learning material from Oracle}}
+
   []
 
 *Testing:
 
-  * {{{./onJUnit.html}On JUnit.}}
+  * {{{./onJUnit.html}On JUnit : A Jave Testing Framework}}
 
-  * {{{./onMockito.html}On Mockito.}}
+  * {{{./onMockito.html}On Mockito : A Mocking Framework}}
+
+  * {{{./onOpenClover.html}On OpenClover : Test Coverage Tool.}}
 
   []
 

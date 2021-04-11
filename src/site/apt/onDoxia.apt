@@ -32,7 +32,7 @@
 
 * Some basics for writing documentation using Apache Doxia
 
-	[[1]] Official Documentation is {{https://maven.apache.org/doxia/references/apt-format.html}} here}
+	[[1]] Official Documentation is {{{https://maven.apache.org/doxia/references/apt-format.html}} here}
 
 	[[1]] Any lines not seperated by a blank line are considered part of the same paragraph, so you need 2 hard-returns ( i.e. a blank line)) to creates one.
 
@@ -54,4 +54,4 @@ Resource Directory
 
 	This is usefule for processing image files, or already formatted html
 
-	e.g. the documentation from 3rd part libraries etc 
+	e.g. the documentation from 3rd part libraries etc

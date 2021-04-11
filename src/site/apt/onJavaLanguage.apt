@@ -32,6 +32,8 @@ Bits on Pieces, Tips and Tricks on the Java Language.
 
   Checked exceptions are generally ones that might be expected to occur from time to time an from which the program might reasonably expected to recover.
 
+  ANY EXCEPTION THAT IS NOT A SUBCLASS OF RuntimeException ARE CHECKED EXCEPTIONS.
+
 **Unchecked exceptions
 
   Are the exceptions that are <<not>> checked at compile time. These can be:
@@ -41,6 +43,23 @@ Bits on Pieces, Tips and Tricks on the Java Language.
     Runtime Exceptions : arising from exceptional conditions arising from WITHIN the application : E.g. Divide by zero, Null Pointer exceptions etc.
 
   These are not subject to the Catch or Specify Requirement described above.
+
+
+**Reuse Existing Exception.
+
+  Whereever possible, Reuse existing Exceptions.
+
+  Minimise the use of Checked excpetions
+
+
+  IllegalArgumentException : Unchecked
+
+  IllegalStateException : Unchecked
+
+  NullPointerException : Unchecked
+
+  unSupportedOperationException : Unchecked
+
 
 
 ===
