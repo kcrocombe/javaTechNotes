@@ -2,7 +2,7 @@ Modelling Singleton Classes
 
 	A singleton class is one where just a single instance is allowed.
 
-	It seems to be relatively easy to implement this feature WITHOUT having to actually model anything; it acn all be done in the implementing class.
+	It seems to be relatively easy to implement this feature WITHOUT having to actually model anything; it can all be done in the implementing class.
 
 	The following seems to be a relatively standard way of doing it ( From Effective Java).
 
@@ -12,10 +12,15 @@ Modelling Singleton Classes
 
 		2. A private constructor.
 
+	<<NB if the constructor is NOT private, then the singleton property is not guaranteed.>>
+
+	It is possible to protect a protected constuctor by getting it to throw an exception should a second instance be attempted to be created, but the private constructor is much better because it hightlights attempted violations at compile time.
+
 ---
 	public ClassImpl {
 		public static final ClassImpl SINGLETON = new ClassImpl();
 
+		@generated NOT
 		private ClassImpl() { set up some stuff };
 		...
 	}
@@ -23,7 +28,7 @@ Modelling Singleton Classes
 	The class can then be referenced anywhere as ClassImpl.INSTANCE
 ---
 
-	The factory method that CodeGen will within the package's Factory class canbe implemented:
+	The factory method that CodeGen will within the package's Factory class can be implemented:
 
 ---
 	public Class1 createClass1() { return Class1Impl.SINGLETON; }

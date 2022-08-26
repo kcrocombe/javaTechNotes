@@ -1,0 +1,818 @@
+---
+########################################################################################
+#
+# $HeadURL: file:///users/svn/summit/branches/br4.01/docs/misc/svnUsageNotes.txt $
+#
+# $Revision: 27 $
+#
+# $Date: 2014-01-14 15:41:56 +0000 (Tue, 14 Jan 2014) $
+#
+# $Author: kcrocomb $
+#
+# Modifications:
+#
+########################################################################################
+
+
+Use of SubVersion for Source Code Control within Mortgage Loan Servives
+
+
+
+Introductory Notes
+
+1)	Subversion is open source software fully compliant with the Debian Free Software Guidelines : there are no 
+	license fees to pay for its use.
+
+
+2)	Currently it is installed to both the harrison ( AIX) and lennon (UPUX) development machines. We also
+	have packages to install it to Windows paltforms if need be.
+
+
+3)	We currently operate v1.6 of Subversion. Distributions, support, documentation is available 
+	from http://subversion.apache.org
+
+4)	A copy of a subversion guide (pdf) is located on the LAN
+		( J:\IT\MCLS\Application Packs\Subversion\subVersion User Guide
+
+	and the user is refered to this as the principle source of guidance.  The department also has a hard 
+	copy of this book floating around.
+
+5)	Command line help is available as follows:
+
+		svn help
+	or
+		svn help <command>
+
+
+6)	In concept, its usage is similar to clearcase in that we still have the concepts of a trunk, for main
+	line development and branches for various lines of seperate development.
+
+
+7)	Architecturally it is very different from clearcase.
+
+	In essence, it consists of one or more seperate repositories each containing the source for a different 
+	system.
+
+	For example, we have a repository for summit and a repository for mcc.
+
+	The repository itself is a filesystem collection of directories and files with a proprietery 
+	structure. It is not possible to work on source code directly within the repository: instead, 
+	the files have to be checked out into what is known as a Working Copy before any work can be done.
+
+
+8)	A working copy is essentially just a local copy of a particular version of a repository. Typically
+	each developer will work independently in their own working copy. When appropriate, changes are commited
+	back to the repository from the working copy: this makes the changes available for others to incorporate
+	into their own working copy as and when they see fit.
+
+
+
+9)	Subversion repositories are network aware. This means the repository does not have to be on the same
+	machine as that containing your working copy(s). The repository has an associated listener/server that
+	can send files to subversion clients anywhere on the network.
+
+	Consequently, the repository on harrison is accesible from lennon or anywhere else where there is
+	a subversion client.
+
+
+10)	Access to a repository is generally via a URL. The format of the URL can differ according to the
+	daemon used to service requests. Currently we use the subversion proprietery daemon (svnserve).
+	Requests to this daemon take the form
+
+		svn://server/<repName>/dir
+	e.g.
+		svn://harrison/summit/trunk
+
+
+11)	For the purposes of resilience, subversion has the capability to replicate the changes made in a
+	reposititory to a second (or 3rd) mirror server. Currently MLS operates in that configuration:
+
+		Primary server :    svn://harrison/<repName>
+
+		Mirror server	: svn://lennon/<repName> 
+
+	Note that normally, only the primary server is available for use. The mirror will only be brought
+	online in the case of failure of the primary
+
+
+10)	At the time of writing, all primary repositories are held on the harrison box, under /home/svn/repositories.
+	The mirror repositories are on lennon under /home/svn/repMirror.  In both cases, teh repositories are
+	held on their own filesystem (/home/svn). On the priamry server, there is a second filesystem /home/svnBack
+	which holds the nightly backup of the repository.
+	
+	There is a specific user ( svn ), which own the files making up these repositories, and runs the daemons and
+	system processes necessary to maintain them. 
+
+
+
+Basic Administrative processes
+
+The following few notes summarize the very few basic administrative procedures necessary to keep the
+show on the road
+
+1) svnserve daemon
+
+   Normal user access to the repositories requires a daemon process to be running. It is possible to
+   use Apache or other webservers, but on theis site we are using the proprietery svnserve daemon.
+	
+   To manually start the daemon on the primary server, use the following
+
+	from the svn user:
+
+		svnserve -d -r /home/svn/repositories
+
+	or for the mirror server
+
+		svnserve -d -r /home/svn/repMirror
+
+
+   The harrison server has been configured to start this process at boot type by running the
+   /etc/rc.d/rc2.d/S040_subversionDaemon.
+
+   Likewise lennon has been configured to start the daemon by running the 
+   /sbin/init.d/subversion script.
+
+
+   There is no specific shutdown process. The daemon process id can simplely be killed.
+
+
+2) svn User Acccounts 
+
+   In its current configuration, subversion has only limited security protection. The username
+   names and passwords are held in clear text in the configuration file
+
+	/home/svn/etc/passwd
+
+
+   Note that all repositories are configured to use this one file ( although, if required,
+   they can be configured to different ones.
+
+   New account, password changes etc are made by editing this file 
+
+
+
+3) Repository Backups
+
+   According to the manual, backing up the repository files while users are accessing them can result in silently
+   duff backups. Consequently, a specific hot backup process is provided  ( svnadmin hotcopy).
+
+   Within MLS, this is scheduled via cron to run nightly at 19:00
+	(/home/svn/etc/svnBackup.sh)
+
+   A logfile is written to /tmp/svnBackup.log
+
+   This backs up the repositories in /home/svn/repositories --> /home/svnBack, from where it is backed up tp tape
+
+
+
+4) Server Replication
+
+   Periodically, changes to the primary server on harrison are replicated to a mirror server on lennon.
+
+   This is controlled by a cron job on harrion which runs every hour. (/hom/svn/etc/svnSynchronize.sh). Once
+   again a log file wil be written to /tmp.
+
+
+   Occasionally, the replication job may not be able to get the locks it requires on the repositories in
+   order to proceed. This may happen if the previous running of the replication job has been
+   interrrupted or sime such.
+
+   In these circumstances, it will be necessary to remove the offending locks manually.
+
+
+   e.g  On the mirror server,  list the locks
+
+	svn proplist --revprop -r HEAD file:///home/svn/repMirror/mcc
+
+	and then remove the offending one
+
+	svn propdel svn:sync-lock --revprop -r HEAD file:///home/svn/repMirror/summit \
+			--username syncuser --password hj5Gfdhj7
+
+
+   Note, the locks can be in more than one place: in particular, locks are also put in 
+   place on revivision 0 of the repository which may not be immediately obvious.
+
+	svn proplist --verbose --revprop -R  -r 0 file:///home/svn/repMirror/summit
+
+	svn propdel svn:sync-lock --revprop -r0 file:///home/svn/repMirror/summit \
+			--username syncuser --password hj5Gfdhj7
+	
+		
+	
+
+5) Creating a new repository and its associated directory structure.
+
+a)	This has to be done locally on the repository server, and the convention shall be that all our
+	repositories will be created as subdirectories of /home/svn/repositories. At the same time
+	that the repository is created, a mirror repository must also be created on the secondary server.
+	Currently all our repositories are periodically replicated to lennon
+
+b)	As the svn user:
+		svnadmin create /home/svn/repositories/<repName>      
+
+
+c)	amend the repository configuration files 
+		/home/svn/repositories/<repName>/conf/svnserve.conf
+
+	Template files are created by default when the repository is created. By default,
+	these allow access to every one. The passwd file needs amaendign to include user names
+	and passwords for the authorized users.
+
+	The svnserve.conf file needs amending to restrict access to the authorized users
+	and use the /home/svn/etc/passwd file to pick up its users. ( Note this file is
+	used as a global password file for all repositories)
+
+
+        This is explained well enough in the template files, but in summary the following
+        options need to be set
+        
+
+                anon-access = read
+                auth-access = write
+                password-db = /home/svn/etc/passwd
+
+
+c)	On the secondary server ( currently lennon ), and as the svn user create an identically named
+	repository to act as the mirror
+
+		svnadmin create /home/svn/repMirror/<repName>
+
+
+d)	On the secondary server, amend the repository configuration files
+			/home/svn/repMirror/<repName>/conf/svnserve.conf
+
+	Again, the password-db parameter needs setting so that the global password file
+	/home/svn/etc/passwd is referenced. Because this is the mirror, there should be only
+	one authorized user (syncuser). This account should be used by the synchronisation daemon alone 
+
+	The secondary server requires a couple of specific hook procedures putting in place to allow
+	it to act as a mirror repository. These are
+		/home/svn/repMirror/<repName>/hooks/start-commit
+		/home/svn/repMirror/<repName>/hooks/pre-revprop-change
+
+	These can be copied from the templates in /home/svn/etc
+
+e)	The mirror repository then needs initialising
+
+		svnsync initialize svn://lennon/<repName> svn://harrison/<repName> \
+			--source-username syncuser \
+			--source-password  hj5Gfdhj7 \
+			--sync-username syncuser \
+			--sync-password  hj5Gfdhj7
+
+
+f)      It will warn you tha the password can only be stored un-encrypted.
+        For now, except the constriant ie
+
+                Store password unencrypted (yes/no)? yes
+
+	
+	This completes preparation of the mirror repository. The synchronisation cron job
+	on the primary server should now be able to mirror any commits to the primary
+	repository to the mirror.
+
+
+
+
+6) Creating the internal layout of the repositories.
+
+	Theoretically, repositories can be given any number of different internal structure. However, in practice,
+	we shall restrict ourselves to teh layout recomended with the Subversion Guide
+
+	i.e - each repository shall have the following 3 directories: trunk; branches; tags. Each directory shall hold
+	'snapshot' copies of all or parts of the reposiroty as follows.
+
+	trunk  - This shall hold the "main line" of the source code development. In essence, all change will eventually
+		 make its way into this part of the repository.
+
+	branches - Any piece of work that reuquires more than a trivial amount of change should not be performed
+		on the trunk of the reposititory. Instead, a suitabley named branch shall be created under the branches
+		directory. All change shall be initially performed on this branch. Once the full program of change has
+		been completed, tested etc. the chnges in teh branch will be merged back into the trunk.
+
+
+	tags - This directory essentially consists of named snapshots of the trunk ( or a branch) directory. No change is
+		allowed in the tags directory which is used essentially to give a meaniningfuill name to  certain
+		significant copies of the repository e.g. a Release etc.
+
+
+
+	To create, 
+			svn mkdir -m "Initial Setup" svn://harrison/<repName>/trunk
+			svn mkdir -m "Initial Setup" svn://harrison/<repName>/branches
+			svn mkdir -m "Initial Setup" svn://harrison/<repName>/tags
+
+	At the moment, there isn't anything to physically prevent people committing things to the tags directory
+
+
+7) Importing existing files into a new project
+
+a) If there are pre-existing source code files, these can be imported to the trunk as follows:
+
+	as any user
+
+	svn import <sourceDir> svn://harrison/<repName>/trunk -m "<Suitable Comment>"
+	
+
+b)  You can list back what you've created as follows:
+ 
+	svn list svn://harrison/<repname>/trunk
+
+
+c)  NB by default svn will ignore some file types during imports ( and directory adds ). For example
+    all .o files will be ignored. The list of files ignored is configurable ( see books).
+
+    If necessary the --no-ignore option can be used to import everything. Or, more usually the
+    specific files can be added explicitly
+
+
+
+
+
+Using Subversion 
+
+	The basic cycle of work will be:
+
+	a)	If necessary, create a branch for your work. It is ok to perform trvial changes directly on the
+		trunk, but if your work is going to involve changes on multiple files you will need to create
+		a branch for that work.  Usually, the branch will be created as a copy of the trunk, but it can 
+		also be created as a copy of a 'Tag' or another branch.
+
+	b)	Checkout a working copy of that branch. Theoretically, any no of developers can check out
+		their own copy of the branch and work on it independently
+
+	c)	Make the desired changes to your working copy. Existing files can be edited, directories/files
+		can be added, deleted as necessary. Changes made on the branch by others can be incorporated
+		as necessary, as can work on other branches.
+
+	d)	Commit the changes made to the repository, when appropriate
+
+	e)	When work on the branch is complete and tested merge it back into the trunk.
+
+	f)	Cut a new release as necessary from the trunk which may now include any number of
+		mwerged branches. If necessary, this cut can be tagged e.g. system testing
+
+	g)	Once testing of this Release is completed, it can be again tagged e.g. Release x annd installed
+
+
+	h)	If necessary, the now defunct branch can be deleted.
+
+	i)	If necessary, your working copy can be deleted.
+
+
+	This is expanded upon below.
+
+
+
+1)	Creating a branch,
+
+	a)	Most changes will require a branch creating for the work.
+
+		It is ok to perform trvial changes directly on the trunk, but if your work is going to involve
+		changes on multiple files you will need to create a branch for that work.  Usually, the branch 
+		will be created as a copy of the trunk, but it can also be created as a copy of a 'Tag' or 
+		another branch.
+
+			svn copy svn://harrison/<repName>/trunk \
+				 svn://harrison/mcc/branches/br3.03.01 \
+				-m "<Description of branch purpose>"
+
+	b)	Note that subversion does not physically copy any files here : this is just a logical copy, so creating
+		lots of copies does not chew up lots of diskspace.
+
+
+2)	Checking out a Working Copy
+
+	a)	a Working Copy is a structural copy of your projects files/directories but with a number of
+		special svn files incorporated. These files should never be touched - they are used by svn	
+		to co-ordinate changes with the repository.
+
+	b)	A working copy can be created from scratch by checking out a particular revivion of the
+		repository. This will normally be a branch as described  above
+
+			svn checkout svn://harrison/<repName>/branches/<BranchName> <targetDir>
+
+		You do not have to create a working copy of the entire project: somtimes a single sub
+		directory is sufficient
+	
+			svn checkout svn://harrison/<repName>/branches/<BranchName>/dir <targetDir>
+
+		You cannot checkout just single files
+
+
+	c)	If you already have a working copy of some other revision of the repository, it is quicker
+		to use the switch command to change it to your desired branch
+
+			svn switch svn://harrison/<repName>/branches/<BranchName>
+
+		This is especially so in network environments since it minimised tte no of files sent
+		over the network
+
+
+	d)	Working copies are would generally be used over and over by a developer, and so it can be easy
+		to lose track of what version of the repository you are working with.  To help you, you can use
+		the 'info' command, which will show basic information about a working copy directory
+
+			svn info
+
+
+3)	Making Changes
+
+	a)	Changes to existing files can now be made using whatever tool you like. At this point the
+		changes are made just to the local copy NOT the repository.
+
+	b)	New files/directories or known to Subversion until you explicitly add them to the
+		repository
+
+			svn add <fileDir>
+
+	c)	Likewise with deletes
+	
+			svn delete <fileDir>
+
+
+	d)	Note that, to date,  the changes have only been made to a working copy and NOT to
+		the repository. When the changes are sufficiently well developed to merit capturing 
+		in the repository for others to see/use, they should be commited.
+
+			svn commit -m "Some meaning full comment"
+
+		If the -m option is not specified a text editer will open up to show the changes being commited.
+
+		NB Large commits can take a few minutes to complete across the network.
+
+
+	e)	The status of your working copy in relation to the repository can be seen with the
+		status command
+
+			svn status
+
+		This will show you where your working copy has changed
+
+		The verbose option -v is useful for displaying the the version no of each file
+
+		Also the --no-ignore option can stop you being caught out be weird file types you want 
+		to be under  version control but would normally be ignored by svn
+
+			svn status --no-ignore
+
+
+	f)	To discard changes made to a working copy and return to the version within the repository
+
+			svn revert <fileDir>
+
+
+	g)	If more than one person is working on a branch, then it is wise to periodically update
+		your working copy with the changes commited by them
+
+			svn update.	
+
+
+
+4)	Merging your Branch Back into the Trunk ( or other branch)
+
+	a)	When work on the branch is effectively complete (ie. development and testing largely
+		complete), then the package of work needs to be integrated back into the trunk in preparation
+		for its release. In busy projects, there may be many branches that require merging before
+		an amalgamated release is prepared for integration/system testing and release.
+
+	b)	First, make sure you have no uncommited changes in your working copy.
+
+			svn status
+
+		or
+			svn status --no-ignore
+
+		If necessary, commit or revert as appriopriate any outstanding changes
+
+
+	c)	Ensure your working copy has incorporate any outstanding changes that anyone else has
+		made on the branch
+
+			svn update
+
+		Again commit any changes
+
+
+	e)	The first step of the merge is to merge any changes from the trunk into your
+		branch. So from the top level directory within your working copy
+
+			svn merge svn://harrison/<repname>/trunk --dry-run
+
+		This doesn't actually do anything, but just reports the action it is going to 
+		take. There may be some conflicts that have to be resolved manually.
+
+
+	f)	When all is well do the first part of the merge for real
+	
+			svn merge svn://harrison/<repname>/trunk 
+
+
+			svn commit
+
+
+		The most likely problem situation to be encountered will be conflicts : i.e. things
+		that svn cannot resolve without some additional input. In particular, if the directory
+		structure has changed then tree conflicts are likely to be encountered. ( in other words
+		the direcory stucture of the 2 branches are different and svn needs to be told which is right)
+
+		Most often ( especially if you are the only one working on the change) that change that you want
+		to accept will be the ones in the working coy of the branch ( and in theory no-one should be
+		doing developemnt work on teh trunk).
+
+		In these cases subversion bneeds to be told to accept the version in the working copy.
+
+			svn status		( will reveal whats in conflict)
+
+			svn resolve <file> --accept working
+
+
+
+		If you have removed, files etc. be careful that the merge does not try and pull them back in.
+		It may be that you have to remove these again from teh merged branch.
+
+			svn rm <file>
+		
+		When all are resolved, the commit will now succeed.
+		
+
+
+	g)	Now the branch has to be merged back into the trunk. For this we need a 
+		working copy of the trunk. The easiest way to get there is to switch the
+		existing working copy
+
+			svn switch svn://harrison/<repName>/trunk
+
+		This can take a little time if there are many changes to make
+
+
+	h)	Once again, ensure no one else has made changes on the trunk which aren't
+		in your working copy of it ( unlikely if you've only just created the 
+		working copy)
+
+			svn update
+
+
+	i)	Now re-integrate, first with a dry run
+
+			svn merge --reintegrate svn://harrison/<repName>/branches/<branchName> --dry-run
+
+		and then if all ok
+
+			svn merge --reintegrate svn://harrison/<repName>/branches/<branchName>
+
+
+	j)	At this point you hav the merged changes is a uncommited working copy of the trunk.
+		After testing etc, these can be commited to complete the merge.
+
+			svn commit -m "Suitable Comment"
+
+
+		Again it is possible for conflicts to arise, and these will need to be resovled as above.
+
+
+
+5)	Labelling up a version of the repository
+
+	Periodically it will be necessary to capture a particular repository for posterity. Examples might
+	be
+		a)	label up an explicit version of the repository to be released for testing
+
+		b) 	label up a partticlar verion of the repository for release into production
+
+
+	The process for this is essentially the same as that use for creating a branch : Namely
+	just create a copy of the repository, but this time into the 'tags' directory.
+
+	It is good practice to ensure that all releases are made from the trunk so
+
+		svn copy svn://harrison/<repName>/trunk svn//harrison/<repName>/tags/<TagName>
+
+
+	Note that svn places no great significance on the tags directory per se. By default it is perfectly
+	possible to check out working copies on a 'tag' and update and commit changes to it. This obviously
+	defeats the purpose of a tag.
+
+	Consequently, the pre-commit 'hook' on the repository SHOULD be configured in such a way as to disallow
+	any commits to the tags directory.
+
+
+
+6)	Getting a copy out of the repository which does not contain the .svn inormation ( ie. a non-working copy).
+
+		svn export svn://harrison/<repName>/trunk <destDir>
+
+	
+
+
+
+
+
+Notes on the Inital Population of the summit repository.
+
+
+	Prior to subversion being implemented, summit source code was managed through Clearcase.
+	It was not practical to import teh entire revision history from this product. Instead
+	just 2 version were imported to go forward.
+
+
+	a)	What was believed to be the production code immediately prior to the major infrastructure
+		upgrade of 2009. ( Release.Production.Jan2010 )
+
+
+	b)	The code base implemented into production at the end of that project ( Release.3.05.01)
+
+
+	These code cuts were imported as follows.
+
+	a)	The productionJan2010 code was cut from clearcase and imported into the newly created
+		summit repository trunk.
+
+		svn import svn://harrison/summit/trunk sumitProd2010 -m "Initial import of helena Production Jan 2009 Code"
+		( Note that this step had an error. It should have specified a --no-ignore opttion, since summit
+		  contains a couple of .o file that are under version control. Ths was an error that needed to be
+		  corrected later)
+
+	b)	A tag was taken of this import
+
+			svn copy svn://harrison/summit/trunk svn://harrison/summit/tags/Release.Production.Jan2010 -m ""
+
+
+	c)	A branch was created for the 'work' to  upgrade this to Rel.3.05
+
+
+			 svn copy svn://harrison/summit/trunk svn://harrison/summit/branches/br3.05.01 -m "<some comment>"
+
+
+	d)	A working copy of this branch was created in my local directory
+
+
+			svn checkout svn://harrison/summit/branches/br3.05.01 summit
+
+
+
+	e)	Essentially we now want to lay Cleartool export of Releas 3.05.01 on top of this. However
+		it is important we retain all the .svn information. So
+
+		i) generated a list of direcories ( omitting the .svn ones)	
+
+			find . -type d -print | grep -v \.svn > tmp
+
+		ii)	edited the tmp file to introduce an 'rm' command of the form
+
+				rm dir/*
+
+		iii)	ran this to strip out all ordinary files ( apart from those in the various .svn
+			directories.
+
+
+		iv)	untarred a copy of the Rel.3.05.01 files on top of this.
+
+
+
+	f)	snv status now showed a number of unversioned files '?' needing to be added and
+		'!' files needing to be deleted.
+
+
+		Generated scripts to do this
+
+			svn status | grep '?' > add.tmp
+
+		edited the script to introduce an 'svn add' then ran it
+
+			. ./add.tmp
+
+
+		Likewise with the deletes
+
+			svn status | grep '!' > del.tmp
+
+			. ./del.tmp
+
+
+	g) Needed to get rid of the empty fmt directory manually
+
+		svn delete fmt
+
+
+	h) Now commit these changes
+
+
+	i) An export of the branch was then created for a file by file comparison with
+	   the contents of teh original Clearcase 3.05.01 release. This was just to sanity
+	   check what had been done.
+
+	   This highlighted that 3 .o files had been lost in the migration ( .o files
+	   by default are ignored by import)
+
+	j) Added these lost files manually
+
+		svn add oracleLegacy/cobsqlusrxt.o
+		svn add cobol/uex/s0main12.o
+		svn add oracleLegacy/cobsqlintf.o
+
+		svn commit -m "Some Comment"
+
+
+	k) This branch was then merged back into the trunk
+
+		svn merge svn://harrison/summit/trunk --dry-run
+
+		svn merge svn://harrison/summit/trunk
+
+		svn commit
+
+
+		svn switch svn://harrison/summit/trunk
+
+		svn update
+
+		svn merge --reintegrate svn://harrison/summit/branches/br3.05.01 --dry-run  
+
+		svn merge --reintegrate svn://harrison/summit/branches/br3.05.01
+
+		svn commit
+
+
+	l) This was then tagged
+
+		svn copy svn://harrison/summit/trunk svn://harrison/summit/tags/Rel.3.05.01 \
+			-m "Release 3.05.01 to producttion May 2010"
+	
+
+	m) There are several small changes that have gone into summit since the May Release, and these have not
+	   been captured anywhere. If we don't get a handle on these soon, we will lose total control, hence
+	   did a comparison with live and isolated the files that have changed since the May release.
+
+	   They are:
+
+	   Updates.
+
+		2445222660 2513 br3.05.01/release/./batch/exec/sumbacs_exec.sh
+		3622807769 2502 br3.05.01/prod14Dec2010/./batch/exec/sumbacs_exec.sh   		Done
+
+		3349923132 2992274 br3.05.01/release/./bin/ChrBS_genCacsResendFile
+		3195974420 1086052 br3.05.01/prod14Dec2010/./bin/ChrBS_genCacsResendFile
+
+		3349923132 2992274 br3.05.01/release/./bin/ChrBS_applyCacsResendFile
+		3195974420 1086052 br3.05.01/prod14Dec2010/./bin/ChrBS_applyCacsResendFile
+
+		3349923132 2992274 br3.05.01/release/./bin/ChrBS_cacsAccountAging
+		3195974420 1086052 br3.05.01/prod14Dec2010/./bin/ChrBS_cacsAccountAging
+
+		3349923132 2992274 br3.05.01/release/./bin/ChrBS_cacsStage2
+		3195974420 1086052 br3.05.01/prod14Dec2010/./bin/ChrBS_cacsStage2
+
+		3349923132 2992274 br3.05.01/release/./bin/ChrBS_cacsStage1
+		3195974420 1086052 br3.05.01/prod14Dec2010/./bin/ChrBS_cacsStage1
+
+		3349923132 2992274 br3.05.01/release/./bin/ChrBS_CAC_main
+		3195974420 1086052 br3.05.01/prod14Dec2010/./bin/ChrBS_CAC_main
+
+		2440142638 3456 br3.05.01/release/./bin/ChrBS_cacsRetrieve.sh			Done
+		2733073484 3548 br3.05.01/prod14Dec2010/./bin/ChrBS_cacsRetrieve.sh
+
+		2229967533 4817 br3.05.01/release/./bin/ChrBS_cacsSend.sh			Done
+		1917485100 6106 br3.05.01/prod14Dec2010/./bin/ChrBS_cacsSend.sh
+
+		1287442304 37285 br3.05.01/release/./shells/ChrBS_split.sh			Done
+		689055632 37537 br3.05.01/prod14Dec2010/./shells/ChrBS_split.sh
+
+		
+	and the additional files are:
+
+		2286819785 5566 br3.05.01/prod14Dec2010/./dbchange/WN_006071_dt.sh		Done
+
+		2155609649 1058 br3.05.01/prod14Dec2010/./batch/exec/dummyPrint_exec.sh		Done
+
+		861182661 16297 br3.05.01/prod14Dec2010/./shells/dial1.sql			No longer required
+
+		3463347641 360 br3.05.01/prod14Dec2010/./shells/TidySplit.sh			No longer required
+
+		2800627334 9761 br3.05.01/prod14Dec2010/./shells/dialler_main.sh		No longer required
+
+		2271141887 2118 br3.05.01/prod14Dec2010/./shells/dial2.sql			No longer required
+
+		3474969865 3037 br3.05.01/prod14Dec2010/./shells/dial3.sql			No longer required
+
+		68968667 2120 br3.05.01/prod14Dec2010/./shells/dial.ctl				No longer required
+
+
+
+
+	k)	A new branch was created to capture these misc small changes
+
+			svn copy svn://harrison/summit/trunk \
+				svn://harrison/summit/branches/br3.05.02 \
+				-m "to capture the small no of changes that have gone in post Rel3.05.01 and pre-SubVersion" 
+
+			svn switch  svn://harrison/summit/branches/br3.05.02
+
+
+
+	l)	The above amendmened were copied into the working directory, commited an then the branch was merged
+		back into the trunk as described above.
+---
+
+

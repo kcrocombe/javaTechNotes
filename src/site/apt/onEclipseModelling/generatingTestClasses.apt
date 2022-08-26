@@ -65,6 +65,17 @@ Types of test cases generated.
 
 		<Package> --> Generate Example Class)
 
+Methods Tested
+
+	In general, test cases cases get generated each method defined on the Class.
+
+	In general, they <<do not>> get generated for the standard simple getter/setter methods that the toll will generate for standard attributes.
+
+	However, attribute marked as <<Volatile>> ( and so not underpinned by an actual class variable) WILL get test methods generated for them.
+
+	Attributes marked as <<Derived>> (which are still underpinned by actual storage) WILL also get test methods generated for them.
+
+
 
 Running the generated Tests
 
@@ -434,3 +445,19 @@ Test Cases for Classes implementing Interfaces.
 	c) Ensure the test methods generated in the Extending test case that DUPLICATE test in the extended class are NOT annotated with @Test. That way they will get eignored by the test runner.
 
 	d) Note that teh super class has no setup/teardown methods. These need to be implemented in the Extending class, nad annotated with @BeforeEach / @afterEach there ( if that is appropriate to the test scenario)
+
+
+
+Problems and Gotchas
+
+	Test that were working now start failing horribly.
+
+	If you start getting stack dumps that start in the constructor e.g.
+
+---
+	Run 1: TestSuite$1 Exception in constructor: testDebug__String (java.lang.NullPointerException
+---
+
+	Check that your Class has not reverted back to using the <<<junit.framework.TestCase>>> rather than my <<<uk.co.pegortech.junit3Stubs.TestCase>>> Stub version.
+
+	(Remember you have to mask the Test Class @Generated NOT to stop this behaviour coming back when the test case is regenerated).

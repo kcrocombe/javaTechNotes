@@ -4,35 +4,50 @@ Modelling in Eclipse using the EMF framework.
 
   Some topics, in no especially well defined order:
 
-  * {{{./onEclipseModelling/siriusDiagrammingTool.html}Diagramming with the Sirius Diagramming Tool.}}
+  [[1]] {{{./onEclipseModelling/siriusDiagrammingTool.html}Diagramming with the Sirius Diagramming Tool.}}
 
-  * {{{./onEclipseModelling/attributeProperties.html}Ecore Model Properties - Attributes.}}
 
-	* {{{./onEclipseModelling/basicModelTransformation.html}Understanding the transformation of the model into code.}}
+  [[1]] {{{./onEclipseModelling/attributeProperties.html}Ecore Model Properties - Attributes.}}
 
-  * {{{./onEclipseModelling/controllingGeneration.html}Controlling of Generation artifacts.}}
 
-  * {{{./onEclipseModelling/renderingInterfacesAndClasses.html}The rendering of Interfaces and Classes in Code.}}
+	[[1]] {{{./onEclipseModelling/basicModelTransformation.html}Understanding the transformation of the model into code.}}
 
-	*	{{{./onEclipseModelling/generatingDocumentation.html}The Eclipse Model Generator and JavaDoc.}}
 
-	* {{{./onEclipseModelling/modellingGenerics.html}Modelling Generics within EMF.}}
+  [[1]] {{{./onEclipseModelling/controllingGeneration.html}Controlling of Generation artifacts.}}
 
-	* {{{./onEclipseModelling/generatingTestClasses.html}Generating JUnit Test Classes.}}
 
-  * {{{./onEclipseModelling/creatingAModelFromAnnotatedJava.html}Creating a model from Annotated Java.}}
+  [[1]] {{{./onEclipseModelling/renderingInterfacesAndClasses.html}The rendering of Interfaces and Classes in Code.}}
 
-  * {{{./onEclipseModelling/readOnlyComponents.html}Making model components Read Only.}}
 
-  * {{{./onEclipseModelling/constructorsAndFactoryMethods.html}On Factory Methods And Constructors.}}
+	[[1]]	{{{./onEclipseModelling/generatingDocumentation.html}The Eclipse Model Generator and JavaDoc.}}
 
-  * {{{./onEclipseModelling/topLevelApplicationClass.html}Modelling a Top Level Application class with a main() method.}}
 
-  * {{{./onEclipseModelling/modellingSingletons.html}Modelling Singleton Classes.}}
+	[[1]] {{{./onEclipseModelling/modellingGenerics.html}Modelling Generics within EMF.}}
 
-  * {{{./onEclipseModelling/problemsAndGotchas.html}Problems and Gotchas.}}
 
-  * {{{./onEclipseModelling/sharingEMFobjects.html}Sharing EMF Model Objects.}}
+	[[1]] {{{./onEclipseModelling/generatingTestClasses.html}Generating JUnit Test Classes.}}
+
+
+  [[1]] {{{./onEclipseModelling/creatingAModelFromAnnotatedJava.html}Creating a model from Annotated Java.}}
+
+
+  [[1]] {{{./onEclipseModelling/readOnlyComponents.html}Making model components Read Only.}}
+
+
+  [[1]] {{{./onEclipseModelling/constructorsAndFactoryMethods.html}On Factory Methods And Constructors.}}
+
+
+  [[1]] {{{./onEclipseModelling/topLevelApplicationClass.html}Modelling a Top Level Application class with a main() method.}}
+
+
+  [[1]] {{{./onEclipseModelling/modellingSingletons.html}Modelling Singleton Classes.}}
+
+
+  [[1]] {{{./onEclipseModelling/problemsAndGotchas.html}Problems and Gotchas.}}
+
+
+  [[1]] {{{./onEclipseModelling/sharingEMFobjects.html}Sharing EMF Model Objects.}}
+
 
   []
 
