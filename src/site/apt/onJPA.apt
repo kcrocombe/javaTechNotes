@@ -1,0 +1,826 @@
+JPA - Java Persistence API
+
+*Content
+
+*==>{{{#Sources}Sources}}
+
+*==>{{{#Introduction}Introduction}}
+
+*==>{{{#Principle_Concepts_within_the_API}Principle Concepts within the API}}
+
+**====>{{{#Entities}Entities}}
+
+***======>{{{#Entity_Metadata}Entity Metadata}}
+
+**====>{{{#Transient_Annotations}Transient Annotations}}
+
+**====>{{{#Primary_Keys.}Primary Keys.}}
+
+***======>{{{#Automatic_Generation}Automatic Generation}}
+
+**====>{{{#Relationships}Relationships}}
+
+**====>{{{#The_Entity_Manager}The Entity Manager}}
+
+*==>{{{#Persistence_Unit,_PersistenceContexts_and_Entity_Managers}Persistence Unit, PersistenceContexts and Entity Managers}}
+
+**====>{{{#The_Persistence_Unit_Configuration}The Persistence Unit Configuration}}
+
+***======>{{{#Persistence.xml_location}Persistence.xml location}}
+
+**====>{{{#Types_of_Entity_Manager}Types of Entity Manager}}
+
+**====>{{{#Container-Managed/Transaction-Scoped_Entity_Managers.}Container-Managed/Transaction-Scoped Entity Managers.}}
+
+**====>{{{#Container-Managed/Extended_Entity_Managers.}Container-Managed/Extended Entity Managers.}}
+
+**====>{{{#Application_Managed_Entity_Managers}Application Managed Entity Managers}}
+
+*==>{{{#JPA_Transactions}JPA Transactions}}
+
+**====>{{{#JTA_Transactions}JTA Transactions}}
+
+**====>{{{#Resource_Local_Transactions}Resource Local Transactions}}
+
+*==>{{{#Principle_Operations}Principle Operations}}
+
+**====>{{{#Persist}Persist}}
+
+**====>{{{#Find}Find}}
+
+**====>{{{#Remove}Remove}}
+
+*==>{{{#Cascading.}Cascading.}}
+
+*==>{{{#Clearing_the_Persistence_Context.}Clearing the Persistence Context.}}
+
+*==>{{{#Synchronisation_with_the_Database.}Synchronisation with the Database.}}
+
+*==>{{{#Detachment_and_Merging}Detachment and Merging}}
+
+**====>{{{#Working_with_Detached_Entities.}Working with Detached Entities.}}
+
+**====>{{{#Avoiding_Detachment}Avoiding Detachment}}
+
+*==>{{{#Lazy_Fetching}Lazy Fetching}}
+
+*==>{{{#Lazy_Relationships}Lazy Relationships}}
+
+*==>{{{#Embedded_Collections.}Embedded Collections.}}
+
+**====>{{{#Lists}Lists}}
+
+*==>{{{#Java_Persistence_Query_Language_(JPQl)}Java Persistence Query Language (JPQl)}}
+
+**====>{{{#Fuller_Details}Fuller Details}}
+
+**====>{{{#Introduction_to_JPQL}Introduction to JPQL}}
+
+**====>{{{#Defining_Queries}Defining Queries}}
+
+***======>{{{#Query_Interfaces}Query Interfaces}}
+
+***======>{{{#Dynamic_and_Non-Dynamic_Queries}Dynamic and Non-Dynamic Queries}}
+
+****========>{{{#Dynamic_Queries}Dynamic Queries}}
+
+****========>{{{#Named_Queries}Named Queries}}
+
+***======>{{{#Executing_Queries}Executing Queries}}
+
+***======>{{{#Working_with_Query_Results.}Working with Query Results.}}
+
+***======>{{{#Misc_Query_Topics}Misc Query Topics}}
+
+****========>{{{#Database_queries_that_hit_Entities_that_are_currently_sitting_in_the_PersistenceContext.}Database queries that hit Entities that are currently sitting in the PersistenceContext.}}
+
+****========>{{{#Blocking_and_Timeouts.}Blocking and Timeouts.}}
+
+****========>{{{#Bulk_updates}Bulk updates}}
+
+****========>{{{#Inheritance_and_Polymorphism.}Inheritance and Polymorphism.}}
+
+****========>{{{#Collection_Expressions}Collection Expressions}}
+
+*==>{{{#The_Criteria_API}The Criteria API}}
+
+**====>{{{#Outline}Outline}}
+
+**====>{{{#Join_Objects}Join Objects}}
+
+**====>{{{#Predicate_Objects}Predicate Objects}}
+
+*==>{{{#When_do_you_use_JP_QL_over_the_Criteria_API_and_vice_versa.}When do you use JP QL over the Criteria API and vice versa.}}
+
+
+*Sources of inforamtion
+
+  The following are the principle sources for the notes that follow:
+
+    * Pro JPA2 - Mastering the JavaTm Persistence API (Keith and Schnicariol)
+
+*Introduction
+
+  The Java Persistence API (JPA) was introduced into the Java platform in order to help bridge the gap between object-orientated domain models and the relational database systems that are used to give them persistence. The API is lightweight and POJO based.
+
+  Note that it is just a specification: it specifies interfaces and a behaviour designed to provide object-relational mapping but without providing any concrete implementation classes. These are provided by third party providers, e.g.:
+
+    * hibernate;
+
+    * toplink;
+
+    []
+
+  Likewise, actual storage technology will view provided by OTHER third party providers, Oracle, DB2, Mysql etc.
+
+*The Principle Persistence Objects managed within the API
+
+**Entities
+
+***Entity Characteristics
+
+  Entities are Classes with very specific characteristics:
+
+    * The most basic characteristic of a class that is an Entity is that it is to be <<Persisted>>.
+
+    * Identity - an entity has an <<Identifier>>. Regardless of the value of other attributes, if 2 objects have the same Identifier they are considered to be the same object (though, possibly,  in different states);
+
+    * Are transactional i.e. created/updated/deleted within the context of a JPA Transaction.
+
+    * Usually, they will have an observable lifecycle: they are created, move through various states, and are eventually deleted/archived.
+
+    * Are non-primitive (or wrappers for primitives) : in other words, they have significance in the the context of the application.
+
+    []
+
+***Entity Metadata
+
+  Entities can be specified within the API in more than one way. They can be indicated either:
+
+    * by Annotating their class definitions with appropriate tokens;
+
+    * By explicit mapping to a underlying database table via an accompanying XML document.
+
+    []
+
+  The entity, at minimum, must be defined in terms of an @Entity annotation and the attribute or combination of attributes which give rise to the @Id (Although an annotation is used here, the required metadata can also be provided in XML).
+
+  By default, the other attributes/getger/settrer methods within the class will be assumed reuire persistence as columns within the table.
+
+***Entity Annotations
+
+****General
+
+  Since it is my intention to perform as much of my work via annotaions, the following notes will concentrate primarily on this route. Bear in mind that everything described can also be done via XML.
+
+  Annotations fall broadly into 2 categories:
+
+    * Logical annotations: those that bind the domain model (e.g. describing relationships between entities etc.)
+
+    * physical annotations: those that specify more concrete notions within the database implementation (table names, column names, datatypes etc.)
+
+    []
+
+  Annotations can also be typically applied:
+
+    * at Class Level;
+
+    * at field level;
+
+    * at method level;
+
+    []
+
+  By annotating methods, rather than fields, the values persisted to the database will be via these getters/setters rather than by direct field access. This provides possibilities for additional processing during model population/persisting etc.
+
+****Transient Annotations
+
+  By default, all fields will be persisted to the database. Should persisting a particular field serve no purpose, then this can be suppressed with the @Transient annotation.
+
+****Primary Keys.
+
+  Attributes aspiring to be @IDs are restricted to particular types:
+
+    * Java Primitives : byte, int, short, long, char
+
+    * Wrapper Classes: Byte Integer Long etc.
+
+    * String
+
+    * BigInteger
+
+    * Temporal types: java.util.Date etc.
+
+    []
+
+  Primary Keys can be automatically generated by the JPA, if so required, using one of 4 strategies:
+
+    * TABLE - A specific database table will be used to generate ID's. This 2-col table basically stores the name of the table whose PK is being generated plus the last generated value.
+
+    * SEQUENCE - ID are taken from a database sequence (for implementations that support it)
+
+    * IDENTITY - ID are automatically created by the database at the time of insertion
+
+    * AUTO - This just allows the JPA itself to choose which of the above strategies is most appropriate.
+
+    []
+
+  The application is also free to use its own strategy to generate keys. For example, the  applicaion may choose to generate its own GUID type keys.
+
+  Note that the presence of a Primary Key on an Entity CAN mean that the EntityManager will consider it as something that is already part of the database: in the parlance, it will consider it a detached entity, and complain about that fact.
+
+  You will see this if you try and persist() something that already has a PK. Consequently if you are going to generate your own keys, they need to be generated AFTER it has been persisted(), but BEFORE it is committed.
+
+**Relationships
+
+  Much of the finesse of object mappings can be captured via suitable annotations on the PK/FK tables including
+
+    * Directionality
+
+    * Cardinality
+
+    * Ordinality ( i.e whether it has to be there at all (optionality))
+
+    []
+
+  This is reflected in base annotations such as the following. Each can be further qualified to provide additional details as required
+
+      * @OneToMany
+
+      * @ManyToOne @JoinColumn(name='XXX')
+
+      * @OneToOne @JoinColumn(name='XXX')
+
+      * @ManyToMany
+
+  Refer to the documentation for fuller description.
+
+**Management of persistable objects
+
+  Entities are classes that have been either annotated as such in their declarations,  or mapped in XML.
+
+  However this is NOT sufficient for them to behave as Entities with regard to persistence: they <<can not persist themselves>> when created, delete themselves when they are garbages collected, or load themselves when referenced.
+
+  It is <<STILL>> the application that must manipulate Entities as they progress through their lifecycle.
+
+  JPA provides the <<EntityManager>> interface for this purpose. The EntityManager will bring persisted objects from the repository into a context where they may be manipulated by the application, and re-persist their amended states to database. None of this however is automatic: an entity does not get retrieved or persisted until the application tells the Entity Manager that that is what is to happen.
+
+  The mechanics of this are described in the following sections.
+
+
+*The Persistence Unit, PersistenceContexts and Entity Managers
+
+**General
+
+  A <<Persistence Unit>> is a <<named configuration>> of entities. Which Entity classes belong to which Persistence Units is determined via configuration, usually via entries within a persistence.xml file.
+
+  There will usually just be ONE Persistence.xml file in an application. There may be more than one persistence unit if:
+
+    * Different parts of the model are persisted to different databases;
+
+    * Different parts of the model are persisted using different authentication credentials.
+
+    * There is a need to use different transaction types;
+
+
+  A <<persistence context>> is a set of entity <<instances>> drawn from classes belonging to a Persistence Unit, whose persistence is to be <<managed>>. Typically, at any one time, a persistence Context will contain instances drawn from multiple classes. A PersistenceContext is initially empty: to be managed, entity instances need to be explicitly added to it. Only while they are remain within the PersistenceContext can object instances be managed by it.
+
+  Only one instance of any particular Entity can exist within the PersistenceContext at any one time(although copies of it can exist outside the context).
+
+  Entity instances are not managed directly by a  <<<PersistenceContext>>>, but by one or more EntityManagers. It is EntityManagers which provides the insert/update/delete functionality. The persistence context is only ever accessed indirectly through the Entity Manager.
+
+  A single <<EntityManager>>, possibly jointly, manages just one <<persistence context>>. They are reliant on third party provider for their implementation.
+
+  Entity Managers are created by the  <<EntityManagerFactory (EMF)>> associated with a particular Persistence Unit. All EntityManagers created by a single Persistence Unit's EMF will share similar properties, and they will have inherited those properties from that Persistence Unit.
+
+  EntityManagerFactories are created via a static method of a bootstrap class called Persistence.
+
+  If the persistence context participates in a <<Transaction>>, the in-memory state of the <<Managed Entities will get synchronised with the database>>. Any changes made to an Object within the Persistence Unit will get synchronised to the database when those changes are committed. This will continue for as long as the object instance remains within the persistence unit.
+
+[images/jpaBasicRelationships.png]
+
+**Configuration of the Persistence Unit via persistence.xml
+
+  Each persistence unit is defined within an XML file called persistence.xml. A single persistence.xml file may contain multiple, distinct, persistence units, but each of them will be uniquely named.
+
+  Typically a persistence unit will specify:
+
+    * The Entities that belong to it.
+
+    * The transaction type that it uses
+
+    * Vendor specific properties relating to the underlying technology that will actually provide the provisioning capability.
+
+    []
+
+  In a typical packaged application (jar, war), the persistence.xml file will be expected to be found within the /META-INF directory within the package.
+
+  For non-packaged applications, the file just needs to be located somewhere along the CLASSPATH that is in operation.
+
+**Entity Managers
+
+***General
+
+  It is the EntityManager interface that provides the general read and write functionality between memory resident objects in the PersistenceContext and the backing persistence store. In many ways, the PersistenceContext and the EntityManager are synonymous: the EntityManager provides the means of interacting with the PersistenceContext.
+
+  An EntityManager can only manage a single PersistenceContext, although it is possible fo a PersistenceContext to have multiple EntityManagers which co-operate to manage it.
+
+  JPA defines 3 different forms of Entity Manager, each specialised for use within a specific context:
+
+    * Container-managed and Transaction Scoped.
+
+    * Container-managed and Extended
+
+    * Application Managed.
+
+    []
+
+  Container Managed/Transaction Scoped Entity Managers are the recommended choice wherever they can be used, but obviously require an ApplicationServer context before they can be used. For the most part, I am expecting to use Application Managed Transactions.
+
+***Container-Managed/Transaction-Scoped Entity Managers.
+
+  To be described... See the published Documentation for details.
+
+***Container-Managed/Extended Entity Managers.
+
+  To be described... See the published Documentation for details.
+
+***Application Managed Entity Managers
+
+  In this case, it is the Application that manages the lifecycle of the the entity manager, rather than the Container. It is the only Entity Manager available outside of a EE/Container environment.
+
+  Within JPA, EntityManagers are created from an <<EntityManagerFactory>> which in turn are provided by the static Persistence Class, and will, by default, be configured by properties taken from the persistence.xml file.
+
+  The EntityManager and the EntityManagerFactory must be <<opened>> and <<explicitly closed>> by the application.
+
+  An EntityManager will continue to manage the Entities it controls until it is closed, and are independent of any Transactions that may be committed/rolled back.
+
+*Transactions
+
+**General
+
+  JPA Transactions define when in-memory entities are <<synchronised with the database>>. (Note this is NOT the same as a transaction as defined within a database context.) Any entity changes performed by an EntityManager <<OUTSIDE>> of a Transaction <<WILL NOT>> be persisted to the database: the attempted change may throw an exception, or the changes may just simply be ignored. (The Transaction must also belong to the EntityManager performing the change.)
+
+  There are 2 transaction types supported by JPA:
+
+    * Resource-local. These are the native transactions of the JDBC drivers.
+
+    * JTA transactions. These are the transactions of the Java EE Server, and are not typically available in Java SE applications. Container managed Entity managers ALWAY use JTA transactions.
+
+    []
+
+**JTA Transactions
+
+  The Java Transaction API (JTA) is one of the Java Enterprise Edition APIS that enables <<distributed transactions>> across multiple X/Open XA resources in a Java Environment. The <<UserTransaction>> is one of the transaction interfaces defined by JTA.
+
+  To be more fully described later...
+
+**Resource Local Transactions
+
+  These are explicitly controlled by the Application NOT by the Application Server (if there is one).
+
+  They are realised via the <<EntityTransaction>> interface which imitates the behaviour of the UserTransaction specified by JTA.
+
+  Applications interact with resource-local transactions by acquiring an EntityTransaction via the getTransaction() method of the EntityManager overlying the Persistence Context.
+
+  If one of the persistence operations of the EntityManager fails while the Transaction is active, the EntityTransaction will be <<marked for rollback>>.  You cannot commit() a transaction that is marked for rollback: it will throw an exception.
+
+  Although Rollback is not automatic: it must be explicitly invoked by the application, either in response to some persistence related operation failing or some other reason.
+
+  When Rollback is initiated, the database state is reverted, BUT the in-memory state of the objects DOES NOT.
+
+  Committing an EntityTransaction usually involves BOTH <<posting>> of the changes to the database and performing the database commit.
+
+  RollingBack a transaction:
+
+    * rolls back the database transaction
+
+    * The persistence context is cleared, detaching all the managed entity instances. We are left with a bunch of detached entities.
+
+    []
+
+  This means, to move forward, the detached entities will need to be merged back into a new Persistence Context, a new transaction started and the problems that caused the failure addressed. Beware that:
+
+    * The in-memory Entities may hold the PK that has been assigned to it (if using Automatic PK generation). If this has been assigned via the database, the key generator will have been rolled back. So it will likely dole out the PK's assigned to your entities to someone else. Consequently, it is a good idea the CLEAR the in-memory PK's.
+
+    * Likewise objects often maintain a version field for locking purposes. This are assigned by the Persistence provider, and may also be incorrect.
+
+    []
+
+  Often it is more sensible to selectively copy the parts of the Failed Entity that you want to move forward to a NEW object and take that forward instead.
+
+*Working with Persistence Operations.
+
+**Principle Operations of the EntityManager
+
+  The Entity Manager provides multiple operations to manage the PersistenceContext, but the following are perhjaps the most widely used:
+
+***Persist
+
+  persist() - accepts an entity instances and causes to to become <<managed>>. It DOES NOT mean it will be written to the database straight away.  Whatever state exists in the Entity at the time a transaction is committed is will be what is written tot eh database (be it insert/update/delete).
+
+  It is designed for use with Entities which do <<NOT>> already exist in the database.
+
+  Entities which are retrieved from the database by an Entity Manager are already managed by that Entity Manager.
+
+  When invoked OUTSIDE a transaction, the behaviour depends a bit on the transaction manager involved, but for Resource-local transaction will usually still allow the Entity to become managed, but will NOT be written to the database until some transaction has been started.
+
+***Find
+
+  find() is the workhorse of the EntityManager. Most providers will optimise its operation so that in-cache versions of an object will be used if possible, rather than necessarily going to the database.
+
+  It exists in several versions, but there is a special version, getReference(), which is used in situations where you don't need the full object, just its primary key. This is usually used in situations where you are just creating a new relationship, possibly from a new object,  to a pre-existing object ( which itself doesn't need modification.)
+
+  The advice is to use this only when you really need to : otherwise use find() and pull back the full object : the cacheing performance of most providers means that the performance implications of using it are pretty limited, and they don't outweigh the advantages.
+
+***Remove
+
+  The remove() method. Removing an Entity will require appropriate attention be given to its related Entities: referential integrity is NOT automatically maintained. Relationship maintenance is a responsibility of the application: if you delete an Entity you will have to nullify Entities that reference it manually.
+
+  The memory representation (if any) of deleted objects are unaffected (apart from now being in a detached state): they still exist, and can be persisted() again if that is deemed necessary.
+
+***Clear
+
+  A large query might result in very many objects being retrieved and held within the persistence context. We might only make changes to a handful of these and re-commit them, but that leaves the remaining objects still consuming resources within our persistence Context.
+
+  The clear() method allows us to discard these objects without closing the Persistence Context. Following clear()'ing, the entities remain, but become detached.
+
+***Flush
+
+  Synchronisation with the Database is generally managed with the <<<commit()>>> operation of the EntityTransaction. Occasionally though, the EntityManager's <<<flush()>>> operation may be used in support of this.
+
+  Whenever the provider generates SQL and writes stuff out to the database, we say the Persistence Context has been flushed. This will happen:
+
+    * When a commit() is invoked. In these circumstances, the changes will be written to the database and committed to the database
+
+    * When some operation causes the flush() operation to be performed. In these circumstances, the database changes will be written out to the database BUT NOT committed. The transaction remains open, and potentially the changes made on the database could be rolled back.
+
+  A flush() is not under the total control of the application, it may happen whenever the provider deems it necessary ( for technical reasons).
+
+  One of the principle reasons for flushing is so that any subsequent query operations have visibility of any changes made to the PersistenceContext: Query operations (in contrast to EntityManager.find() operations) bypass the PersistenceContext, so any unflushed changes will be missed by the database query.
+
+**Cascading Operations.
+
+  By default, every Entity Manager Operation applies only to the explicit Entity referenced by it. They will NOT automatically cascade to other Entities that may be referenced by the Entity being actioned.
+
+  However, a mechanism is provided that will allow certain operations to be cascaded across relationships.
+
+  This is achieved by attaching an attribute to the logical relationship attribute concerned (@OneToOne, @OneToMany, @ManyToOne, @ManytoMany)
+
+  The attribute cascade can take the values, PERSIST, REFRESH, REMOVE, MERGE, DETACH which pertain to the EntityManager operation of the same name:  so, for example, if the PERSIT attribute is present then the persist() operations will cascade across the relationship.
+
+**Detachment
+
+***Definition
+
+  A detached Entity is one that is no longer associated with a Persistence Context. It allows an application to work with an Entity that is remote from a database, or to maintain read access to an object after it has been committed.
+
+  Entities become detached:
+
+    *  When a Transaction-Scoped Persistence Context commits, all Entities associated with the Persistence Context become detached.
+
+    * If an application-managed persistence context is closed
+
+    * If the clear() method on the EntityManager is invoked
+
+    * If the detach() method on the EntityManager is invoked.
+
+    * When a transaction rolls beck.
+
+    * When an entity is serialized.
+
+***Detachment and Merging
+
+  The merge() operation is responsible for pulling pre-existing entities back into a Persistence Context.
+
+  Note the the merge() operation DOES NOT merge the object specified as its argument. It either:
+
+    * creates a NEW object and merges THAT one. The argument to merge will remain unchanged
+
+    * If the object to be merged already exists in the persistence context, it will be merged with the object provided as an argument and the resultant object returned. The existence of an Object with the SAME identifier ( PK) is what determines whether an object is considered as already belonging or not.
+
+***Working with Detached Entities.
+
+  This is a common pattern in web based applications.  It does,  however, create complications particularly for objects that would normally be lazily-loaded. If an entity is detached without references that would normally be lazily loaded, then the client has no easy way to access them.
+
+  One way to avoid this is to trigger the lazy-loading for all the objects that may be required PRIOR to detachment. Basically you just access the object concerned, so forcing it to be loaded.
+
+  Alternatively, explicitly configure eager loading.
+
+  Collection valued relationships lazyload by default.
+
+***Avoiding Detachment
+
+  Either:
+
+    * keep entities local, and don't work with them in the remote process. This will involve copying objects to a different structure.
+
+    * keep a persistence context open for the duration of remote processing.
+
+  These are quite involved strategies and will need looking at in more depth..
+
+**Lazy Fetching
+
+  Lazy fetching refers to a a situation where a data item is not retrieved from the database when the entity enclosing it is retrieved, but delayed until that specific data item is actually referenced by the application ( at which time it is transparently fetched).
+
+  It is specified by annotating the particular column with a fetchType.LAZY attribute.
+
+  These are HINTS to the query optimiser only: which may or may not choose to take any notice.
+
+  It only has any real relevance with regard to:
+
+    * Large Objects ( BLOBS/CLOBS etc) which are particularly resource intensive to handle.
+
+    * Referenced Objects
+
+**Lazy Relationships
+
+  Particular fields within an Entity may be annotated with tokens indicating whether they represent particular relationships between objects, e.g.:
+
+      * @OneToOne
+
+      * @OneToMany
+
+      * @ManyToOne
+
+      * @ManyToMany
+
+      []
+
+  The annotation can be further qualified to indicate whether the referenced objects should be treated when a fetch occurs on the parent object.
+
+    e.g.
+
+      fetch=FetchType.LAZY
+
+      fetch=FetchType.EAGER
+
+  Note that these are ONLY hints to the optimiser: the optimiser is not compelled to take any notice. It is just an opportunity for the developer to indicate what objects are likely to be requested next.
+
+  Your application will STILL have to logically fetch an object that has been eagerly loaded, but it should not be necessary to perform a physical load because the object will be already cached.
+
+**Embedded Collections.
+
+  Sometimes an object will contain other objects. That secondary object will not have any independent existence in its own right, so it is not appropriate to model it as a relation-ship between two objects.
+
+  Rather, one is a constituent part of the the other.
+
+  Sometimes these constituent parts can be collections rather than individual items. These can be relatively elemental, or be a collection of Objects. e.g.
+
+    * Person may have a collection of Nicknames ( Elemental)
+
+    * Person may have have a collection of HolidayBookings (which itself will have structure, but again only has relevance within the context of the a Person).
+
+  Such things can also be indicated on the Class with Annotations (@Embeddable). Depending on the nature, it may be appropriate to map this to a set of columns within same table, or to a secondary table.
+
+***Lists
+
+  Can indicate the Ordering we wish to respect.
+
+*Queries and the Criteria API..
+
+  JPA supports two broad methods for the expression of queries that retrieve data from the database:
+
+    * Query Languages, namely JP QL
+
+    * via the Criteria API
+
+    []
+
+**Java Persistence Query Language (JPQl)
+
+***Fuller Details
+
+  This is only the briefest of overviews. The reader is referred to Chapter 8 of Pro JPA2 for a more in depth guide.
+
+***Introduction to JPQL
+
+  At first sight JPQl looks very like SQL.
+
+---
+  SELECT e
+  FROM Employee e
+
+  SELECT e.department
+  FROM Employee e
+
+  SELECT e.name, e.department.name
+  FROM Project p JOIN p.employees e
+
+  SELECT e
+  FROM Employee e
+  where e.department = :dept
+
+  SELECT NEW example.EmpMenu( e.name, e.department.name)
+  FROM Project p JOIN p.employees e
+  WHERE p.name = ?1
+  ORDER BY e.name
+---
+
+  There are significant differences, however:
+
+    * The key difference is that it is the Entity Classes that are specified and NOT the underlying table.
+
+    * The return type is also different, and depends somewhat on the syntax used in the select statement. It can be:
+
+      * a list of one or more Objects - the examples above will return a list of zero or more Employees, or one or more Departments
+
+      * a List of one or more Object Arrays. This typically happens when the select statement specifies a list of fields  taken from one or more objects rather than the whole objects themselves. The Objects returned cannot be THEMSELVES collections, they must be single valued objects.
+
+      * Basic java types such as String etc.
+
+      * User-defined (non-entity) types created from a constructor, and specified with the <new> keyword.
+
+      []
+
+    * Joins are specified somewhat differently: 'Dot' notation can be used to walk the relationships between objects in a java-like syntax
+
+    * Named Parameters can be used in the query, here a token name preceded by a colon(:). The variables will be replaced with an actual value when the query is executed.
+
+    []
+
+***Defining Queries
+
+****Query Interfaces
+
+  Two interfaces are provided to define and execute queries structured with JP SQL
+
+    * The Query. This is used whenever the return type is a series of Objects.
+
+    * The TypedQuery. This is used whenever the query returns a list of Object Arrays.
+
+****Dynamic and Non-Dynamic Queries
+
+*****Dynamic Queries
+
+  A query can be defined dynamically by generating a String to hold the query, and then generating a Query or TypedQuery object via one of the createNamedQuery() methods of the EntityManager object.
+
+  Dynamic queries are flexible, but come with a performance penalty associated with the runtime, query plan preparation and compilation.
+
+*****Named Queries
+
+  A named query is one which is fully defined at compile time (albeit with parameters) and defined using the @NamedQuery Annotation. The annotation simply defines the text of the query and associates it with a label. e.g.
+
+---
+  @NamedQuery(name="findSalaryForNameAndDepartment",
+  query="SELECT e.salary " +
+  "FROM Employee e " +
+  "WHERE e.department.name = :deptName AND " +
+  " e.name = :empName")
+---
+
+  Named queries are usually placed on the Entity class most closely related to the query. If more than one query is associated with the class, they must be further annotated inside a @NamedQueries construct.
+
+---
+  @NamedQueries({
+        @NamedQuery(name="Employee.findAll", query="SELECT e FROM Employee e"),
+        @NamedQuery(name="Employee.findByPrimaryKey", query="SELECT e FROM Employee e WHERE e.id = :id"),
+        @NamedQuery(name="Employee.findByName", query="SELECT e FROM Employee e WHERE e.name = :name")
+  })
+---
+
+
+****Executing Queries
+
+  Once a Query or NamedQuery object has been constructed, it is executed typically by executing one of three methods, depending on circumstances:
+
+    * getSingleResult();
+
+    * getResultList();
+
+    * executeUpdate();
+
+    []
+
+
+  Any select query that returns data via the above may also specify locking constraints on the database rows impacted by the query.
+
+****Working with Query Results.
+
+  The objects returned by a query become part of the active persistenceContext. Consequently any modifications etc made to such objects (within the context of a transaction) will be persisted.
+
+
+  When it is known that the query results WILL NOT BE modified, then a transaction-scoped entity manager, operating OUTSIDE of a transaction will be more efficient than queries executing inside a transaction.
+
+
+  Query Paging - In cases where it would be overwhelming to display the entire result set, applications must be able to return a RANGE of data items from the result set. Both Query and TypedQuery interfaces provide support for pagination :
+
+    * setFirstResult() - will specify the FIRST result to be retrieved by the getResultList() method;
+
+    * setMaxResults() - will specify the number of objects to be returned by the getResultList() method;
+
+    []
+
+****Misc Query Topics
+
+*****Database queries that hit Entities that are currently sitting in the PersistenceContext.
+
+  Because queries are executed by the rdbms provider DIRECTLY against the database, any changes that have been made in the persistence context but not yet committed to the database, MAY NOT get reflected in the results returned by the query (if those results overlap).
+
+  This is in contrast to the find() type operations of the EntityManager, which generally knows the primary key of the entities being sought and so can check the persistenceContext before going to the database.
+
+  Therefore, by default, the persistenceContext will be flushed to the database BEFORE the query is executed. While this is the safest way to handle the situation, it can impose a performance penalty. For this reason, it is within the control of the developer to disable this behaviour.
+
+  By setting the EntityManager or Query interface flush mode (setFlushMode()) to COMMIT rather then the default AUTO, this behaviour can be disable either on a temporary or permanent basis.
+
+  Generally speaking, the advice is to use this facility with caution.
+
+*****Blocking and Timeouts.
+
+  When a query executes, it will block until the database query returns. Should a query wish to limit the amount of time q query waits before continuing, a timeout can be set on the Query object.
+
+*****Bulk updates
+
+  These are update/delete statements that are issued against the database using the executeUpdate() method.
+
+  <<NB THE persistence context is NOT updated to reflect the changes made by this operation.>>
+
+  Thus such operations should either run in a transaction of its own, or as the first step in the operations that a transaction performs.
+
+  Consequently, Bulk Updates and Persistence Contexts that remain for extended lengths of time are a dangerous combination.
+
+*****Inheritance and Polymorphism.
+
+  JPA support inheritance between entities. A query targeted at a super-type is capable of returning a List of objects that are a mixture of all sub-types of the super-type. If we wish to restrict results to one or more sub-types, we can restrict this in the WHERE clause.
+
+---
+  SELECT p
+  FROM SuperType p
+  WHERE TYPE(p) = subType1 OR TYPE(p) = subType2
+---
+
+*****Collection Expressions
+
+  The <<<IS EMPTY>>> operator is the logical equivalent to <<<IS NULL>>> when used in reference to a Collection Type.
+
+**The Criteria API
+
+***Outline
+
+  The Criteria API is an alternative method for the construction of queries to be issued against a database, that uses the java language directly rather than submitting strings of JP QL.
+
+  It is especially suited to situations where queries need to be constructed dynamically.
+
+---
+  SELECT e
+  FROM Employee e
+  WHERE e.name = 'John Smith'
+---
+
+  And here is the equivalent query constructed using the criteria API:
+
+---
+  CriteriaBuilder cb = em.getCriteriaBuilder();
+
+  CriteriaQuery<Employee> c = cb.createQuery(Employee.class);
+
+  Root<Employee> emp = c.from(Employee.class);
+
+  c.select(emp).where(cb.equal(emp.get("name"), "John Smith"));
+
+
+  TypedQuery<Employee> q = em.createQuery(c);
+
+  List<Employee> = q.getResultList();
+---
+
+  Firstly, a CriteriaBuilder is obtained from a Factory method of the EntityManager
+
+  Secondly, use the CriteriaBuilder to create an initial CriteriaQuery based on a particular Entity.
+
+  Thirdly, establish the Root Object. The Root Object basically determines the type of Object that will be returned by the CriteriaQuery, but without any filtering criteria.
+
+  Fourthly, use the Root Object, along with the CriteriaQueryObject, which is itself a Builder-type object, to specify the criteria that will determine the results returned.
+
+  Fifthly, construct the Query/TypedQuery interfaces described earlier, and
+
+  Finally, return a result set by executing the getResultList() method.
+
+
+***Join Objects
+
+  Joins are performed by creating a Join Object
+
+    Root<Employee> emp = c.from(Employee.class);
+
+    ...
+
+    Join<Employee,Project> project = emp.join("projects", JoinType.LEFT);
+
+    (projects is the field within Employee that references Project)
+
+***Predicate Objects
+
+    List<Predicate> criteria = new ArrayList<Predicate>();
+
+    criteria.add( ...)
+
+**When do you use JP QL over the Criteria API and vice versa.
+
+  * Partly an issue of preference;
+
+  * the Criteria API flows more naturally from the application java, and can be strongly typed to cut down on runtime errors;
+
+  * Jp Ql is possibly easier for anyone with experience of SQL;
+
+  * the Criteria API does NOT support Named Queries, however, which are the best choice as far as performance is concerned.

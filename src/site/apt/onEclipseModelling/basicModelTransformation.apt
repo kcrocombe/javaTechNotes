@@ -1,0 +1,88 @@
+Understanding the transformation of the model into code.
+
+		[[1]] Classes drawn upon the diagram are normally:
+
+		a. implemented as an Interface
+		b. supplied with a template \*.Impl Class that implements that interface
+
+	This is a highly recommended Design Pattern.(See Effective Java).
+
+	[[1]] It is possible to change the way that code is generated such that each Diagrammed Class is implemented as a class.
+
+		open the \*.genmod file with the GenModel Editor
+
+			Model --> Suppress Interfaces --> TRUE
+
+	It seems that this will cause ALL modelled classes to be implemented as CLASSES. I have not found a way to allow just individual classes to be modelled as CLASSES: although I suspect is ought to be possible with some further clever annotations.
+
+
+	[[1]] If you put code snippets in your model they HAVE to be syntactically correct code ; otherwise the generation will bomb out!.
+
+
+	[[1]] It is possible to sensibly represent External Interfaces (i.e. interfaces supplied as part of the standard libraries, or third party libraries) on the diagrams. As long as these are marked as 'Interfaces', then the generator will not attempt any code generation for them, just the implementing/extending class.
+
+	It is harder to represent external classes on the diagram. The generated code:
+
+		DOES NOT generate an INTERFACE for it.
+
+		DOES create an Implementation class for it (BUT ITS BROKEN)
+			The implementation
+				extends the standard <MinimalEObjectImpl.Container> Class, and implements the ExternalClass. However classes can't implement OTHER classes ( so this fails). Nor can they extend more than 1 class, and since we are already extending the standard <MinimalEObjectImpl.Container> Class this isn't an option.
+
+				( The <MinimalEObjectImpl.Container> Class is needed for other internal workings of the model).
+
+				In other words, the construct can't work.
+
+
+	IF you put an Internal Class on the Diagram, the generated code:
+
+		* DOES create an INTERFACE for it. ( That extends the standard internal root object EObject)
+
+		* DOES create a CLASS that implements the INTERFACE created. (It also extends the standard MinimalEObjectImpl.Container)
+
+	IF you put an External Interface on the Diagram, the generated code:
+
+		* DOES NOT create an INTERFACE for it  ( because it already exists somewhere)
+
+		* DOES NOT create a CLASS for it.
+
+	IF you put an Internal Interface on a Diagram, the generated code:
+
+		* DOES create an INTERFACE for it. (That extends the standard internal root object EObject)
+
+		* DOES NOT create a CLASS for it.
+
+
+		[[1]] IF you DO want to use an external CLASS as part of the model, then you need to represent it:
+
+		* as a Datatype. The advice seems to be that it is best to do this for only Simple types.
+
+		* They can be indirectly represented by effectively creating a Wrapper Interface. At first sight, this
+		approach seems to be fairly cumbersome. However it DOES represent a pretty solidly supported Design Pattern,
+		namely: <Favouring Composition over Inheritance>
+
+			Inheritance is a powerful way to archive code re-use, but it can lead to fragile software.
+
+			Inheriting from ordinary classes across package boundaries is considered dangerous.
+
+			(It is ok to use inheritance WITHIN a package though)
+
+			It is OK to inherit from Abstract Classes : these should have been designed specifically for that purpose.
+
+	It DOES require that a set of forwarding methods be written ( ie a method that basically just calls the method of the same name in the subOrdinate class).
+
+	Can be used to LIMIT the functionality of the sub-ordinate class, by choosing to forward only certain methods.
+
+	Can also use a Forwarding Class. This is useful if you have different object "inheriting" from your subOrdinate object.
+	The forwarding class is essentially re-useable.
+
+	There is a choice to be made about whether the instance variable holding the subordinate Object should be private
+	or public.
+
+	If the subordinate Object is included in the Interface Definition, then essentially all the methods on that
+	subordinate object become visible
+
+	If it is NOT then only the forwarding methods may be used to manipulate it, so you are effectively only exposing
+	a subset of its properties.
+
+		- Again this is a good thing. The more limited an objects properties are, the easier it is to test.

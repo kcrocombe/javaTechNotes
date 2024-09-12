@@ -1,0 +1,104 @@
+JavaDoc
+
+	Java Comments, conforming to a particular style and situated in specific places, can be formatted into HTML pages that follow standard java-style documentation conventions. The formatting is performed by the <<<javadoc>>> tool or some equivalent.
+
+*The Structured Comment
+
+**General
+
+	The comment:
+
+	 	* must precede the class/field/constructor/method declaration;
+
+		* must be started with the begin-comment delimiter /**  ( on its own line), and terminated in a similar may (\*/) e.g
+
+---
+	/**
+	 * Comment
+	 */
+
+---
+
+		* must be written as text marked up for HTML: so will commonly include such elements as:
+
+			* <<<<P>>>> - representing a paragraph marker;
+
+			* <<<<B> Bold <\B>>>>
+
+			* <<<<code>java keywords etc </code>>>>
+
+			* <<<<UL>underline</UL>>>>
+
+			* <<<<!-- Comment -->>>>
+
+			[]
+
+	* is made up of two sections:
+
+		[[a]] a descriptive section
+
+		[[a]] a block tag section
+
+**The Descriptive Section
+
+	The description consists:
+
+		The first sentence. This should be a short summary description
+
+		The first line starting with an @ char will terminate the description block.
+
+**The Block Tag section
+
+	The block tags consist of a series of @tags, with the appropriate description attached.
+
+		@author (classes and interfaces only, is considered required by convention.)
+		@version (classes and interfaces only, is considered required by convention.)
+
+		@param (methods and constructors only)
+		@return (methods only)
+		@exception (@throws is a synonym added in Javadoc 1.2)
+
+		@see   ( references to #tags in this or other javadocs
+				@see #field
+				@see #Constructor(Type, Type...)
+				@see #Constructor(Type id, Type id...)
+				@see #method(Type, Type,...)
+				@see #method(Type id, Type, id...)
+				@see Class
+				@see Class#field
+				@see Class#Constructor(Type, Type...)
+				@see Class#Constructor(Type id, Type id)
+				@see Class#method(Type, Type,...)
+				@see Class#method(Type id, Type id,...)
+				@see package.Class
+				@see package.Class#field
+				@see package.Class#Constructor(Type, Type...)
+				@see package.Class#Constructor(Type id, Type id)
+				@see package.Class#method(Type, Type,...)
+				@see package.Class#method(Type id, Type, id)
+				@see package
+
+		@since
+		@serial (or @serialField or @serialData)
+		@deprecated (see How and When To Deprecate APIs)
+
+
+* An example
+---
+
+/**
+ * Short one liner to describe someFunction().
+ * <p>
+ * Longer description of someFunction(). If there were any, it would be
+ * here.
+ * </p>
+ * And even more explanations to follow in consecutive
+ * paragraphs separated by HTML paragraph breaks.
+ *
+ * @param  parameter1 Description of parameter1
+ * @return Description of returned value
+ */
+public int someFunction (...) {
+    // method body with a return statement
+}
+---

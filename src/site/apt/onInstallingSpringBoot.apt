@@ -1,0 +1,109 @@
+Installing Spring Boot
+
+---
+  git clone https://github.com/spring-projects/spring-boot.git
+
+
+
+  mvn install
+---
+
+  This downloads lots, and takes ages ( 40 mins ) and ends with …
+
+
+
+---
+  INFO] ------------------------------------------------------------------------
+  [INFO] Building Spring Boot Build 1.3.0.BUILD-SNAPSHOT
+  [INFO] ------------------------------------------------------------------------
+  [INFO]
+  [INFO] --- maven-install-plugin:2.4:install (default-install) @ spring-boot-build ---
+  [INFO] Installing /Users/kevin/dvl/gitClones/spring-boot/pom.xml to /Users/kevin/.m2/repository/org/springframework/boot/spring-boot-build/1.3.0.BUILD-SNAPSHOT/spring-boot-build-1.3.0.BUILD-SNAPSHOT.pom
+  [INFO] ------------------------------------------------------------------------
+  [INFO] Reactor Summary:
+  [INFO]
+  [INFO] Spring Boot Dependencies ........................... SUCCESS [  2.974 s]
+  [INFO] Spring Boot Parent ................................. SUCCESS [ 12.964 s]
+  [INFO] Spring Boot Versions ............................... SUCCESS [  6.224 s]
+  [INFO] Spring Boot Tools .................................. SUCCESS [  0.008 s]
+  [INFO] Spring Boot Configuration Processor ................ SUCCESS [ 15.091 s]
+  [INFO] Spring Boot Dependency Tools ....................... SUCCESS [ 47.666 s]
+  [INFO] Spring Boot Loader ................................. SUCCESS [01:45 min]
+  [INFO] Spring Boot Loader Tools ........................... SUCCESS [ 20.671 s]
+  [INFO] Spring Boot Maven Plugin ........................... SUCCESS [03:39 min]
+  [INFO] Spring Boot Gradle Plugin .......................... SUCCESS [ 26.241 s]
+  [INFO] Spring Boot ........................................ SUCCESS [01:40 min]
+  [INFO] Spring Boot AutoConfigure .......................... SUCCESS [07:12 min]
+  [INFO] Spring Boot Actuator ............................... SUCCESS [01:24 min]
+  [INFO] Spring Boot Docs ................................... SUCCESS [  2.001 s]
+  [INFO] Spring Boot Starters ............................... SUCCESS [  0.187 s]
+  [INFO] Spring Boot Logger Starter ......................... SUCCESS [  0.145 s]
+  [INFO] Spring Boot Starter ................................ SUCCESS [  0.306 s]
+  [INFO] Spring Boot AMPQ Starter ........................... SUCCESS [  0.267 s]
+  [INFO] Spring Boot AOP Starter ............................ SUCCESS [  0.055 s]
+  [INFO] Spring Boot Batch Starter .......................... SUCCESS [  0.870 s]
+  [INFO] Spring Boot Spring Cloud Connectors Starter ........ SUCCESS [  4.158 s]
+  [INFO] Spring Boot Data Elasticsearch Starter ............. SUCCESS [  2.734 s]
+  [INFO] Spring Boot Data GemFire Starter ................... SUCCESS [  8.555 s]
+  [INFO] Spring Boot JDBC Starter ........................... SUCCESS [  0.057 s]
+  [INFO] Spring Boot Data JPA Starter ....................... SUCCESS [  2.001 s]
+  [INFO] Spring Boot Data MongoDB Starter ................... SUCCESS [  0.074 s]
+  [INFO] Spring Boot Tomcat Starter ......................... SUCCESS [  0.050 s]
+  [INFO] Spring Boot Web Starter ............................ SUCCESS [  0.330 s]
+  [INFO] Spring Boot Data REST Starter ...................... SUCCESS [  0.325 s]
+  [INFO] Spring Boot Data Solr Starter ...................... SUCCESS [  0.808 s]
+  [INFO] Spring Boot FreeMarker Starter ..................... SUCCESS [  0.092 s]
+  [INFO] Spring Boot Groovy Templates Starter ............... SUCCESS [  0.056 s]
+  [INFO] Spring Boot HATEOAS Starter ........................ SUCCESS [  0.114 s]
+  [INFO] Spring Boot HornetQ Starter ........................ SUCCESS [  0.893 s]
+  [INFO] Spring Boot Integration Starter .................... SUCCESS [  5.417 s]
+  [INFO] Spring Boot Jersey Starter ......................... SUCCESS [  8.106 s]
+  [INFO] Spring Boot Jetty Starter .......................... SUCCESS [ 10.614 s]
+  [INFO] Spring Boot Atomikos JTA Starter ................... SUCCESS [  0.237 s]
+  [INFO] Spring Boot Bitronix JTA Starter ................... SUCCESS [  0.101 s]
+  [INFO] Spring Boot Log4J Starter .......................... SUCCESS [  1.864 s]
+  [INFO] Spring Boot Log4J2 Starter ......................... SUCCESS [  1.344 s]
+  [INFO] Spring Boot Mail Starter ........................... SUCCESS [  1.930 s]
+  [INFO] Spring Boot Mobile Starter ......................... SUCCESS [  0.058 s]
+  [INFO] spring-boot-starter-mustache ....................... SUCCESS [  0.055 s]
+  [INFO] Spring Boot Actuator Starter ....................... SUCCESS [  0.081 s]
+  [INFO] Spring Boot Starter Parent ......................... SUCCESS [  0.003 s]
+  [INFO] Spring Boot Redis Starter .......................... SUCCESS [  0.074 s]
+  [INFO] Spring Boot Security Starter ....................... SUCCESS [  0.054 s]
+  [INFO] Spring Boot Social Facebook Starter ................ SUCCESS [  0.071 s]
+  [INFO] Spring Boot Social Twitter Starter ................. SUCCESS [  0.044 s]
+  [INFO] Spring Boot Social LinkedIn Starter ................ SUCCESS [  0.046 s]
+  [INFO] Spring Boot Remote Shell Starter ................... SUCCESS [ 12.948 s]
+  [INFO] Spring Boot Test Starter ........................... SUCCESS [  0.045 s]
+  [INFO] Spring Boot Thymeleaf Starter ...................... SUCCESS [  0.092 s]
+  [INFO] Spring Boot Undertow Starter ....................... SUCCESS [  0.961 s]
+  [INFO] Spring Boot Velocity Starter ....................... SUCCESS [  2.420 s]
+  [INFO] Spring Boot WebSocket Starter ...................... SUCCESS [  0.052 s]
+  [INFO] Spring Boot Web Services Starter ................... SUCCESS [  3.854 s]
+  [INFO] Spring Boot CLI .................................... SUCCESS [03:13 min]
+  [INFO] Spring Boot Integration Tests ...................... SUCCESS [16:07 min]
+  [INFO] Spring Boot Gradle Integration Tests ............... SUCCESS [02:25 min]
+  [INFO] Spring Boot Security Tests ......................... SUCCESS [  0.004 s]
+  [INFO] Spring Boot Security Tests - Web Hello World ....... SUCCESS [  9.230 s]
+  [INFO] Spring Boot Build .................................. SUCCESS [  0.115 s]
+  [INFO] ------------------------------------------------------------------------
+  [INFO] BUILD SUCCESS
+  [INFO] ------------------------------------------------------------------------
+  [INFO] Total time: 41:08 min
+
+---
+
+
+
+  Also installed the wildly maven plug in.
+
+
+---
+  git clone https://github.com/wildfly/wildfly-maven-plugin.git
+
+  mvn install
+---
+
+
+  At first this didn’t build properly, but this was only because the web server was running.
+  Once it was shutdown, then the build proceeded ok.

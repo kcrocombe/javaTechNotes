@@ -1,0 +1,552 @@
+iMac:dvl kevin$ 
+iMac:dvl kevin$ vi crGit.sh
+iMac:dvl kevin$ . ./crGit.sh
+Initialized empty Git repository in /users/gitRepos/kevin/javaTechNotes.git/
+
+iMac:dvl kevin$ vi README.txt
+iMac:dvl kevin$ vi release.txt
+iMac:dvl kevin$ git add README.txt
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+
+iMac:javaTechNotes kevin$ ls
+README.txt	crGit.sh	release.txt
+iMac:javaTechNotes kevin$ cat README.txt >> crGit.sh
+iMac:javaTechNotes kevin$ cat release.txt >> crGit.sh
+iMac:javaTechNotes kevin$ git add README.txt
+iMac:javaTechNotes kevin$ git add release.txt
+iMac:javaTechNotes kevin$ echo "add README.txt" >> crGit.sh
+iMac:javaTechNotes kevin$ 
+iMac:javaTechNotes kevin$ git add release.txt
+iMac:javaTechNotes kevin$ git status
+On branch master
+
+No commits yet
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+	new file:   README.txt
+	new file:   release.txt
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	crGit.sh
+
+iMac:javaTechNotes kevin$ git branch dvl
+fatal: Not a valid object name: 'master'.
+
+iMac:javaTechNotes kevin$ git commit -m "Initial Commit of the Repository"
+[master (root-commit) 204a90f] Initial Commit of the Repository
+ 2 files changed, 4 insertions(+)
+ create mode 100644 README.txt
+ create mode 100644 release.txt
+
+iMac:javaTechNotes kevin$ git branch dvl
+iMac:javaTechNotes kevin$ git remote add origin https://github/kcrocombe/javaTechNotes.git
+iMac:javaTechNotes kevin$ hub create -p -d "Hold notes collected while investigating various java technologies" -o
+A git remote named 'origin' already exists and is set to push to 'https://github/kcrocombe/javaTechNotes.git'.
+
+iMac:javaTechNotes kevin$ git remote --verbose
+origin	https://github/kcrocombe/javaTechNotes.git (fetch)
+origin	https://github/kcrocombe/javaTechNotes.git (push)
+
+iMac:javaTechNotes kevin$ git remote remove origin
+iMac:javaTechNotes kevin$ git remote add origin https://github.com/kcrocombe/javaTechNotes.git
+
+iMac:javaTechNotes kevin$ git push --set-upstream --all --dry-run origin
+To https://github.com/kcrocombe/javaTechNotes.git
+ * [new branch]      dvl -> dvl
+ * [new branch]      master -> master
+Would set upstream of 'dvl' to 'dvl' of 'origin'
+Would set upstream of 'master' to 'master' of 'origin'
+
+
+iMac:javaTechNotes kevin$ git push --set-upstream --all origin
+Enumerating objects: 4, done.
+Counting objects: 100% (4/4), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (3/3), done.
+Writing objects: 100% (4/4), 543 bytes | 271.00 KiB/s, done.
+Total 4 (delta 0), reused 0 (delta 0)
+To https://github.com/kcrocombe/javaTechNotes.git
+ * [new branch]      dvl -> dvl
+ * [new branch]      master -> master
+Branch 'dvl' set up to track remote branch 'dvl' from 'origin'.
+Branch 'master' set up to track remote branch 'master' from 'origin'.
+
+iMac:javaTechNotes kevin$ git checkout -b mavenBld
+Switched to a new branch 'mavenBld'
+
+iMac:javaTechNotes kevin$ cp ~/java*/genSite.sh .
+iMac:javaTechNotes kevin$ ls
+README.txt	crGit.sh	genSite.sh	release.txt
+
+iMac:javaTechNotes kevin$ vi gen*
+iMac:javaTechNotes kevin$ . ./genSite.sh
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------< org.apache.maven:standalone-pom >-------------------
+[INFO] Building Maven Stub Project (No POM) 1
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] >>> maven-archetype-plugin:3.0.1:generate (default-cli) > generate-sources @ standalone-pom >>>
+[INFO] 
+[INFO] <<< maven-archetype-plugin:3.0.1:generate (default-cli) < generate-sources @ standalone-pom <<<
+[INFO] 
+[INFO] 
+[INFO] --- maven-archetype-plugin:3.0.1:generate (default-cli) @ standalone-pom ---
+[INFO] Generating project in Batch mode
+[INFO] Archetype repository not defined. Using the one from [org.apache.maven.archetypes:maven-archetype-site:1.4] found in catalog remote
+[INFO] ----------------------------------------------------------------------------
+[INFO] Using following parameters for creating project from Archetype: maven-archetype-site:1.4
+[INFO] ----------------------------------------------------------------------------
+[INFO] Parameter: groupId, Value: uk.co.pegortech
+[INFO] Parameter: artifactId, Value: javaTechNotes
+[INFO] Parameter: version, Value: 1.0-SNAPSHOT
+[INFO] Parameter: package, Value: uk.org.pegortech
+[INFO] Parameter: packageInPathFormat, Value: uk/org/pegortech
+[INFO] Parameter: package, Value: uk.org.pegortech
+[INFO] Parameter: version, Value: 1.0-SNAPSHOT
+[INFO] Parameter: groupId, Value: uk.co.pegortech
+[INFO] Parameter: artifactId, Value: javaTechNotes
+[INFO] Project created from Archetype in dir: /Users/kevin/dvl/gitReps/javaTechNotes/javaTechNotes
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  12.178 s
+[INFO] Finished at: 2019-11-09T21:44:58Z
+[INFO] ------------------------------------------------------------------------
+
+
+iMac:javaTechNotes kevin$ git status
+On branch mavenBld
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	crGit.sh
+	genSite.sh
+	pom.xml
+	src/
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+
+iMac:javaTechNotes kevin$ git add src
+
+iMac:javaTechNotes kevin$ git status
+On branch mavenBld
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	new file:   src/site/apt/format.apt
+	new file:   src/site/apt/index.apt
+	new file:   src/site/fml/faq.fml
+	new file:   src/site/fr/apt/format.apt
+	new file:   src/site/fr/apt/index.apt
+	new file:   src/site/fr/fml/faq.fml
+	new file:   src/site/fr/markdown/markdown-velocity.md.vm
+	new file:   src/site/fr/markdown/markdown.md
+	new file:   src/site/fr/xdoc/xdoc.xml
+	new file:   src/site/markdown/markdown-velocity.md.vm
+	new file:   src/site/markdown/markdown.md
+	new file:   src/site/site.xml
+	new file:   src/site/site_fr.xml
+	new file:   src/site/xdoc/xdoc.xml
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	crGit.sh
+	genSite.sh
+	pom.xml
+
+iMac:javaTechNotes kevin$ git add pom.xml
+
+
+iMac:javaTechNotes kevin$ mvn site:site
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------< uk.co.pegortech:javaTechNotes >--------------------
+[INFO] Building Maven 1.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-site-plugin:3.7.1:site (default-cli) @ javaTechNotes ---
+[INFO] configuring report plugin org.apache.maven.plugins:maven-project-info-reports-plugin:3.0.0
+[INFO] 15 reports detected for maven-project-info-reports-plugin:3.0.0: ci-management, dependencies, dependency-info, dependency-management, distribution-management, index, issue-management, licenses, mailing-lists, modules, plugin-management, plugins, scm, summary, team
+[INFO] Rendering site with default locale English (en)
+[INFO] Relativizing decoration links with respect to localized project URL: http://maven.apache.org/
+[INFO] Rendering content with org.apache.maven.skins:maven-fluido-skin:jar:1.7 skin.
+[INFO] Skipped "About" report (maven-project-info-reports-plugin:3.0.0:index), file "index.html" already exists.
+[INFO] Rendering 6 Doxia documents: 2 apt, 1 fml, 2 markdown, 1 xdoc
+[WARNING] [APT Parser] Modified invalid link: 'Document structure' to '#Document_structure'
+[INFO] Generating "Dependency Information" report --- maven-project-info-reports-plugin:3.0.0:dependency-info
+[INFO] Generating "Distribution Management" report --- maven-project-info-reports-plugin:3.0.0:distribution-management
+[INFO] Generating "Plugin Management" report --- maven-project-info-reports-plugin:3.0.0:plugin-management
+[INFO] Generating "Plugins" report       --- maven-project-info-reports-plugin:3.0.0:plugins
+[INFO] Generating "Summary" report       --- maven-project-info-reports-plugin:3.0.0:summary
+[INFO] 
+[INFO] Rendering localized site for French (fr)
+[INFO] Relativizing decoration links with respect to localized project URL: http://maven.apache.org/fr
+[INFO] Rendering content with org.apache.maven.skins:maven-fluido-skin:jar:1.7 skin.
+[INFO] Rendering 6 Doxia documents: 2 apt, 1 fml, 2 markdown, 1 xdoc
+[WARNING] [APT Parser] Modified invalid link: 'Document structure' to '#Document_structure'
+[INFO] Generating "Informations de dépendance" report --- maven-project-info-reports-plugin:3.0.0:dependency-info
+[INFO] Generating "Gestion de la distribution" report --- maven-project-info-reports-plugin:3.0.0:distribution-management
+[INFO] Generating "Gestion des plugins" report --- maven-project-info-reports-plugin:3.0.0:plugin-management
+[INFO] Generating "Plugins du projet" report --- maven-project-info-reports-plugin:3.0.0:plugins
+[INFO] Generating "Résumé du projet" report --- maven-project-info-reports-plugin:3.0.0:summary
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  16.569 s
+[INFO] Finished at: 2019-11-09T21:50:05Z
+[INFO] ------------------------------------------------------------------------
+
+
+iMac:javaTechNotes kevin$ git status
+On branch mavenBld
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	new file:   pom.xml
+	new file:   src/site/apt/format.apt
+	new file:   src/site/apt/index.apt
+	new file:   src/site/fml/faq.fml
+	new file:   src/site/fr/apt/format.apt
+	new file:   src/site/fr/apt/index.apt
+	new file:   src/site/fr/fml/faq.fml
+	new file:   src/site/fr/markdown/markdown-velocity.md.vm
+	new file:   src/site/fr/markdown/markdown.md
+	new file:   src/site/fr/xdoc/xdoc.xml
+	new file:   src/site/markdown/markdown-velocity.md.vm
+	new file:   src/site/markdown/markdown.md
+	new file:   src/site/site.xml
+	new file:   src/site/site_fr.xml
+	new file:   src/site/xdoc/xdoc.xml
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	crGit.sh
+	genSite.sh
+	target/
+
+iMac:javaTechNotes kevin$ vi .gitignore
+
+iMac:javaTechNotes kevin$ git status
+On branch mavenBld
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	new file:   pom.xml
+	new file:   src/site/apt/format.apt
+	new file:   src/site/apt/index.apt
+	new file:   src/site/fml/faq.fml
+	new file:   src/site/fr/apt/format.apt
+	new file:   src/site/fr/apt/index.apt
+	new file:   src/site/fr/fml/faq.fml
+	new file:   src/site/fr/markdown/markdown-velocity.md.vm
+	new file:   src/site/fr/markdown/markdown.md
+	new file:   src/site/fr/xdoc/xdoc.xml
+	new file:   src/site/markdown/markdown-velocity.md.vm
+	new file:   src/site/markdown/markdown.md
+	new file:   src/site/site.xml
+	new file:   src/site/site_fr.xml
+	new file:   src/site/xdoc/xdoc.xml
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	.gitignore
+	crGit.sh
+	genSite.sh
+
+iMac:javaTechNotes kevin$ git add .gitignore
+iMac:javaTechNotes kevin$ git status
+On branch mavenBld
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	new file:   .gitignore
+	new file:   pom.xml
+	new file:   src/site/apt/format.apt
+	new file:   src/site/apt/index.apt
+	new file:   src/site/fml/faq.fml
+	new file:   src/site/fr/apt/format.apt
+	new file:   src/site/fr/apt/index.apt
+	new file:   src/site/fr/fml/faq.fml
+	new file:   src/site/fr/markdown/markdown-velocity.md.vm
+	new file:   src/site/fr/markdown/markdown.md
+	new file:   src/site/fr/xdoc/xdoc.xml
+	new file:   src/site/markdown/markdown-velocity.md.vm
+	new file:   src/site/markdown/markdown.md
+	new file:   src/site/site.xml
+	new file:   src/site/site_fr.xml
+	new file:   src/site/xdoc/xdoc.xml
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	crGit.sh
+	genSite.sh
+
+iMac:javaTechNotes kevin$ git commit -m "Initial Maven Project Structure: based on the maven-archetype-site archetype"
+[mavenBld 64b4eba] Initial Maven Project Structure: based on the maven-archetype-site archetype
+ 16 files changed, 1515 insertions(+)
+ create mode 100644 .gitignore
+ create mode 100644 pom.xml
+ create mode 100644 src/site/apt/format.apt
+ create mode 100644 src/site/apt/index.apt
+ create mode 100644 src/site/fml/faq.fml
+ create mode 100644 src/site/fr/apt/format.apt
+ create mode 100644 src/site/fr/apt/index.apt
+ create mode 100644 src/site/fr/fml/faq.fml
+ create mode 100644 src/site/fr/markdown/markdown-velocity.md.vm
+ create mode 100644 src/site/fr/markdown/markdown.md
+ create mode 100644 src/site/fr/xdoc/xdoc.xml
+ create mode 100644 src/site/markdown/markdown-velocity.md.vm
+ create mode 100644 src/site/markdown/markdown.md
+ create mode 100644 src/site/site.xml
+ create mode 100644 src/site/site_fr.xml
+ create mode 100644 src/site/xdoc/xdoc.xml
+
+iMac:javaTechNotes kevin$ git status
+On branch mavenBld
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	crGit.sh
+	genSite.sh
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+iMac:javaTechNotes kevin$ git switch dvl
+Switched to branch 'dvl'
+Your branch is up to date with 'origin/dvl'.
+
+iMac:javaTechNotes kevin$ git merge mavenBld
+Updating 204a90f..64b4eba
+Fast-forward
+ .gitignore                                   |   2 +
+ pom.xml                                      |  62 ++++++++++
+ src/site/apt/format.apt                      | 602 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ src/site/apt/index.apt                       |  16 +++
+ src/site/fml/faq.fml                         |  27 +++++
+ src/site/fr/apt/format.apt                   | 602 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ src/site/fr/apt/index.apt                    |  17 +++
+ src/site/fr/fml/faq.fml                      |  27 +++++
+ src/site/fr/markdown/markdown-velocity.md.vm |  13 +++
+ src/site/fr/markdown/markdown.md             |  11 ++
+ src/site/fr/xdoc/xdoc.xml                    |  17 +++
+ src/site/markdown/markdown-velocity.md.vm    |  13 +++
+ src/site/markdown/markdown.md                |  11 ++
+ src/site/site.xml                            |  39 +++++++
+ src/site/site_fr.xml                         |  39 +++++++
+ src/site/xdoc/xdoc.xml                       |  17 +++
+ 16 files changed, 1515 insertions(+)
+ create mode 100644 .gitignore
+ create mode 100644 pom.xml
+ create mode 100644 src/site/apt/format.apt
+ create mode 100644 src/site/apt/index.apt
+ create mode 100644 src/site/fml/faq.fml
+ create mode 100644 src/site/fr/apt/format.apt
+ create mode 100644 src/site/fr/apt/index.apt
+ create mode 100644 src/site/fr/fml/faq.fml
+ create mode 100644 src/site/fr/markdown/markdown-velocity.md.vm
+ create mode 100644 src/site/fr/markdown/markdown.md
+ create mode 100644 src/site/fr/xdoc/xdoc.xml
+ create mode 100644 src/site/markdown/markdown-velocity.md.vm
+ create mode 100644 src/site/markdown/markdown.md
+ create mode 100644 src/site/site.xml
+ create mode 100644 src/site/site_fr.xml
+ create mode 100644 src/site/xdoc/xdoc.xml
+
+
+iMac:javaTechNotes kevin$ git status
+On branch dvl
+Your branch is ahead of 'origin/dvl' by 1 commit.
+  (use "git push" to publish your local commits)
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	crGit.sh
+	genSite.sh
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+
+
+iMac:javaTechNotes kevin$ git push
+Enumerating objects: 27, done.
+Counting objects: 100% (27/27), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (20/20), done.
+Writing objects: 100% (26/26), 9.41 KiB | 385.00 KiB/s, done.
+Total 26 (delta 4), reused 0 (delta 0)
+remote: Resolving deltas: 100% (4/4), done.
+remote: error: GH006: Protected branch update failed for refs/heads/dvl.
+remote: error: At least 1 approving review is required by reviewers with write access.
+To https://github.com/kcrocombe/javaTechNotes.git
+ ! [remote rejected] dvl -> dvl (protected branch hook declined)
+error: failed to push some refs to 'https://github.com/kcrocombe/javaTechNotes.git'
+iMac:javaTechNotes kevin$ hub pull-request -r kcrocombe
+Aborted: 1 commits are not yet pushed to origin/dvl
+(use `-f` to force submit a pull request anyway)
+
+Disabled the branch protection on the dvl branch at this stage!!!!
+
+iMac:javaTechNotes kevin$ git push
+Enumerating objects: 27, done.
+Counting objects: 100% (27/27), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (20/20), done.
+Writing objects: 100% (26/26), 9.41 KiB | 1.05 MiB/s, done.
+Total 26 (delta 4), reused 0 (delta 0)
+remote: Resolving deltas: 100% (4/4), done.
+To https://github.com/kcrocombe/javaTechNotes.git
+   204a90f..64b4eba  dvl -> dvl
+
+
+iMac:javaTechNotes kevin$ git pull
+Already up to date.
+iMac:javaTechNotes kevin$ git status
+On branch dvl
+Your branch is up to date with 'origin/dvl'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	crGit.sh
+	genSite.sh
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+iMac:javaTechNotes kevin$ git branch --list
+* dvl
+  master
+  mavenBld
+
+iMac:javaTechNotes kevin$ git checkout  mavenBld
+Switched to branch 'mavenBld'
+
+iMac:javaTechNotes kevin$ git status
+On branch mavenBld
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	crGit.sh
+	genSite.sh
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+
+iMac:apt kevin$ mv /Users/kevin/javaTechnologyNotes/src/site/apt/* .
+
+iMac:apt kevin$ git status
+On branch mavenBld
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	../../../crGit.sh
+	../../../genSite.sh
+	NotesMadeOnEclipseModelling.apt
+	aboutThisDocumentation.apt
+	atomEditor.apt
+	branchModel.png
+	depot.png
+	format.xhtml
+	gitNotes.apt
+	hotfix.png
+	mainBranches.png
+	mergeNoFF.png
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+
+iMac:apt kevin$ git status
+On branch mavenBld
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	new file:   NotesMadeOnEclipseModelling.apt
+	new file:   aboutThisDocumentation.apt
+	new file:   atomEditor.apt
+	new file:   gitNotes.apt
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	../../../crGit.sh
+	../../../genSite.sh
+	branchModel.png
+	depot.png
+	hotfix.png
+	mainBranches.png
+	mergeNoFF.png
+
+iMac:apt kevin$ git add *.png
+
+iMac:apt kevin$ git status
+On branch mavenBld
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	new file:   NotesMadeOnEclipseModelling.apt
+	new file:   aboutThisDocumentation.apt
+	new file:   atomEditor.apt
+	new file:   branchModel.png
+	new file:   depot.png
+	new file:   gitNotes.apt
+	new file:   hotfix.png
+	new file:   mainBranches.png
+	new file:   mergeNoFF.png
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	../../../crGit.sh
+	../../../genSite.sh
+
+iMac:javaTechNotes kevin$ mvn site:site
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------< uk.co.pegortech:javaTechNotes >--------------------
+[INFO] Building Maven 1.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-site-plugin:3.7.1:site (default-cli) @ javaTechNotes ---
+[INFO] configuring report plugin org.apache.maven.plugins:maven-project-info-reports-plugin:3.0.0
+[INFO] 15 reports detected for maven-project-info-reports-plugin:3.0.0: ci-management, dependencies, dependency-info, dependency-management, distribution-management, index, issue-management, licenses, mailing-lists, modules, plugin-management, plugins, scm, summary, team
+[INFO] Rendering site with default locale English (en)
+[INFO] Relativizing decoration links with respect to localized project URL: http://maven.apache.org/
+[INFO] Rendering content with org.apache.maven.skins:maven-fluido-skin:jar:1.7 skin.
+[INFO] Skipped "About" report (maven-project-info-reports-plugin:3.0.0:index), file "index.html" already exists.
+[INFO] Rendering 10 Doxia documents: 6 apt, 1 fml, 2 markdown, 1 xdoc
+[WARNING] [APT Parser] Modified invalid link: 'Figure 1' to '#Figure_1'
+[WARNING] [APT Parser] Modified invalid link: 'GWT-Google Web Toolkit' to '#GWT-Google_Web_Toolkit'
+[WARNING] [APT Parser] Modified invalid link: 'Maven Notes' to '#Maven_Notes'
+[WARNING] [APT Parser] Modified invalid link: 'Notes on Domain Driven Design' to '#Notes_on_Domain_Driven_Design'
+[WARNING] [APT Parser] Modified invalid link: 'Some stuff on Oath2 and OpenID Connect' to '#Some_stuff_on_Oath2_and_OpenID_Connect'
+[WARNING] [APT Parser] Modified invalid link: 'Technology Glossary' to '#Technology_Glossary'
+[WARNING] [APT Parser] Modified invalid link: 'Architectural Outline' to '#Architectural_Outline'
+[WARNING] [APT Parser] Modified invalid link: 'Basic Concepts' to '#Basic_Concepts'
+[WARNING] [APT Parser] Modified invalid link: 'The Three File States' to '#The_Three_File_States'
+[INFO] Generating "Dependency Information" report --- maven-project-info-reports-plugin:3.0.0:dependency-info
+[INFO] Generating "Distribution Management" report --- maven-project-info-reports-plugin:3.0.0:distribution-management
+[INFO] Generating "Plugin Management" report --- maven-project-info-reports-plugin:3.0.0:plugin-management
+[INFO] Generating "Plugins" report       --- maven-project-info-reports-plugin:3.0.0:plugins
+[INFO] Generating "Summary" report       --- maven-project-info-reports-plugin:3.0.0:summary
+[INFO] 
+[INFO] Rendering localized site for French (fr)
+[INFO] Relativizing decoration links with respect to localized project URL: http://maven.apache.org/fr
+[INFO] Rendering content with org.apache.maven.skins:maven-fluido-skin:jar:1.7 skin.
+[INFO] Rendering 6 Doxia documents: 2 apt, 1 fml, 2 markdown, 1 xdoc
+[WARNING] [APT Parser] Modified invalid link: 'Document structure' to '#Document_structure'
+[INFO] Generating "Informations de dépendance" report --- maven-project-info-reports-plugin:3.0.0:dependency-info
+[INFO] Generating "Gestion de la distribution" report --- maven-project-info-reports-plugin:3.0.0:distribution-management
+[INFO] Generating "Gestion des plugins" report --- maven-project-info-reports-plugin:3.0.0:plugin-management
+[INFO] Generating "Plugins du projet" report --- maven-project-info-reports-plugin:3.0.0:plugins
+[INFO] Generating "Résumé du projet" report --- maven-project-info-reports-plugin:3.0.0:summary
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  14.478 s
+[INFO] Finished at: 2019-11-09T22:32:39Z
+[INFO] ------------------------------------------------------------------------
+iMac:javaTechNotes kevin$ 
+
+iMac:javaTechNotes kevin$ git commit -m "Initial Working Copies of Docs so Far added in - Not in any real state as of yet"
+[mavenBld 076cfc4] Initial Working Copies of Docs so Far added in - Not in any real state as of yet
+ 9 files changed, 5775 insertions(+)
+ create mode 100644 src/site/apt/NotesMadeOnEclipseModelling.apt
+ create mode 100644 src/site/apt/aboutThisDocumentation.apt
+ create mode 100644 src/site/apt/atomEditor.apt
+ create mode 100644 src/site/apt/branchModel.png
+ create mode 100644 src/site/apt/depot.png
+ create mode 100644 src/site/apt/gitNotes.apt
+ create mode 100644 src/site/apt/hotfix.png
+ create mode 100644 src/site/apt/mainBranches.png
+ create mode 100644 src/site/apt/mergeNoFF.png

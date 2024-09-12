@@ -1,0 +1,192 @@
+Java Technologies : Documentation
+
+  The following are a collection of notes made on various topics that I have collected via reading and playing around with various Java Technologies. Write a lot of the notes are very rough and ready: often just recording what I was doing when I was playing around. Others, I have tried to present in a reasonably tidy format.
+
+  The idea is that this will evolve in time into a reasonably useful resource, describing not only the technology itself, but how I have chosen to use it.
+
+*How to Build it
+
++-----+
+  mvn site
+
++-----+
+
+Background
+
+  * {{{./aboutThisDocumentation.html}About this documentation.}}
+
+  []
+======
+
+Documentation
+
+  * {{{./onDoxia.html}On Doxia - a APT renderer.}}
+
+  * {{{./format.html}The Almost Plain Text (APT) mark up language.}}
+
+  * {{{./onAtom.html}The Atom Editor.}}
+
+  []
+======
+
+Design
+
+  * {{{./onUML.html}On Unified Modelling Language (UML)}}
+
+  * {{{./onDomainDrivenDesign.html}On Domain Driven Design.}}
+
+  * {{{./onEclipseModelling.html}On Eclipse Modelling.}}
+
+  * {{{./onPapyrus.html}On Papyrus UML Modelling Tool}}
+
+  []
+======
+
+Development
+
+  * {{{./onGit.html}Git and how to use it.}}
+
+  * {{{./onMaven.html}Maven and how to use it.}}
+
+  * {{{./onJenkins.html}On Jenkins}}
+
+  * {{{./onThymeLeaf.html}On ThymeLeaf Templating System}}
+
+  * {{{./onGoogleWebToolkit.html}On Google Web Toolkit (GWT)}}
+
+  * {{{./onJavaLanguage.html}Notes and Snippets on Java}}
+
+  * {{{./onEclipse.html}Notes and Snippets on the Eclipse IDE}}
+
+  * {{{https://docs.oracle.com/javase/tutorial/index.html}Learning material from Oracle}}
+
+  []
+
+*Testing:
+
+  * {{{./onJUnit.html}On JUnit : A Jave Testing Framework}}
+
+  * {{{./onMockito.html}On Mockito : A Mocking Framework}}
+
+  * {{{./onOpenClover.html}On OpenClover : Test Coverage Tool.}}
+
+  []
+
+*Persistence
+
+  * {{{./onJPA.html}On the Java Persistence Architecture}}
+
+  * {{{./onHibernate.html}On Hibernate}}
+
+  []
+
+
+*Spring
+
+  * {{{./onSpringBasicConcepts.html}On Spring Basic Concepts}}
+
+  * {{{./onSpring.html}On Spring}}
+
+  * {{{./onSpringSecurity.html}On Spring Security}}
+
+  * {{{./onInstallingSpringBoot.html}On installing Spring Boot}}
+
+  * {{{./onCreatingRestServiceWithSpringBoot.html}On creating a simple REST web service with Spring Boot}}
+
+  []
+======
+
+Infrastructure
+
+*Security
+
+**Authentication Services
+
+***Oauth2 and OpenConnect ID:
+
+  * {{{./onOauth2andOpenIdConnect.html}On OAuth2 and OpenID Connect.}}
+
+  * {{{./onOpenIDConnectWithGoogle.html}On using OpenID Connect with Google.}}
+
+  []
+
+***SSL, TLS, encryption and certificates etc.
+
+  * {{{./onCertificatesAndKeyPairs.html}On SSL, TLS, Certificates and Cryptological Keys}}
+
+  []
+
+*Application Servers
+
+**Wildfly Application Server:
+
+  * {{{./onWildfly.html}On Wildfly Application Server}}
+
+  * {{{./onInstallingWildfly.html}On installing Wildfly.}}
+
+  []
+
+*Microservices and Web Hosting Stuff
+
+**Services
+
+  * {{{./onRestServices.html}On Rest based Web Services}}
+
+**CoreOs Platform
+
+  * {{{./onContainerLinux.html}On Container Linux (CoreOS) and Vagrant}}
+
+  * {{{./onFedoraCoreOs.html}On Fedora-CoreOS and Vagrant}}
+
+  []
+
+**Virtual Environments:
+
+  * {{{./onVirtualization.html}On various virtualization concepts}}
+
+  * {{{./onVirtualBox.html}On Virtual Box}}
+
+  * {{{./onVagrant.html}On Vagrant}};
+
+  []
+
+**Containerisation.
+
+  * {{{./onDocker.html}On Docker Container Engine}}
+
+  * {{{./onRKT.html}On RKT (rocket) Container Engine}}
+
+  []
+
+**Orchestration and Support infrastructure.
+
+  * {{{./onKubernetes.html}Notes on Kubernetes}}
+
+  * {{{./onKubernetesVagrantAndCoreOs.html}On Kubernetes built using Vagrant on CoreOs}}
+
+  * {{{./onEtcd.html}On the etcd distributed database}}
+
+  * {{{./onFlannel.html}On flannel (a network fabric provider)}}
+
+  []
+
+**Commercial Service Offerings
+
+  * {{{./onWebHostingOfferings.html}On Web Hosting Offerings}}
+
+  * {{{./onRedHatOpenShiftPart1.html}On Red Hat Open Shift - Part 1}}
+
+  * {{{./onRedHatOpenShiftPart2.html}On Red Hat Open Shift - Part 2}}
+
+  * {{{./onRedHatOpenShiftPart3.html}On Red Hat Open Shift - Part 3}}
+
+  []
+======
+
+Miscellaneous
+
+  * {{{./onOSX.html}on misc OSX tips and tricks}}
+
+  * {{{./glossary.html}Glossary}}
+
+  []

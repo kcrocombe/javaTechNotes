@@ -1,0 +1,13 @@
+Thymeleaf Templating System
+
+	[[1]] M Thymeleaf is a HTML based templating system that has specific support in Spring.
+
+	 * Firstly, Standard HTML5 documents are created either manually, or with tool support.
+
+	 * Secondly, specific HTML5 elements are then further annotated with Thymeleaf specific tags.
+
+	 * These tags have no meaning to a browser, so the tagged up HTML can be viewed in a browser as though the thymeleaf tags were not there.
+
+	 * The thymeleaf tags essentially allow you to work more effectivley with the model data that will eventually sit inside the page: be it formatting, support for selection and iteration, data capture etc.
+
+	 * The thymeleaf marked up .html file is loaded up with data from the Model and rendered.

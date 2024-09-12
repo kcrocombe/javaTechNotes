@@ -1,0 +1,14 @@
+
+16-Sep-2021
+
+Signed up as david.walsh@pegortech.co.uk  suppliying my Barclays Debit Card as Payment Detail.
+
+
+created a private/public key pair and down loaded it ( awsKey.pem) and saved it to my .shh dir in the usual manner.
+
+Tried to fin a way to create an alias for the long dns name,
+
+
+ ssh -v -i ./awsKey.pem ec2-user@ec2-3-143-243-15.us-east-2.compute.amazonaws.com
+
+  Note that ec2-user is the default user created

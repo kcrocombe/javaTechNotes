@@ -1,0 +1,153 @@
+Working with the Sirius Diagramming Tool
+
+Domumentation
+
+https://www.eclipse.org/sirius/doc/
+
+http://www.eclipse.org/sirius/doc/user/diagrams/Diagrams.html
+
+
+*Standard Mode/ Visibility Mode/ Layouting Mode
+
+	Standard Mode -   In this mode, every action is available to the user. So it is possible to define additional elements, and move attributes etc around; Draging and Dropping them between element.
+
+	Layouting mode - Most operations that change the Meaning og the model are Disabled. In this mode you can't drag and drop, re-name things etc.  But you can move things around. The mode is intended to allow you to prettty things up without fear of inadvertently changing the meaning of the mode.
+
+	Visibility Mode - Any Hidden elements on the Diagram will become semi-visible. While in theis mode it is posible to Hide/Unhide elements by double clicking on them.
+
+
+*The Diagram Layers
+
+	*Documentation Layer - Exposes the documentation tools, and displays any documented elements.
+
+			ANy NON-DOCUMENTED ELEMENTS WILL TURN RED.
+
+	* Validation Layer -
+
+			ANY Elements with perceived problems will highligh in Red.
+
+			The problems will be displayed when you Float over that Element
+
+
+
+*Pinning
+
+	Pinning an object does NOT lock it in position. Instead it makes immune from the effect of Auto-Arrange.
+
+
+
+*Use the Properties Window
+
+	When you are creating stuff in the diagraming tool, it is useful to have the Properties exposed in the Pane below. If it is not visible, the following should bring it up:
+
+			Window --> Show View --> Properties
+
+	The Editor is not the best when it comes to adding detail to the model. Double clicking does not bring up too many particularly useful dialog boxes. Consequently most detail will need to be added by amending the Ecore properties within this view.
+
+	Presumably, is adding detail into the .ecore model file.
+
+	Most of the initial model information will be added into the
+
+			Ecore ---> Semantic sub-pane
+
+
+*Shortcuts
+
+	The above not withstanding, there are some useful shortcuts however:
+
+		* Typing 1 on an attribute will change its cardinality --> 1:1 (required)
+
+		* Typing * on an attribute will change its cardinality to 1:*
+
+		* Typing :EInt on attribute can be used to set its type.
+
+
+*Beware of Empty Strings
+
+	In many places on the in the modelling tools (diagram editors, modelling editors), an attribute that is set to null and an attribute that is set to an empty string appear identically.
+
+	HOWEVER THEY ARE NOT TREATED IDENTICALLY DURING MODEL GENERATION.
+
+	It is easy to accidentally set a value to the empty string, e.g. by giving it a value, then changing you mind later on, and then just deleting it using the keyboard. This will set it to the empty string and can have unwelcome and difficult to debug consequences further down the line.
+
+	INSTEAD, TO RESET A VALUE BACK TO NULL, RIGHT CLICK AND SELECT "RESTORE DEFAULT VALUE"
+
+
+Choosing Data Types
+
+		For primitives, choose the corresponding E'Type'
+
+			e.g. Eint for int.
+
+
+
+*Creating Secondary Diagrams
+
+	Diagrams are a type of <<<Representation>>> (Class Tables are other forms of representation).
+
+	Usually, you will need more than just one Diagram in order to construct your model.
+
+	Additional Diagrams can be added:
+
+		Right Click on the Project --> Create Representation
+
+			Choose Design --> Entities in a class Diagram --> Then Choose the <<<ecore>>> Model you wish to base the representation on.
+
+
+*The Validation Layer
+
+	If the Validation Layer is active, then any object on the diagram that has something dodgy about it will be shown in RED. (Note that is the Documentation Layer is active, any objects without documentation attached will also show in
+	RED)
+
+	The Validation is not something that is performed continously. It is exececuted on request:
+
+			Right Click --> Validate Diagram
+
+	(Not to be confused with Validate - which, I think, is to do with the structure of the model file rather than the structure of the model)
+
+	When Validation is complete, the elements with queries or errors will be decorted with an 'i' or 'x' respecively (Not this shows regardless of whether the validation layer is active.)
+
+
+Constraints.
+
+	Constraints can be placed at the Class level ONLY. (This sort of makes sense - if a constraint needs to be placed on an attribute, then you are theoretically taking it from the wrong domain. i.e. if its an integer that needs to be greater than 0, then it shouldn't be drawn from int at all, but from positiveInteger. If such ac lass does not exist, it should be created).
+
+	From the model perspective, constraints are just 'Annotations' attached to a Class, pretty much in the same way as Documentation annotations.
+
+	Technically, they are drawn from the 'Ecore' namespace, and MUST bear the KEY 'constraints'. The value you can associate with this key is a comma separated list of tokens although it is possible to add constraints manually within the properties window, it is best NOT too: its too easy to mess up. Use the constraint tool instead.
+
+	The tokens are single words that should reflect what the constraint is. For example: upperLimitAboveLowerLimit, blueImpliesBoy, pinkImpliesGirl. They should probably reflect a relationship between more than attribute. There is no reason why they can't reference just a single attribute e.g ageLessThan100, but perhaps these are more naturally addressed by restricting the attribute domain (as suggested above)
+
+	Note that ONLY one List of constraints is allowed per class.
+
+	A constraint can ONLY be attached to ONE class : if a second class has identical constraints you need to create a duplicate.
+
+Implementation
+
+	When the code is generated, the constraints get translated into a set of operation() stubs within a utility class generated for that purpose (xxxValidator.java).
+
+	How this works, though I do not know.
+
+Deleting constraints.
+
+	The only way to delete dodgy constraints is via the properties window (Annotation) of the Class Annotated.
+
+
+
+
+Re-Opening the properties Window
+
+	The properties window at the bottom of the screen ( and others) can be re-opened
+
+		Window --> Show View
+
+
+
+
+*The Tool Pallet
+
+	It is not always that easy to use the diagramming tool. I struggled for ages once trying to workout haw to add relationships and could not work out why this was proving so hard. The reason was that the tool pallet had become hidden, and it was not immediately obvious how to reinstate it. (The tool palette contains all the goodies you would expect). It was not immediately obvious, either, that there are was anything missing, because there were other ways of adding other things.
+
+	<<The palette is hidden/unhidden by clicking a tiny arrow in the top right corner of the drawing canvas.>>
+
+	Also the content of the palette is dependent on what Layers are active on the diagram. For example the constraint tools are not active unless the 'Constraints Layer' is active.

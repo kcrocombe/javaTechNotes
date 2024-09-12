@@ -1,0 +1,174 @@
+Problems and Gotchas
+
+	Have seen this reasonably frequently
+
+		Exception thrown org.eclipse.emf.common.util.BasicEList$BasicIndexOutOfBounds Exception: index=0, size =0
+
+			Shut down all projects that aren't strictly necessary
+
+			Shutdwon and Reboot Eclipse itself
+
+		This has resolved this in the past.
+
+
+====
+
+*Generating Failing with Unhandled Exceptions.
+
+			Occasionally these occur during generation. I THINK it happens when you change the name of an entity and regenerate.
+
+			It generally can be fixed by deleting the previously generated java files, HOWEVER be careful to save any custom code in these FIRST!
+
+			Shutting down and restrating Eclipse often helps here too.
+
+===
+
+*Get it right first Time!
+
+	When you create your modelling project and the modelling files that go with it, it is a good idea to get the names and spelling etc correct. While it is perfectly possible to refactor a model to change these things at a later date ( and I have done so successfully), there are a lot of little changes to make in lots of files. So better to avoid that if you can.
+
+
+===
+
+*Problems, Bugs and Gotchas modeling and Generating Code.
+
+
+** java.lang.IllegalArgumentException
+
+	I encountered this problem immediately when trying to run an almost completely generated jar.
+
+---
+		java -jar  /Users/kevin/dvl/gitReps/fitStats/target/FitStats-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+		Exception in thread "main" java.lang.ExceptionInInitializerError
+		Caused by: java.lang.IllegalArgumentException: The value '' is invalid.
+			at org.eclipse.emf.ecore.impl.EFactoryImpl.createFromString(EFactoryImpl.java:470)
+			at uk.co.pegortech.FitStats.impl.FitStatsFactoryImpl.createMainFactoryFromString(FitStatsFactoryImpl.java:139)
+			at uk.co.pegortech.FitStats.impl.FitStatsFactoryImpl.createFromString(FitStatsFactoryImpl.java:82)
+			at uk.co.pegortech.FitStats.impl.DecoderClientImpl.<clinit>(DecoderClientImpl.java:98)
+
+---
+
+	The line causing the failure was:
+
+---
+	  protected static final MainFactory MAIN_FACTORY_EDEFAULT = (MainFactory)FitStatsFactory.eINSTANCE.createFromString(FitStatsPackage.eINSTANCE.getMainFactory(), "");
+---
+	and seems to be because the final argument is "".
+
+	The code is trying to set the default initial for an attribute within the class. According to the ecore model, this attribute DOES NOT have a default value.
+
+	However, the code generated for other attributes which also don't have a default value, looks very different, i.e.
+
+---
+		protected static final FtpFactory FTP_FACTORY_EDEFAULT = null;
+
+		protected FtpFactory ftpFactory = FTP_FACTORY_EDEFAULT;
+---
+
+	as opposed to:
+
+---
+	  protected static final MainFactory MAIN_FACTORY_EDEFAULT = (MainFactory)FitStatsFactory.eINSTANCE.createFromString(FitStatsPackage.eINSTANCE.getMainFactory(), "");
+
+		protected MainFactory mainFactory = MAIN_FACTORY_EDEFAULT;
+---
+
+	When we similarly define the default method code for our problem attribute, the problem goes away.
+
+---
+		protected static final MainFactory MAIN_FACTORY_EDEFAULT = null;
+---
+
+	Examination of the datamodel with the custom editors ( ECore Editor, Sample Ecore Model Editor), or the .genmodel file with the genmodel editor did not reveal any real differences in the way mainFactory and ftpFactory were modelled.
+
+	However when the xml was examined directly with the xml editor, key differences were apparent:
+
+---
+		<eStructuralFeatures xsi:type="ecore:EAttribute" name="mainFactory" eType="#//MainFactory"
+		    defaultValueLiteral=""/>
+		<eStructuralFeatures xsi:type="ecore:EAttribute" name="ftpFactory" eType="#//FtpFactory"/>
+		<eStructuralFeatures xsi:type="ecore:EAttribute" name="segmentScannerFactory"
+		    eType="#//SegmentScannerFactory"/>
+---
+
+	It seems mainFactory somehow has a default value of an empty string "" and this is NOT the same as null, even though the editors seemingly show these values identically.
+
+	When using the editors it is not intuitively obvious how to set a value back to NULL rather then the empty string. The only way I have found that works is to:
+
+---
+				Right Click ---> Restore Default Value.
+---
+
+	Also in these circumstances, the XML editor is your friend.
+
+
+
+
+*Another Common Error
+
+	org.eclipse.emf.common.util.BasicEList$BasicIndexOutOfBoundsException: index=7, size=7
+			at org.eclipse.emf.common.util.BasicEList.get(BasicEList.java:346)
+
+
+	Seems to happen sometimes when you delete elements from a model that you no longer want...
+
+
+	Sometimes this can be fixed just by shutting down and restarting Eclipse...
+
+
+*<ClassName>PackageImpl Generation
+	Generating Java class <ClassName>.impl.<ClassName>PackageImpl failed with unhandled exeception
+		java.lang.reflect.InvocationTargetException
+			java.lang.NullPointerException
+
+	Often this can result simply because the model is,as yet, insufficiently fleshed out to support generation. Maybe some of the attributes/paramters have not been typed?
+
+	Use the 'Validate Diagram'   and Validate options to Highlight where problems might be and resolve them.
+
+
+
+*Random Compilation Failure
+
+	IF you are using maven for compiling and packaging, it will attempt to compile all java in the source diirecories. If you have deleted redundant classes/interface from teh model, this DOES NOT mean their source files will be deleted from the source directories. So maven will still be compiling them...and eventually they will become inconsistent with the rest of the model and start throwing errors.
+
+	Make sure to manually remove redundnat source code from the source direcories.
+
+====
+
+
+*Unsetting Properties that had previously been set.
+
+	If you set a default value property for an attribute and then at a later date decide that you don't want that default attribute value, just deleting the value is no good; it persists and appears in the generated code as a value of "". Sometimes this is harmless, but other times it does no any syntactic sense.
+
+	To get rid of the problem you need to get rid of the property that has been set entirely. The easiest way I have found to do this is by using the XML editor DIRECTLY on the <<<ecore>>> file, and finding and deleting the property.
+
+*When Editors are slow to open.
+
+	I suspect that different Editors perform different levels of validation whenever a model/representation in opened. It does appear that certain constructs take quite a lot of time to validate. In particular:
+
+	When using the <<<ecore>>> Model Editor:
+
+		DataTypes/Interfaces will often be associated with external datatypes via their Instance Class Name and Type Class Name attributes (e.g. org.apache.commons.math3.stat.descriptive.DescriptiveStatistics ). When the editor attempts to open it a model with such external class references, the validation is very slow. It can easily take 5 minutes to open such a model (although they do generally get there in the end). If you take those External Classes out, the model opens in a few seconds.
+
+		Opening the same Model with the 'Sample Model Editor' is much quicker: presumably because it isn't doing the same degree of validation.
+
+		Also, some external object seem to be much faster to be validated than others; the java.lang.Objects seem to validated pretty quickly. (Maybe its because these are early in some sort of search path??).
+
+	Validation does seem to be configurable at:
+
+		* project level;
+
+		* workspace Level;
+
+		* installation level.
+
+		[]
+
+	I have tried disabling all this validation  (Properties --> Validation), but it does not seem to make any difference to the speed with which this particular editor opens.
+
+	Also, if it is indeed attempting to validate these external references, it does not seem to be able to do so effectively. If I deliberately put an invalid External Class into one of those fields, it does not pick it up.
+
+	Not also that there are Validate Diagram and Validate options available inside some of the tools too - these do not seem to take the same length of time to do their work.
+
+	This remains a curiosity. Have been unable to find anything on the internet which shines any light.

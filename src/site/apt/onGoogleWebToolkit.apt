@@ -1,0 +1,679 @@
+GWT-Google Web Toolkit
+
+	Documentation : {{http://www.gwtproject.org/}}
+
+	Is a google provided SDK, providing a core set of Java API's and Widgets for the construction of browser-based UI.
+
+	The name is possibly derived from the AWT classes used on thick-client java applications.
+
+	It allows you to write AJAX applications in Java, and then compile them to JavaScript rather (than byte code). The JavaScript is downloaded by the browser and interpreted like javaScript anywhere.
+
+	Can be used in any browser, including on mobile devices.
+
+
+	AJAX - Ansyncronous JavaScript and XML  - is a set of web development techniques. ( Basically Web applications send and receive data asynchrounously ( in the background) without interfering with display or behaviour of the browser page.)  These days, JSON is used as much as XML.
+
+	DOM - Document Object Model
+
+	Serializable - allows the content of a dataobject to be moved out of a piece of running code and, either:
+		a) Transmitted to another piece of running code
+		b) Stored outside the application
+
+	GWT uses RPC to transmit objects as parameters or Return Types, so they MUST be serializable.
+
+	Deferred Binding - the compiler creates many versiojns of code at compile time: differnt versions for different browsers, different versions for different langauges. The appropriate version for a particular situation is determined at runtime.
+
+	As well as the java objects, the SDK provides a number of tools to aid the development process.
+
+		[[1]] The GWT developer plugin - this spans the gap between java byte code in the debugger and the JavaScript in the browser. This means you can effectively make c ode changes on the fly, and see them immediately reflected in the browser.
+
+		[[1]] The GWT compiler - highly optimized compiler for converting java to javascript. Includes Speed Tracer for diagnosing performance problems in the browser.
+
+
+
+=====
+
+* Creating a GWT project with the Eclipse Plugin
+
+	Can do this in 2 ways via the supplied Wizard. In each case, a starter direcory layout is created and populated with
+	the bare minimum set of files:
+
+		* a html page to launch the generated javaScript;
+
+		* a css file to support cascading style;
+
+		* Deployment Descriptor ( web.xml);
+
+		* Example Client and Server Classes.
+
+	The number and nature of files differs slightly depending whether you have chosen to create a Maven Project or not.
+
+		* without Maven Support:
+
+			* an External Dependency on the GWT SDK is configured
+
+		* with Maven Support:
+
+			* a pom.xml file is generated which referencoed the dependencies ion the SDK, but it does not down load those
+			  to the local Maven Repositor at this stage.
+
+
+			Had to  Change the Project Nature --> Maven
+
+				Configure --> Convert to Maven Project
+
+				( Little M appeared)
+
+			Had to add in the www prefix...
+
+			  <!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.7.0//EN" "http://gwtproject.org/doctype/2.7.0/gwt-module.dtd">
+		-->
+			  <!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.7.0//EN" "http://www.gwtproject.org/doctype/2.7.0/gwt-module.dtd">
+
+
+
+		Creating a GWT project with a Maven Archetype
+
+---
+mvn archetype:generate \
+	-DarchetypeGroupId=org.codehaus.mojo \
+	-DarchetypeArtifactId=gwt-maven-plugin \
+	-DarchetypeVersion=2.8.1 \
+	-DgroupId=uk.co.pegortech \
+	-DartifactId=mavenGwtProject \
+	-Dversion=1.0-SNAPSHOT \
+	-Dpackage=uk.co.pegortech.apps.mavenGwt \
+	-Dmodule=Main \
+	-DinteractiveMode=N
+---
+
+		This will generate the following basic files:
+
+---
+./pom.xml
+
+./src/main/java/uk/co/pegortech/apps/mavenGwt/client/GreetingService.java
+./src/main/java/uk/co/pegortech/apps/mavenGwt/client/Main.java
+./src/main/java/uk/co/pegortech/apps/mavenGwt/client/Messages.java
+./src/main/java/uk/co/pegortech/apps/mavenGwt/server/GreetingServiceImpl.java
+./src/main/java/uk/co/pegortech/apps/mavenGwt/shared/FieldVerifier.java
+./src/main/resources/uk/co/pegortech/apps/mavenGwt/client/Messages_fr.properties
+./src/main/resources/uk/co/pegortech/apps/mavenGwt/Main.gwt.xml
+./src/main/webapp/Main.css
+./src/main/webapp/Main.html
+./src/main/webapp/WEB-INF/web.xml
+
+./src/test/java/uk/co/pegortech/apps/mavenGwt/client/GwtTestMain.java
+./src/test/resources/uk/co/pegortech/apps/mavenGwt/MainJUnit.gwt.xml
+---
+		These are largely the same file that are generated using the GWT wizard from within eclipse.
+
+---
+Directories:
+	./.settings  - Note: this is an empty directory.
+
+Source Tree
+	./src
+	./src/main
+	./src/main/java
+	./src/main/java/uk
+	./src/main/java/uk/co
+	./src/main/java/uk/co/pegortech
+	./src/main/java/uk/co/pegortech/apps
+	./src/main/java/uk/co/pegortech/apps/mavenGwt
+	./src/main/java/uk/co/pegortech/apps/mavenGwt/client
+	./src/main/java/uk/co/pegortech/apps/mavenGwt/server
+	./src/main/java/uk/co/pegortech/apps/mavenGwt/shared
+	./src/main/resources
+	./src/main/resources/uk
+	./src/main/resources/uk/co
+	./src/main/resources/uk/co/pegortech
+	./src/main/resources/uk/co/pegortech/apps
+	./src/main/resources/uk/co/pegortech/apps/mavenGwt
+	./src/main/resources/uk/co/pegortech/apps/mavenGwt/client
+	./src/main/webapp
+	./src/main/webapp/WEB-INF
+
+Testing Tree
+	./src/test
+	./src/test/java
+	./src/test/java/uk
+	./src/test/java/uk/co
+	./src/test/java/uk/co/pegortech
+	./src/test/java/uk/co/pegortech/apps
+	./src/test/java/uk/co/pegortech/apps/mavenGwt
+	./src/test/java/uk/co/pegortech/apps/mavenGwt/client
+	./src/test/resources
+	./src/test/resources/uk
+	./src/test/resources/uk/co
+	./src/test/resources/uk/co/pegortech
+	./src/test/resources/uk/co/pegortech/apps
+	./src/test/resources/uk/co/pegortech/apps/mavenGwt
+
+Build Tree
+	./target
+	./target/generated-sources
+	./target/generated-sources/gwt
+	./target/generated-sources/gwt/uk
+	./target/generated-sources/gwt/uk/co
+	./target/generated-sources/gwt/uk/co/pegortech
+	./target/generated-sources/gwt/uk/co/pegortech/apps
+	./target/generated-sources/gwt/uk/co/pegortech/apps/mavenGwt
+---
+	It can be manipulated outside of Eclipse as follows:
+
+---
+mvn package    ( By default the gwt:compile goal is bound to the prepare-package phase)
+---
+
+
+	For full details, see the on-line documentation at:
+
+	{{https://gwt-maven-plugin.github.io/gwt-maven-plugin}}
+
+
+*	Importing into Eclipse.
+
+		Use Import --> and select the Maven --> Existing Maven Project Wizard.
+
+		This will create:
+
+			.project    file
+
+			.classpath  file
+
+			.settings   filled with loads of config files
+
+
+		A Warning will show against the Module Descriptor File  ( the .gwt.xml file), because it doesn't, by default include a schema Defininition line. This can be added in, as above:
+
+---
+<!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.7.0//EN" "http://www.gwtproject.org/doctype/2.7.0/gwt-module.dtd">
+---
+
+		In the directory layout favoured by the gwt-maven-plugin archetype, the Module Description File is held within the resources directory of the tree. This differs from projects created directly through eclipse ( where it is held under the source tree).
+
+		This can cause problems during Building if the Module Description File cannot be found. Normally, the resources dir DOES lie on the classpath normally searched during the Compilation.
+
+		<<HOWEVER>> - the imported Maven Configuration Does seem to explicitly hide any files along the resources branch of the class path and so it cannot be found. In order to fix this, you need to amend the build path on the project so that these files are unhidden.
+
+		Properties --> Java Build Path --> Source
+			Amend the Excusion Filter on Both Resource Paths from \*\* --> \*.java
+
+			( This will allow the .gwt.xml file to be found along the Classpath)
+
+
+		Also, it is necessary to create a launch configuration for the imported applicaton. The gwt-maven-plug provides a specific goal for this.
+
+		Use the gwt-maven-plugin to generate a Launch configuration for the application
+
+---
+mvn gwt:eclipse
+---
+
+		This will create a .launch post-fixed xml file. This can be imported into eclipse
+
+			Import --> Run/Debug --> Launch Configurations
+
+
+		This will create a Run Configuration based on the module name (e.g. Main.html) that will fire up the application in GWT Developemnt Mode ( i.e. using com.google.gwt.dev.DevMode as the main class, in super developemtn mode, and running the module (uk.co.pegortech.apps.mavenGwt.Main, for instance)
+
+		Note that there is nothing provided to deploy the application proper to a webserver...
+
+
+		The main goals of interest provided by the gwt-maven-plugin are:
+
+---
+mvn gwt:clean
+
+gwt:compile
+
+gwt:help
+
+gwt:run
+---
+
+
+		Note that the compilation proper is tied into the prepare-package phase
+
+---
+mvn prepare-package
+---
+
+
+		For information, under the hood this is launching a shell script that basically runs:
+
+			java -cp gwt-dev.jar com.google.gwt.dev.Compiler <module>
+
+
+
+===
+
+*	The Newer version of the GWT-Maven-plugin
+
+	Although the org.codehaus.mojo version of the gwt-maven-plugin is what is configure by eclipse, this is now considered outdated. There is a new version that is now recommended for use in all projects:
+
+---
+groupID = net.ltgt.gwt.maven
+<artifactId>gwt-maven-plugin</artifactId>
+	<version>1.0-rc-10</version>
+	<extensions>true</extensions>
+---
+
+	It theorettically provides better support for multi-module projects, and provides for a a much cleaner seperation of client side code ( i.e. the stuff that get compiles down to JavaScript), the backend webserver, and the classes that are shared between the two.
+
+
+	The plugin itself is available at:
+
+		{{https://tbroyer.github.io/gwt-maven-plugin/index.html}}
+
+
+	Likewise, the archetypes used by the plugin have changed a fair bit from that used by the older plugin, most notably, the 3 sub-project created by default, and then a slightly different layout within each
+
+	The archetype is created:
+
+---
+mvn archetype:generate \
+		-DarchetypeGroupId=net.ltgt.gwt.archetypes \
+		-DarchetypeVersion=LATEST \
+		-DarchetypeArtifactId=<artifactId>
+---
+
+	where the available <artifactIds> are:
+
+  	  * modular-webapp;
+
+  	  * modular-requestfactory;
+
+  	  * dagger-guice-rf-activities.
+
+	(I haven't yet played with anything but the modular-webapp)
+
+---
+mvn archetype:generate \
+	-DarchetypeGroupId=net.ltgt.gwt.archetypes \
+	-DarchetypeVersion=LATEST \
+	-DarchetypeArtifactId=modular-webapp \
+	-DgroupId=uk.co.pegortech \
+	-DartifactId=newGWTplugin \
+	-Dversion=1.0-SNAPSHOT \
+	-Dpackage=uk.co.pegortech.apps.newGWTplugin \
+	-Dmodule=Module1 \
+	-Dmodule-short-name=mod1 \
+	-DinteractiveMode=N
+---
+
+
+	This creates a project with 3 sub-projects:
+
+	test1-client:
+
+		* contains the GWT client code, describing the UI ( ie. what gets transformed to JavaScript);
+
+		* the \*.gwt.xml file describing the rentry point and various other things - need to understand this better I think
+
+	test1-server:
+
+		* contains the simple RemoteServiceServlet implementing the GreetingService interface (  GreetingServiceImpl.java );
+
+		* misc css, xml, html files ( including web.xml and index.html).
+
+	test1-shared:
+
+		* contains the main Business Logic required by the app;
+
+		* FieldVerifier Class;
+
+		* GreetingResponse Class;
+
+		* GreetingService Interface.
+
+
+	This creates the same demonstration app that is bundled with the previous plugin archetype, but is code has been re-arranged for this new layout.
+
+
+**	Test Compiling/Running/Debugging the Client Side code.
+
+		The gwt modules, remember, eventually get compiled to JavaScript. However the AWT toolset provides a platform that will <emulate> the Javascript behaviour just by interpreting the .java files. This is quite nice, because once the various servers ( codeserver/webserver see below) are up and running, then all you need to do is save any change to the source file and refresh the browser in order to see your changes : you <don't need to compile the java at all>.
+
+		The toolset provides 2 versions of this development platform (both Java Objects):
+
+			CodeServer (com.google.gwt.dev.codeserver.CodeServer): This is what is preferred by the maven plugin. According to it documentation it is EXPERIMENTAL. I starts a code server in so called "Super Dev" Mode, a replacement for devmode that has the advantage of NOT requireing the use of Plugins in the browser to use it. However, it does not have support for authentication, data encryption etc.
+
+			It also does not have a built-in Jetty.
+
+			DevMode ( com.google.gwt.dev.DevMode): Running on this platform does not have Super Dev mode capablity and so will require a plugin inthe browser (GWT Developer Plugin) for it to run. It does, however, have an embedded webserver.
+
+			( For completeness, the actual compiler is also a java object ( com.google.gwt.dev.Compiler )
+
+		Each of these has a full set of command line options that might be specified ( documented both on the AWT site  {{http://gwt-plugins.github.io/documentation/index.html}} and available as good old JavaDoc)
+
+
+
+		The recommended use of the plugin for development and debugging (at the command line) is to use the following plugin goals from the root POM:
+
+			a. in one terminal window:
+
+---
+mvn gwt:codeserver -pl \*-client -am
+---
+
+				This invokes the <codeserver> goal on the plugin. The other arguments are <maveni> arguments:
+					-pl is --projectList and so restricts the processing to just the 'client' sub-project,
+					-am is --also-make, and so will pull in any dependencies from other projects ( in this case the "shared" sub-project.
+
+				This will start up the codeserver java object, which will serve 'java object' when requested by a webserver.
+
+
+		  b. in a second window fire up jetty:
+
+---
+mvn jetty:run -pl \*-server -am -Denv=dev
+or
+mvn tomcat7:run pl \*-server -am -Denv=dev
+---
+			<NB: the -Denv=dev is important!> This amends the profile active on the \*server build. The prod profile is active by default. Unless the dev profile is active, we won't get the proper interaction with the codeserver, and so java interpretationi doesn't happen.
+
+			If you don't get the 'Compiling App'
+
+			You can then point your web browser at the jetty/tomcat server
+
+					by default : 127.0.0.1:8080/index.html   ( although the name of the initial page will vary per applicaiton)
+
+			This will speak to the codeserver ( on 127.0.0.1:9876 )
+
+
+		The gwt:codeserver goal invokes the execution of the maven lifecycle phase: process-classes.
+
+		There are various options to control logging etc that can be added into the pom.xml as required.
+
+
+		In theory, it should be possible to add options to the maven command line too.
+
+			mvn awt:codeserver -DcodeserverArgs="-startupUrl /index.html"
+
+		..although I've not managed to get that to work yet.
+
+
+		There is full documentation of the plugin options on the plugin website, and help is available via the help goal:
+
+			mvn gwt:help -Ddetail=true -Dgoal=<some-goal>
+
+
+		It is usually a good idea to specify Mavens <<--ProjectList>> and <<--Also-make>> options in order to restrict compilation to just the '\*-client' project contain the AWT source.
+
+
+		Note that it is also possible to use the gwt:devmode goal in order to compile/run gwt source. This fires up the GWT DevMode class with its build in webserver. However it does need a few more configuration steps:
+
+			[[a]] It need the <startupUrl>/index.html</startupUrl> configuring into the pom.xml file.
+
+			[[b]] It need the war:exploded goal running on the \*-server part of the application.
+
+			[[c]] Make sure that the startupUrl is available along the public path of the module ( not sure what this is, but it is defined within \*.gwt.xml)
+
+		However, even then, I have not been able to get this to reliably work!  Quite often, you just get a 404: Not found Error when looking for /index.html
+
+
+* Running/Debugging Using the Eclipse Plugin
+
+	A little misleadingly, the compile/debug/run functionality is available under:
+
+			Right Click --> Debug as --> GWT Development Mode with Jetty			( basically gwt:devmode )
+											 --> GWT Development Mode							( basically gwt:codeserver)
+											 --> GWT Legacy Development Mode with Jetty
+
+			Presumably, with a correctly configured maven, it would be possible to do a
+					mvn jetty:run -pl \*-server -am -Denv=dev    or
+					mvn tomcat7:run -pl \*-server -am -Denv=dev
+
+			And in fact, this seems to work ok.
+
+			Annoyingly, I have yet to find a way of configuring Maven to run:
+			 		- a gwt:codeserver with the right parameters, or
+					- a jetty:run with the right parameters
+
+	With the Debug as running with Jetty, we can now right click on the URL within the 'Development Mode' Pane ( using the Jboss perspective). We can now launch the Chrome Browser with JavaScript Debug Support..
+
+	Right clicking on the displayed page will allow us to inspect elements wetc to aid in laying out etc).
+
+
+
+* Packaging.
+
+		The Maven plugin provides 2 new packaging directive specifically for client-side GWT sources. These sit alongside alongside the usual ones ( war, jar, pom, era etc), and are specified in the pom for the sub-project in the usual way:
+
+					<packaging>gwt-app</packaging>
+
+
+			gwt-app : For client-side GWT code that will ONLY be compiled through to jacaScript via the GWT Compiler
+
+			gwt-lib : For client-side GWT code that needs to be packaged in BOTH compiled and source form. Not sure what would need this, though??
+
+		Note that shared code (i.e. \*-shared sub-project) is just a standard jar packaging, while the \*-server code is usually a war.
+
+
+
+*	GWT Basics
+
+		GWT code gets sent over a network in response to a user request, where it runs as JavaScript inside their browser.
+		This put some restrictions on the Java libraries and code constructs that you can use in a AWT file.
+
+		GWT modules are stored on a webserver as a set of JavaScript and related files. In order to run a module, it must be loaded from a web-page of some sort. Any HTML page can include a GWT application via a SCRIPT tag. This page is known as the HOST PAGE.
+
+		Individual Units of GWT configuraion are called Modules. A module bundles all the configuration that a GWT project needs.
+
+		Modules are defined in XML  ( \*.gwt.xml) and it is recomended that these are placed in the root package of the standard project layout. Typically the xml files will specify:
+
+			* The Entry Point Classes. These are constructed WITHOUT parameters and are instantiated wheniever the module gets loaded. The classes onModuleLoad() method then get called.
+
+			* Source Path. The module will specifiy which sub-packages also contain GWT source. Only these files are candidates for translation to JavaScript.
+
+		Modules is one way that code is re-used within GWT: ie modules can act as libraries.
+
+		Typically, a top-level XML definition will <include> all the libraries needed and then this will compile
+		into a single set of JavaScript output.
+
+		System Modules are provided to do things like:
+
+			Provide unit test frameworks : JUnit.gwt.xml
+			Provide JSON support: JSON.gwt.xml
+
+
+		Entry Point classes implement the Entry Point Interface, which require just one method: onModuleLoad()
+		Typically the onModuleLoad() method is used to:
+				* create user interface components
+				* setup event handlers attached to those components
+				* modifiy the browser DOM ( Document Object Model)
+
+
+		Useful:
+			GWT.log("") can be used to flash debug messages while running in Development Mode ( They get optimised out
+			when running Production Mode).
+
+
+
+* Client Server Communication Basics
+
+		* when the browser based code needt to interact with the server it makes an HTTP request using a Remote
+		Procedure Call.
+
+		* The RPC is then processed on the server.
+
+		* Can use a variety of RPC mecanisms ( JSON, JSNI, or third parety)
+
+		* Fundamental difference between AJAX apps and traditional HTML apps is that AJAX does not need to fetch new HTML pages while tey execute. ( On traditional HTML servers, the page is assembled (via JSP or similar) on the server and then sent and rendered ont eh browser: with AJAX the UI logic all happens on the browser). They just need to ship data.
+
+		* It is <NOT> Simple Object Access Protocol (SOAP).
+
+
+*	Creating Services
+
+		To define your RPC interface, you need to:
+
+			* Define a ServerSide interface for your Service that Extends RemoteService, and lists the required methods;
+
+			* Define a ServerSide class to extend RemoteServiceServlet and implements the interface defined above;
+
+			* Define a ClientSide synchronous interface to the service. However, this CANNOT be used directly by
+			 the client ( AJAX - AYNCHRONOUS JavaScript and XML), so as well...
+
+			* Define a Client Side asynchronous interface to the service, based on the above, that CAN then be called from the client side code.
+
+		It is essential that the synchronous and asynchronous interfaces to conform to a NAMING standard: the compiler depends upon it.
+
+				Synchronous Interface = Xxxxx
+
+				Asynchronous Interface - XxxxxAsync
+
+		They also NEED to have the same methods, except that the corresponding method in the Async interface will have an
+		extra AsyncCallback<string> as its final parameter, e.g.
+
+---
+interface MyService {
+	public void myMethod( String s);
+}
+
+and
+
+interface MyServiceAsync {
+	public void myMethod( String s, AsyncCallback<String> callback);
+}
+---
+
+		They have to be in the same package.
+
+
+		The Server side code which implements the services are based on the Servlet Architecture.
+
+		The service implementation extends RemoteServiceServlet (which itself extends HttpServlet)
+		and implements the sysncronous version of the interface.
+
+
+
+		The process of making a call follows the same 3 steps:
+
+			instantiate the service interface using factory method GWT.create() ( This is known
+			as the service proxy)
+			e.g.
+
+				MyEmailServiceAsync emailService = (MyEmailServiceAsync) GWT.create(MyEmailService.class);
+
+					Note: we create a instance of the class of the sync interface, and cast it to the async interface.
+
+			Create an asynchronous callback object to handle the result
+
+---
+	AsyncCallback callback = new AsyncCallback() \{
+  		public void onSuccess(Void result) \{ some stuff \}
+  		public void onFailure(Throwable caught) \{ \}
+  };
+---
+
+			Make the actual call:
+
+---
+  emailService.emptyMyInbox(fUsername, fPassword, callback);
+---
+
+			NB The service proxy can be created as an attribut in the EntryPoint Class, rather than recreating
+			it in each method.
+
+
+		Handling Exceptions
+
+			RPC are open to all sorts of failures : Network failures, server crashes, slow performance etc.
+
+			Important therefore to catchand handle these situations
+
+
+		Server Calls are Asynchronous.
+
+			Remember that calls to the server will NOT block. The lines of code immeditely following will execute.
+			The onSuccess and andFailure Code will execute only when the callback completes.
+
+
+
+		Some interesting features to be aware of:
+
+			History : Typically applications run in a single page, so attemping to use the 'back' button to step back
+			in the application does not work. There are features available to emulate this though.
+
+			Internationalisation Support
+
+			Scheduling Activity : Timers etc.
+
+			JSON processing faciliites and Overlay Types
+
+			Using Native JavaScript as well as generated Java Script
+
+
+* Playing around creating interfaces.
+
+**The Root Panel
+
+	The Root Panel is essentially the base container for the dynamic elements in your application. It will be at the top of user interface hierachy.  It can be used in 2 ways:
+
+		a) to generate the <entire> body of its host html page
+		b) to generate specific <elements> within its host html page.
+
+		In the parlance, teh Root panel either wraps the <\<body\>> element of the HTLM page or it can wrap any html element that you have given a specific id to.
+
+	 		So, for example if you have a couple of table elements in a table row:
+
+---
+				\<tr\>
+					\<td id="elementOne">\</td>
+					\<td id="elementTwo">\</td>
+				\<tr\>
+---
+
+		you would wrap those elements in code similar to:
+
+---
+			RootPanel.get("elementOne").set( addSomethingIn );
+			RootPanel.get("elementTwo").set( addSomethingElseIn );
+---
+
+		A host page whose entire \<body\> element is to be wrapped would be considered:
+
+---
+			RootPanel.get().set( addSomethingElseIn );
+---
+
+		It is possibly for an html page to have more than one Root Page ( but I don't see how??).
+
+		<NB. The Root Panel comes in at least 2 variant:  RootPanel and RootLayoutPanel>
+
+		If you try laying things out in a RootPanel, then it will not work. In these circumstances you need to use the RootLayoutPanel version. <This took me a whole day to figure out!>
+
+
+**The Host Page.
+
+	Every application needs to be hosted from a bog-standar HTML file.
+
+	The javascript file responsible for the dynamic content would normally be referenced as part of the html \<head\> element, which might also reference a style sheet to be used for the app (as a link in the below).
+
+---
+		<html>
+			<head>
+					...
+					<script type="text/javascript" language="javascript" src="someJavaScript.nocache.js"></script>
+					<link type="text/css" rel="stylesheet" href="someStyleSheet.css">
+			</head>
+---
+
+		The dynamic content may be bound the entire body:
+
+---
+			<body></body>
+---
+
+		or bound to a particular data element with in the body:
+
+---
+			<body>
+				<h1>Some Heading<h1>
+				<div id="someDivision"></div>
+				...
+			</body>
+---

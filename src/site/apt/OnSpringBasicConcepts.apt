@@ -1,0 +1,724 @@
+
+
+
+Dependency Injection
+
+  Is a technique whereby the one object supplies the dependencies of another object. So for example:
+
+---
+    class NoDependencyInjection {
+
+        DependentClass1  depClass1 = new DependentClass1();
+        DependentClass1  depClass2 = new DependentClass2();
+    }
+---
+
+  has its dependencies hard coded. This tightly couples the NoDependencyInjection class to the DependentClass1 and DependendentClass2 classes.
+
+
+  Consider instead,
+
+---
+  class ConstructorDependencyInjection {
+
+        DependentInterface1 dep1;
+        DependentInterface2 dep2;
+    }
+
+        ConstructorDependencyInjection(DependentInterface1 di1, DependentInterface1 di2){
+          dep1 = di1;
+          dep2 = di2;
+        }
+---
+
+  Note:
+
+    * The DependentClasses are now represented as Interfaces within the referencing Class
+
+    * These are populated by the constructor when the Class is instantiated;
+
+    * The constructor also takes interfaces as its arguments NOT classes.
+
+    * These means that the ConstructorDependencyInjection is now only very loosely coupled to its dependencies: any number of classes can be specified to the constructor, just as l;ong as they implement the interface.
+
+    * Repsonsibility for determining WHICH classes actually get passed to the constructor becomes the reponsibilty of whatever class instantiuates the class. This can be just some other class in the client prohgram, BUT often becomet the responsibiliy of an InversionOfControl Framework (such as Spring instead)
+
+    * In the above, dependencies are injected via the constructor, and so is termed constructor Di. Alternatively, dependencies can be injected by using Setter functions etc, and is termed setter Di.
+
+
+Inversion of Control
+
+  IoC inverts the flow of control as compared to traditional control flow. Custom-written portions of a computer program receive the flow of control from a generic framework. A software architecture with this design inverts control as compared to traditional procedural programming: in traditional programming, the custom code that expresses the purpose of the program calls into reusable libraries to take care of generic tasks, but with inversion of control, it is the framework that calls into the custom, or task-specific, code.
+
+
+
+Spring Application Contexts
+
+  Spring provides a number of so-called <container> classes that provide an Inversion of Control framework with capabilities to perform Dependency Injection. These containers essentially provide an execution environment for the objects that they contain. They:
+
+    * create the application objects that they manage
+
+    * inject the dependencies, so-called "wiring" the objects together.
+
+    * manage the lifecycle of the created objects from creation to destruction.
+
+  Spring provides 2 types of Container:
+
+    * Bean Factories - are relatively simple ,and provide little more than DI capability.
+
+    * ApplicationContexts - expand on the Bean Factory and provide additional facilities such as the ability to read property files, and publish application events to interested event listeners.
+
+  In general, most applications will benefit from the additional facilities provided by use of ApplicationContexts.
+
+  Both {{{https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/ApplicationContext.html}ApplicationContext}} and BeanFactory are interfaces, and the framework provides several different implementing classes each spaecialised for use in particular situations.
+
+
+Populating an ApplicationContext
+
+  An ApplicationContext needs to provided with the various Application Objects that it is expected to provide an execution environment for. Different implementations of an ApplicationContext get loaded with <<Instances>> of their application objects in different ways.
+
+    * FileSystemXmlApplicationContext -  can load its Application Objects that are defined within specified XML files in the filesystem.
+
+    * ClassPathXmlApplicationContext - can load its Application Objects that are defined within unspecified XML files, but that can be found via the CLASSPATH environment variable.
+
+    []
+
+  Of particular interest are the ApplicationContexts that can be loaded from ordinary Java Class definitions (POJO) rather than XML.
+
+    * AnnotationConfigApplicationContext - can load their classes from the definitions contained within one or more class files, or from a complete package of classes.
+
+    []
+
+
+  Different ApplicationContexts may also be specialised for particular purposes:
+
+    * AnnotationConfigWebApplicationContext  - This implements the WebApplicationContext Interface which provides configuration for web application servers.
+
+    * GenericGroovyApplicationContext - This ApplicationContext implements the GroovyObject interface, so allowing its objects to be referenced via groovy dot.derefernce syntax.
+
+    []
+
+  The classes managed by BeanFactories and ApplicationServers must exhibit certain properties. In short, they have to be JavaBean.
+
+
+Java Beans
+
+  A java bean is nothing more than an <<INSTANCE of an OBJECT>> whose class satisfies certain conventions:
+
+    * The class must have a public, no-argument constructor.
+
+    * A properties must be private and must be accessible via getter() and setter() methods. the methods must obey certain naming conventions (getX() setX(), isX()...)
+
+    * must be serializable.
+
+  Note, an Enterprise Java Bean is NOT THE SAME as a Java Bean: an EJB is a much richer object encompassing business logic and generally resident on a back-end server.
+
+  In general, the Spring IoC container will create the application beans that it manages based on definition meta-data. The meta-data may be in the form of
+
+    * XMl
+
+    * Annotated Java Classes.
+
+    []
+
+
+
+
+
+Configuring an Annotation based Application Context.
+
+  In general, an annotation based ApplicationContext is passed one or more java class files at instantiation. The classes that get passed are Configuration Classes, although actual model classes can be specified as well.
+
+---
+public static void main( String[] args) {
+    ApplicationContext context = new AnnotationConfigApplicationContext(uk.co.pegortech.Config.class);
+
+}
+---
+
+  Alternatively, an empty context can be created and classes registered seperately
+
+---
+  public static void main( String[] args) {
+      ApplicationContext context = new AnnotationConfigApplicationContext();
+      context.register(uk.co.pegortech.Config.class);
+      context.register(uk.co.pegortech.SomeClass.class);
+      context.register(uk.co.pegortech.SomeOtherClass.class);
+  }
+---
+
+  Instances of a class can be created using the ApplicationContext
+
+---
+  SomeClass someClass = context.getBean(SomeClass.class)
+---
+
+  ...although more usually Spring creates these instances automatically...
+
+
+Configuration Class
+
+  A configuration class is simply one which is annotated thus:
+
+---
+  @Configuration
+  public class someConfigClass{...}
+---
+
+  Annotating a class as a @Configuration indicates that its primary process is a source of Bean definitions. Remember a Bean is basically just an Instance of a particular class. The @Bean annotation indicates that a method instantiates, configures and initialises a new object to be managed by the ApplicationContext
+
+  These are specified essentially as Factory methods of the ConfigurationClass; i.e. methods that create a new instance of an object.
+
+---
+  @Configuration
+  public class someConfigClass{
+
+    @Bean
+    public SomeClass someClass() {
+      return new SomeClass();
+    }
+
+    @Bean
+    public SomeOtherClass someOtherClass() {
+      return new SomeOtherClass();
+    }
+  }
+---
+
+  This provides a means for the container to create 2 object instances:
+
+---
+    SomeClass  someClass;
+
+    SomeOtherClass someOtherClass;
+---
+
+  Note that the instance names are the same name as the Configuration class method name.
+
+  If the class the bean is based on contains dependencies, these can be injected via parameters to the method:
+
+---
+  @Bean
+  public SomeClass someClass(SomeDependencyInterface someDependency) {
+    return new SomeClass(someDependency);
+  }
+---
+
+  Again, the use of interfaces is important.
+
+
+Configuration Class Component Scanning
+
+  It is not necessary for ANY bean definitions to be provided in the Configuration class. Rather than have the bean definitions as methods within the Configuration Class, we can simply annotate the Configuration Class, as follows:
+
+---
+  @Configuration
+  @ComponentScan
+  public class someConfigClass{...}
+---
+
+  With this, the ApplicationContext will SCAN the whole package of which this class is a member looking for classes that it can base bean definitions on.
+
+  Any class that it finds WITHIN the package that is annotated with @Component will have a Bean defined for it
+
+  For example,
+
+---
+  @Component
+  class SomeClass {
+
+      int x;
+      int y;
+
+      someClass(){};
+
+      ...
+  }
+---
+
+  This will automatically have a Bean defined for it, similar to:
+
+---
+    SomeClass someClass(){...}
+---
+
+    Note the method name is based on the Component name. If we want something different we can specify this as a parameter to the @Component Annotation.
+
+
+Bean Scopes
+
+  A bean is essentially a recipe for creating an actual object instance of a class. Because it is a recipe, you can, theoretically, create more than one object instance from a single bean. This is known as the Scope of a Bean.
+
+  In a non-webaware context, beans have only one scope availbale to them: the Singleton.
+
+  A bean with Singleton scope can define just a SINGLE object intsance per container.
+
+  Beans in a webaware context have a further 5 scopes available ( prototype, request, session, applicaion, websocket). See the documentation for details.
+
+  The sinlgeton scope
+
+    When a bean is scoped as a singleton the container creates One istance of the object. All invocation of the methos which create the mean will return the SAME object intance.
+
+    The singleton is the defualt scope within Sring.
+
+
+
+
+When do Beans get instantiated.
+
+  Beans that are singleton scoped and set to be pre-instantiated (the default) will be created <<when the Container is created>>. Otherwise, then bean is only created when it is requested.
+
+  As a bean is created, so a load of other beans are likely to be created in order to fulfil the dependencies of that first bean.
+
+  In general, the beans dependencies will be injected either by constuctor or property (setter()) based Di.
+
+
+
+Bean Wiring
+
+  In Spring, objects are <<NOT>> responsible for finding or creating the other objects that they need to do their jobs. Instead, the <<Container>> gives them the references to the objects they need to work with. The act of creating these associations between objects is known as wiring.
+
+  Spring, however, is not magic: you still need to provide Spring with the beans, and ensure that it has the means to unambiguously wire them together.
+
+  There are 3 ways that this is commonly done:
+
+    * Explicit configuration in XML
+
+    * Explicit configuration in JAva
+
+    * Implicit bean discover and automatic wiring.
+
+    []
+
+  In this note, I am only going to cover the last two.
+
+
+*Explicit Bean wiring with Java
+
+  Automatic configuration (covered later) is not always possible. Most notably, you may with to wire in some third party classes that you do not have the source for.
+
+  Configuring the wiring within Java is becoming the preferred way (over XML). This java is set out within specific Configuration classes. Although this code looks like java, it should be treated as different. IT should be dedicated entirely to wiring up the application, and it <<SHOULD NOT>> contain any business logic.
+
+**Configuration Classes
+
+  As previously described, classes containing details of the applications beans and how they are wired together are known as Configuration Classes. They are standard java classes that are annotated with the word @Configuration.
+
+  Returning to our previous example,
+
+---
+  @Configuration
+  public class someConfigClass{
+
+    @Bean
+    public SomeClass someClass() {
+      return new SomeClass();
+    }
+
+    @Bean
+    public SomeOtherClass someOtherClass() {
+      return new SomeOtherClass();
+    }
+  }
+---
+
+  When the container is created, it will create these 2 beans:
+
+    SomeClass  someclass:
+    SomeOtherClass someOtherClass;
+
+  The beans (think object instances), are named after the methods invoked to create them. However, you can specify some other name if you wish
+
+  @Bean(name="notSomeClass")
+
+
+**Beans that reference Other Beans
+
+  The example above is simple: the beans created are self-contained and do not reference any other objects. However, realistic example will need to be wired into other beans. How is that achieved?
+
+***Explicit wiring by invoking the referenced Bean method
+
+  In the below, the SomeClass instance created by the someClass() bean/factory method is injected into the constuctor of the SomeOtherClass object.
+
+---
+  @Configuration
+  public class someConfigClass{
+
+    @Bean
+    public SomeClass someClass() {
+      return new SomeClass();
+    }
+
+    @Bean
+    public SomeOtherClass someOtherClass() {
+      return new SomeOtherClass(someClass());
+    }
+  }
+---
+
+***Let the SpringFramework inject the dependency.
+
+  Remember that ultimately it is the SpringFramework (presumably the ApplicationContext) that will be invoking the bean methods and creating the Beans. If the bean methods are THEMSELVES parameterised, the ApplicationContext itself must decide what to provide as Actual Parameters when it invokes that method.
+
+  In the below, the framework knows how to create just one SomeClass object, and it knows that the SomeClass object will implement the SomeInstance Interface. Providing that this is ONLY object that fits, the framework will generate the someClass object and then use it as the parameter into the someOtherClass(sc) bean method.
+
+---
+  @Configuration
+  public class someConfigClass{
+
+    @Bean
+    public SomeClass someClass() {
+      return new SomeClass();
+    }
+
+    @Bean
+    public SomeOtherClass someOtherClass(SomeInstance sc) {
+      return new SomeOtherClass(sc)
+    }
+  }
+---
+
+
+  If there are multiple beans that could be used to fill in the SomeInstance parameter, then the framework will require additional help in order to work out what to do (see later).
+
+
+
+*Configuration with Component Scanning and Autowiring.
+
+**Component Scanning Revisited
+
+  With this approach, there is no need to declare ANY beans. The beans are discovered by the framework itself based on  annotations that have been used to decorate particular items within the Class Definitions.
+
+  Re-iterating some of what has been said previously, here we are using an empty configuration class annotated with ComponentScan. This forces all classes in the package to be scanned for possible components that can be used as Beans.
+
+  The annotation @Component indicates that the class is a component class and that a bean should be created for the class.
+
+---
+  @Configuration
+  @ComponentScan
+  public class someConfigClass{...}
+
+
+
+  @Component
+  class SomeClass {
+
+    SomeOtherInterface1 x;
+    SomeOtherInterface2 y;
+
+    someClass(SomeOtherInterface1 xi, SomeOtherInterface2 yi){
+      this.x = xi;
+      this.y = yi;
+    };
+
+    ...
+  }
+---
+
+  By default, the bean that will be created by the above will be called <<<someClass>>>. However, we can choose a different name if we so wish.
+
+---
+  @Component("someDifferentName")
+  class SomeClass {
+    ...
+---
+  By default, the bean that will be created by the above will be called <<<someClass>>>. However, we can choose a different name if we so wish.
+
+
+**Autowiring
+
+  However, without an explicit wiring, how do we indicate how the classes dependencies are to be provided by the framework? The answer is to use the @Autowired annotation on the appropriate methods/properties of the Class definition.
+
+  For example,
+
+---
+  @Component
+  class SomeClass {
+
+    SomeOtherInterface1 x;
+    SomeOtherInterface2 y;
+
+    @Autowired
+    someClass(SomeOtherInterface1 xi, SomeOtherInterface2 yi){
+      this.x = xi;
+      this.y = yi;
+    };
+
+    ...
+  }
+---
+
+  Here the constructor is @Autowired.
+
+  Effectively this will cause a bean to be created behind the scenes that looks a bit like this
+
+---
+    SomeClass someClass(SomeOtherInterface xi, SomeOtherInterface y1) {
+        return new SomeClass(xi, yi);
+    }
+---
+
+  Rather than constructors, property setters can also be annotated
+
+---
+  @Component
+  class SomeClass {
+
+    SomeOtherInterface1 x;
+    SomeOtherInterface2 y;
+
+    someClass(SomeOtherInterface1 xi, SomeOtherInterface2 yi){
+      this.x = xi;
+      this.y = yi;
+    };
+
+    @Autowired
+    setX(SomeOtherInterface1 xi) {
+        this.x = xi;
+    }
+
+    @Autowired
+    setY(SomeOtherInterface2 yi) {
+        this.y = yi;
+    }
+
+    ...
+  }
+---
+
+  In these circumstance, the framework might create a bean that looks something like:
+
+---
+  SomeOtherClass someOtherClass(SomeOtherInterface1 xi, someOtherInterface2 yi) {
+
+    SomeOtherClass sc = new SomeOtherClass();
+    sc.setX(xi);
+    sc.setY(yi);
+
+    return sc;
+  }
+---
+
+  As with the non-@Autowired situation, the framework will workout which Objects of type SomeOtherInterface1 and SomeOtherInterface2 to create first, and inject them into the someOtherClass bean when it creates it.
+
+
+  Where properties are autowired, e.g.
+
+---
+  @Autowired
+  SomeInterface x;
+---
+
+  ...it must STILL be possible for the framework to work out unambiguously HOW to create and inject beans that properly wire the property however.
+
+
+
+
+**Ambiguity
+
+  During wiring, the framework is only able to automatically find, create and inject the right object <<IF>> there is only ONE object that fits. For example, the above will only work if there is ONE and ONLY ONE object available that implements the SomeOtherInterface1 and ONE and ONLY ONE object that implements the SomeOtherInterface2.
+
+  What happens if that requirement is not met?
+
+***No Available Matching Bean.
+
+  If there is NO bean available for the Framework to use to satisfy an injection requirement, then by default the framework will throw an Exception (don't know which one). However, it is possible to disable this behaviour, so that the Reference Objected just remains NULL in these circumstances.
+
+  For example, on the constructor...
+
+---
+  @Autowired(required=false)
+  public SomeClass( SomeOtherClass sc){
+      this.sc = sc;
+  }
+---
+
+
+***More than one Candidate Bean.
+
+  It is perfectly possible for the ApplicationContext to contain more than one candidate bean that can be used to fulfil a wiring requirement. In these circumstance, the framework must be given further direction in order to establish which one it should use.
+
+****Designated Primary Bean
+
+  In the example below, the Bean annotated with @Primary will be used in preference to the others...
+
+---
+  public class IceCream implements Dessert;
+  public class Cake implements Dessert;
+
+  ...
+
+  @Bean
+  public Dessert iceCream() {return new IceCream();}
+
+  @Primary
+  @Bean
+  public Dessert iceCream2() {return new IceCream();}
+
+  @Bean
+  public Dessert cake() {return new Cake();}
+---
+
+  Note it is STILL possible to designate MORE then one Bean as a Primary...
+
+
+***Using Qualifiers
+
+  Consider the following constructor...
+
+---
+  @Autowired
+  @Qualifier=("iceCream")
+  public void setDessert(Dessert des) { this.dessert = des; }
+---
+
+  Here, the @Qualifier indicates the  Bean that should be used to perform the wiring.
+
+  It could also be annotated:
+
+---
+  @Autowired
+  @Qualifier=("cold")
+  public void setDessert(Dessert des) { this.dessert = des; }
+---
+
+  There is no Bean called cold, however we can TAG beans with qualifiers too, so in the situation below, the iceCream bean will also be used fro the wiring.
+
+---
+  @Bean
+  @Qualifier("cold")
+  public Dessert iceCream() { return new iceCream();}
+---
+
+
+Profile Beans
+
+  It is possible to vary which bean will be injected depending on circumstances. Profile Beans are a way of doing this.
+
+  For example, you way which to inject different implementations of an depending on whether it is running in a dev, qa or production environment.
+
+  This is done by collecting different configurations into different Configuration Classes, and then annotating the Configuration class appropriately:
+
+---
+  @Configuration
+  @Profile("dev")
+  public class DevConfig{...}
+
+  @Configuration
+  @Profile("prod")
+  public class ProdConfig{...}
+---
+
+  The profile in effect is specified at runtime. Usually this is determined by the spring.profiles.active and spring.profiles.default properties.
+
+  How these properties are set depends a bit on the execution environment; it may be:
+
+    * an Initialization parameter on DispatcherServlet;
+
+    * as context paramters of a web app;
+
+    * ...any of several others
+
+    []
+
+
+Injecting Property Values rather then References
+
+  When we talk about injection, we tend to think about injecting Objects. However primitive properties can also be injected. This is particularly useful when properties are not known till runtime.
+
+  Remember, it is the ApplicationContext that will have to decide which properties to inject into any particular bean.
+
+  There are 2 ways:
+
+    * via a property source;
+
+    * via the Spring Expression Language
+
+    []
+
+*Injecting Properties
+
+  Basically, properties are read in from an external file, and then referenced from within the Beans.
+
+---
+  @Configuration
+  @PropertySource("classpath:/com/example/applicaion/app.properties")
+
+  public class someConfigClass{
+    @Autowired
+    Environment env;
+
+    @Bean
+    public SomeClass someClass() { return new SomeClass(env.getProperty(prop1), env.getProperty(prop2))}
+  }
+---
+
+  Note the use of the Environment class, which is autowired into teh ConfigClass
+
+
+Using Spring Expression Language (SpEl).
+
+  SpEl is an expression language that supports the querying and manipulation of object graphs at runtime. Although used in Spring as the foundataion for runtime expression evaluation, it is not actually part of Spring: it is just the mechanism that Spring has chosen to use for the purpose.
+
+  If you wanted to, you could create a SpelParser within your application code, and use it for any number of puproses:
+
+    ExpressionParser parser = new SPelExpressoinParser;
+
+    ...
+
+
+  However, within Spring its principle use is within XML or Annotations, where the expressions can be used to inject particular property values at runtime.
+
+---
+  public Thing class{
+
+    String location;
+
+
+  @Value("#{systemProperties['user.region']}")
+  public void setLocation() { this.location = loc;}
+  }
+---
+
+  When the framework invokes the setter method, the @Value will be evaluated and injected as loc.
+
+
+  One of the more useful things that can be done is allow other beans to be refernced by their Bean Id.
+
+---
+  public AnotherThing class{
+
+    Region location;
+
+
+  @Value("#{someCounty.region}
+  public void setLocation() { this.location = loc;}
+  }
+---
+
+  Consequently, this would cause the region property of the someCounty Bean to be injected as the location.
+
+
+
+
+
+
+
+
+
+  The mvn spring-boot plugin
+
+    The mvn spring-boot plugin is described fully {{{https://docs.spring.io/spring-boot/docs/current/maven-plugin/usage.html}here}}.
+
+    It provides the following goals:
+
+      * repackage ; creates a jar/war that is auto executable
+
+      * run
+
+      * start
+
+      * stop
+
+      * build-info
+
+      []

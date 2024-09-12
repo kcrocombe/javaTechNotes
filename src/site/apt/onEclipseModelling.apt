@@ -1,0 +1,904 @@
+Modelling in Eclipse using the EMF framework.
+
+*Index
+
+  Some topics, in no especially well defined order:
+
+  [[1]] {{{./onEclipseModelling/siriusDiagrammingTool.html}Diagramming with the Sirius Diagramming Tool.}}
+
+
+  [[1]] {{{./onEclipseModelling/attributeProperties.html}Ecore Model Properties - Attributes.}}
+
+
+	[[1]] {{{./onEclipseModelling/basicModelTransformation.html}Understanding the transformation of the model into code.}}
+
+
+  [[1]] {{{./onEclipseModelling/controllingGeneration.html}Controlling of Generation artifacts.}}
+
+
+  [[1]] {{{./onEclipseModelling/renderingInterfacesAndClasses.html}The rendering of Interfaces and Classes in Code.}}
+
+
+	[[1]]	{{{./onEclipseModelling/generatingDocumentation.html}The Eclipse Model Generator and JavaDoc.}}
+
+
+	[[1]] {{{./onEclipseModelling/modellingGenerics.html}Modelling Generics within EMF.}}
+
+
+	[[1]] {{{./onEclipseModelling/generatingTestClasses.html}Generating JUnit Test Classes.}}
+
+
+  [[1]] {{{./onEclipseModelling/creatingAModelFromAnnotatedJava.html}Creating a model from Annotated Java.}}
+
+
+  [[1]] {{{./onEclipseModelling/readOnlyComponents.html}Making model components Read Only.}}
+
+
+  [[1]] {{{./onEclipseModelling/constructorsAndFactoryMethods.html}On Factory Methods And Constructors.}}
+
+
+  [[1]] {{{./onEclipseModelling/topLevelApplicationClass.html}Modelling a Top Level Application class with a main() method.}}
+
+
+  [[1]] {{{./onEclipseModelling/modellingSingletons.html}Modelling Singleton Classes.}}
+
+
+  [[1]] {{{./onEclipseModelling/problemsAndGotchas.html}Problems and Gotchas.}}
+
+
+  [[1]] {{{./onEclipseModelling/sharingEMFobjects.html}Sharing EMF Model Objects.}}
+
+
+  []
+
+
+*Some Useful Documentation
+
+		{{https://www.eclipse.org/ecoretools/doc/index.html}}
+
+		{{http://cedric.brun.io/eclipse/ecore-design-checklist-part1/}}
+
+		{{http://cedric.brun.io/eclipse/ecore-design-checklist-part2/}}
+
+		{{http://cedric.brun.io/eclipse/ecore-design-checklist/}}
+
+		{{https://download.eclipse.org/modeling/emf/emf/javadoc/2.11/org/eclipse/emf/ecore/package-summary.html}}
+
+
+
+
+*Data Model
+
+	A description of the ecore Model structure is available at {{{https://download.eclipse.org/modeling/emf/emf/javadoc/2.5.0/org/eclipse/emf/ecore/package-summary.html}org.eclipse.emf.core}}
+
+
+*Creating a Modelling Project.
+
+	The
+
+		New 'Ecore Modelling Project'
+
+
+	Choose the Viewpoints to Enable within the project. Different Viewpoints give you access to different representations of the models.
+
+		Design - You definitely want this one.
+
+		Other Viewpoints are:
+
+			Archetype:
+
+			Review:
+
+			Generate:
+
+	You can activate other viewpoints retrospectively:
+
+		Right Click on Project --> Viewpoint Selection
+
+
+	This creates 3 Models under the model folder:
+
+		\<projectName\>.aird
+		\<projectName\><<<.ecore>>>
+		\<genModel\>.genmodel
+
+
+	Underneath the 	\<projectName\>.aird, the hierarchy appears:
+		Representations per Category
+			Design
+				Entities in a Class Diagram
+					<Diagram Name>
+
+	This diagram needs to be opened with the
+		Sirius Diagram editor
+
+
+
+
+
+
+
+
+
+Delegating and Forwarding
+
+
+		I have yet to find a way of sensibly using an actual concrete CLASS on the diagram that can be sensibly handled by the Code generator.
+
+	[[1]] The graphical editor has a few Annoying Foibles:
+
+		[[a]] If you amend stuff on the various Dialog boxes that pop up if you double click on an Item, then the changes do not take if you press 'OK' without moving out of the field you have just edited. You basically need to move the focus out of the edited field before pressing RETURN. Very Annoying.
+
+		[[b]] If you give Instance Class Name to a Class/Interface (thereby turning it into a proxy for an external class), then if you change your mind, and try and delete it then it doesn't work too well. Even though the field is empty it treats it as being modelled by an external Null Class []. You need to use a different editor to correct this (edit the <<<ecore>>> model file with the <<<ecore>>> Editor).
+
+
+	It is generally easier to refine items in the <<<ecore>>> Editor once the basic Classes and Relationships have been
+	modelled graphically.
+
+
+
+
+Backing out changes to Java Source.
+
+	[[1]] The editor automatically keeps a history of all incarnations of source code files it generates. There is also a really good tool for comparing files in the History to the current file. It also supplies really good support for back porting any text changes that you might want to back out.
+
+
+
+	[[1]] Representing Specific Generics, especially Collections, Lists etc
+
+	The modelling tool seems to provide a limited range of generic collections:
+		EEList<T>      --> org.eclipse.emf.common.util.Elist
+		EMap <K,V>		--> java.util.Map
+		ETreeIterator<T> --> org.eclipse.emf.common.util.TreeIterator
+
+		If you want use a specific external class in your mode, the obvious way would seem to define an Datatype much as you would for other external Classes. However this does not seem to work too well.
+
+		e.g.
+
+		Name:						 IterableOfSomeClass
+		Instance Class Name:  java.lang.Iterable
+		Instance Type Name:   java.lang.Iterable<SomeOtherclass>
+
+		This looks like it SHOULD work. However, in practise, this seems to get translated in the code to:
+		Iterable<Object>
+		and not
+		Iterable<SomeOtherClass>
+
+
+		However, it does seem to posssible to represent the required Collection as an Interface instead
+
+		Name:						 IterableOfSomeClass
+		Instance Class Name:  java.lang.Iterable
+		Instance Type Name:   java.lang.Iterable<SomeOtherclass>
+
+		Abstract: True
+		Interface: True
+
+		This DOES seem to get translated in the code as
+		Iterable<SomeOtherClass>
+
+=====
+
+
+
+
+
+
+
+
+Building and invoking
+
+		mvn package
+
+		remember to include the main class nme in the jar manifest
+
+		execute
+
+	java -jar  /Users/kevin/dvl/gitReps/fitStats/target/FitStats-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+
+
+
+
+Modelling Arrays
+		Define a  Data type  e.g. StringArray to mean java.lang.String[]
+
+
+
+
+
+Refactoring
+
+	It is relatively straightforward to move model components around into different classes, packages etc. just by dragging and dropping in the various editors.
+
+	However, if there is non-generated code in any of the implemented classes, then this will need to be moved into the new implementation classes OUTSIDE of the modeling tools.
+
+	In these circumstances, the File Comparison tool in the Java Perspective is a fantastic help. Learn how to get the most out of it.
+
+
+
+
+
+
+
+Rebuilding my IDE
+
+	The version of IDE that I had been using for modelling etc had become a bit cluttered. As I'd played around with different technologies etc. so more plugins had been installed each with their own perspectives etc. So it was generally getting a bit difficult to see the wood for the trees.
+
+	Therefore before proceeding with the Model based work any further, decided to strip things back a bit.
+
+
+	Downloaded latest version of Eclipse IDE (2019-12)
+
+	https://www.eclipse.org/downloads/packages
+
+	This comes in various different packagings, each geared towards a slightly different audience.
+
+
+	( which has the Modelling bits and pieces pre-instlled)
+
+	Installed some addition
+
+		* m2e - Maven integraton for Eclipse
+
+		* Papyrus fro UML
+
+		* Vagarnt Tooling
+
+		* GitHub (Git was already installed)
+
+
+Created a copy of the ~/eclipseWorkspace ~eclipse-workspace.2019-12
+
+
+*Building a Modelling Environment on top of an existing Maven / Project.
+
+	There may be circumstances where you already have a working development environment that you wish to layer the EMF Modelling and Code Generation Capabilities on top of.
+
+	We assume we have a working Maven project structure outside of the IDE.
+
+**Firstly import the Maven project to the IDE
+
+	File --> Import Projects From Filesystem
+
+	/Users/kevin/dvl/gitReps/fitStats
+
+	This should detect the 'maven' and 'git' natures of the project, and configure the projects source folders
+
+
+*Create the model folder to hold the principle model files.
+
+**If we are creating an empty model.
+
+	If we have not yet done any modelling anywhere (either in some external modelling tool, like {{{./onPapyrus.html}Papyrus}}), or using something that creates a .core file but in some other project) or do not have any annotated java sources to import, we should start with an empty <<<ecore>>> file. The IDE provides one we can use.
+
+		New --> Other --> <<<ecore>>> Model
+
+	When prompted, elect to base the model on a Package (EPackage). (You can choose a number of different objects to form the base object within your model file. However it is probably not worth modelling at any lower level that that.)
+
+	This will add into our project an <<<ecore>>> File, wrapping a package that is:
+
+		* empty;
+
+		*	unnamed;
+
+		[]
+
+	We need to name the package it wrappers before it is properly useable.
+
+***Name the package.
+
+	Open the created <<<ecore>>> file with the 'Ecore Model Editor' (Not the Sample <<<ecore>>> Model Editor) (why the two?). We need to give the currently anonymous package (now embedded in the <<<ecore>>> file) a name and Namespace e.g
+
+---
+	Name --> FitStats
+
+	Namespace URI --> hhtp://www.pegortech.co.uk/FitStats
+
+	Namespace Prefix --> FitStats
+
+---
+
+**Multiple Top Level Packages.
+
+	We are not restricted to a using a single <<<ecore>>> file in our overall modelling project. If we have several top level packages (i.e. packages that are not nested within other classes), then we can create further empty <<<ecore>>> files, as necessary. They are created and added in to our project folder in exactly the same manner as above.
+
+***Viewing Cross File References
+
+	It is perfectly possible for an Element located in one <<<ecore>>> file to make references to Elements located in another. These reference are not always obvious. If you open a an <<<ecore>>> file that references OTHER <<<ecore>>> files with either the 'Ecore Editor' or 'Sample (Simple?) <<<ecore>>> Editor', it will automatically open BOTH Files.
+
+	If you use a lower level editor, such as the XML editor, then you can see the nature of the Element reference. It looks like this:
+
+	ecore:EClass Package1<<<ecore>>>#//NewEClass2
+
+	i.e.
+
+	ecore:EClass <PackageFileNameInProject>#//ElementName
+
+
+	Note however, if you open a file that contains element that are <<referenced>> by elements in other files (as opposed to referencing), then the referencing file is NOT opened.
+
+
+***Beware
+
+	Be careful with crossfile references. If you inadvertently delete a model file that is referenced by another then you will corrupt your model.
+
+
+**Refactoring <<<ecore>>> Files.
+
+	It is possible to move elements to different <<<ecore>>> files using the <<<ecore>>> editor. Just load BOTH files, and then you can drag and drop between. Note that any references to elements that remain in the source file will STIll refer to that element in the original file (i.e. it will now be a remote reference.)
+
+
+**Creating an <<<ecore>>> file based on other pre-existing <<<ecore>>> file.
+
+	It does not seem to be possible to import the object in one <<<ecore>>> file <<directly>> into another. There are several ways to do this indirectly however:
+
+
+***Drag and Drop
+
+	First create an empty <<<ecore>>> file as described above. You can use the <<<ecore>>> Editor to open both this empty file and the <<<ecore>>> file you wish to use as source. You can then Cut/Paste or Drag/Drop elements from one file to the other. You can also copy.
+
+	Take care NOT to leave cross-file references; i.e. copy over an element that refers to an element that has NOT been copied over.
+
+
+***Export/Import
+
+	Although you cannot export directly from an <<<ecore>>> file, you can wrap it up in an .genmodel file as described in the sections below. The <<<EMF Generator>>> tool can be used to access the genModel, and then through it export the <<<ecore>>> data in a number of format (UML, XMI, etc).
+
+	It is then possible to create a new empty genModel file and import from the file exported above. Note that you cannot add to an existing <<<ecore>>> file using this method.
+
+
+
+
+*Adding the Generator Model.
+
+	The <<<ecore>>> file itself holds only data pertaining directly to the structure of the Model. It does not hold anything pertaining to how that model will be implemented. This information is held within the generator model, and at multiple levels, e.g.:
+
+		* the overall model level. This is where most of the information is held.
+
+		* the package level;
+
+		* the Class Level;
+
+		* the Attribute level.
+
+		[]
+
+	Such information would cover such things as:
+
+		* the artefacts that should be generated from the model (Editors, Adapters, Factories, Test Suites etc.)
+
+		* parameters governing how those artefacts are generated.
+
+		* the target infrastructure the model should be generated onto
+
+		* Directory Names, etc
+
+		* the generational style : classes v interfaces; Constructor style;
+
+		[]
+
+	The generator model works by effectively creating a wrapper around one or more <<<ecore>>> models. The generator model seemingly has references to the <<<ecore>>> models it renders embedded within it. So anything that has access to the genmodel also has indirect access to the underlying <<<ecore>>> models too.
+
+	Once the <<<ecore>>> file is wrappered by the .genmodel model, then it becomes endowed with additional functionality, such as:
+
+		* most notably, the ability to generate code; but also
+
+		* export model data in UML or XML formats
+
+		* reload its data from export sources  (Not this will replace the current model rather than add to it.)
+
+		* perform diff type comparisons with previous versions
+
+		* backout recent changes to the model, if so necessary.
+
+		[]
+
+
+
+**Creating the Generator Model
+
+	The generator model is created via the <<<EMF Generator Model>>> wizard, as follows:
+
+---
+	File --> New --> Other --> Eclipse Modelling Framework --> EMF Generator Model
+---
+
+	The model need to be named e.g.:
+
+---
+			Name --> fitStats.genmodel (file needs to have .genmodel suffix)
+---
+
+	..and an appropriate model imported. The model can be:
+
+		* an existing <<<ecore>>> Model (such as the one created above)
+
+		* from Annotated Java
+
+		* from XML
+
+		* from a UML model
+
+	The tool will allow you to add multiple models (of the same type) if that is what is desired. i.e One <<<genmodel>>> file can wrapper many <<<ecore>>> files.
+
+
+**Checking out the Generator Model so created.
+
+	We can examine the generated model, with the <<<Genmodel Editor>>>. The <<<Genmodel Editor>>> will show BOTH the <<<genmodel>>> file AND the <<<ecore>>> files that it is tasked with rendering. The generated model will attach additional properties to elements within the <<<ecore>>> file describing how they will be implemented.
+
+	Sets of generator properties can be set at multiple levels:
+
+		* at the overall genModel level.
+
+		* at the individual class level and below.
+
+		[]
+
+	There are a lot of parameters available at all levels, and, for a lot of them their meaning is not immediately obvious. However, the float over help is very helpful in this regard.
+
+	The default values are fine for most purposes, but it is worth checking that the following are set as you want:
+
+---
+		genModel Level:
+
+			Model Tab:
+
+				model directory --> /fitStats/src/main/java
+
+				Operation Reflection -->
+
+				Suppress Interfaces -->
+
+				Suppress Notiifcation -->
+
+
+
+		Package Level:
+
+				Base Package --> uk.co.pegortech
+
+				Adapter Factory --> true   (i.e. whethet to creates an adapter factory and switch class for the package)
+
+				Generate Model Wizard --> true (i.e.  Hm No sure about this)
+---
+
+
+	<(Need to work how to disable the generateion of th edit/editor/test models etc.)>
+
+
+
+
+*Adding the representations (aird) File.
+
+	Neither the genmodel or the ecore file contains any properties that pertain to how those models may be displayed, edited or otherwise represented to potential user of the model; a developer, a tester, reviewer etc. In order to imbue the model with these properties, a third model wrapper is deployed.
+
+	Different tool providers can potentially wrapper the genmodel/ecore models in different ways, but the 'standard' provider or representational tools is Sirius.
+
+	The Sirius provider wrappers the genmodel/ecore models with a Representations file (.aird) file. A Representations file holds representations: typically, diagrams and tables. (Don't confuse adding a Representation (i.e. a table/diagram) and adding a Representations File (a file that will contain those representations).
+
+	A modelling project, SHOULD have only ONE representations file.
+
+	The aird/representations file can be created in a couple of ways. Either:
+
+		Highlight the <<<ecore>>> file and select the 'Initialise <<<ecore>>> Diagram'
+
+		This will give the opportunity to
+
+			* provide a filename,
+
+			* choose an initial representation to create (a diagram or table)
+
+			* choose the <<<ecore>>> package or other element in the <<<ecore>>> model on which to base that diagram/table.
+
+			[]
+
+	or:
+
+		Add a Representations File via the Sirius wizard available under:
+
+---
+	File --> New --> Other --> Sirius --> Representations File
+---
+
+		This will give the opportunity to base the file either on an initial existing model, or just create an empty representations file.
+
+	A single representations file can wrapper multiple ecore/genmodel files within a project, and hold multiple representations for each.
+
+
+*The aird Editor
+
+	The 'Aird Editor' is the best tool for managing the model representations. If you examine an .aird file, you will see that the file SHOULD have sections for both:
+
+		* the	.core model
+
+		* the	.genmodel model
+
+	Additional representations can be added to either of the above models. In practice, it is sensible to add them to the genmodel.
+
+	The properties of the both SHOULD include a Generation tab. IF this is not present, then the 'Generate' option will not be available as a right click from within the Diagraming tool, which is quite an inconvenience. If ind this happens when the representation is based on a an ecore model that has not yet been wrappered by a genmodel model.
+
+**Adding additional representations
+
+	New Diagrams and tables can be added in a couple of ways:
+
+***via the context menu.
+
+	Additional Representations (Diagrams or table) can be added into the EXISTING aird file, by selecting the package from within either the <<<ecore>>> or .genmodel section of the existing file and selecting the <<<New Representation>>> from the Right Click menu.
+
+***via the Aird editor
+
+	Alternatively, open the Existing aird file with the Aird editor and add in the new representations there
+
+
+A General Warning
+
+	It is best not to be too clever in trying to have multiple cross-referenced ecore models managed by multiple genModels used by multiple Aird documents. It is possible to corrupt the models unless you are careful. Keep it simple stupid.
+
+
+
+
+
+
+
+
+Various Notes derived from the experience of programming with the EMF framework
+
+
+	At the moment, this is just a collection of various notes and jottings made during experimentation with the tools offered by EMF. It will need to be organised into some sort of coherent structure in due course...
+
+
+*Leverage the refactoring capabilities of Eclipse
+
+	The EMF framework favours modelling in interfaces which are the implemented by classes. If you wish to reverse engineer an existing class, and import it into an ecore model, then it need to be transformed into an Interface and its implementing class.
+
+	The Eclipse IDE provides a convenient tool for extracting an interface from an existing class.
+
+	Once that is done, the resultant interface can be annotated with @model tags as required and genModel used to pull the interfaces into a model file.
+
+
+*Maven POM changes to support EMF generated methods.
+
+	The classes generated by the EMF framework include a number of its own methods and supporting classes. These make use of particular objects drawn from the org.eclipse.emf<<<ecore>>> package. For maven to control the building of these classes, this dependency needs to be added the pom file.
+
+	The version of the library corresponding to this 12-2019 release was located within Maven Central and the dependency
+
+	<dependency>
+		<groupId>org.eclipse.emf</groupId>
+	  <artifactId>org.eclipse.emf.ecore</artifactId>
+	  <version>2.20.0</version>
+	</dependency>
+
+	added into the pom.
+
+
+
+
+
+
+
+*Creating a Modelling Project v Creating an <<<ecore>>> Modelling Project
+
+	The 'Create a Modelling Project' wizard is provided by Sirius. It is not based on an any underlying data model (e.g. <<<ecore>>>, uml etc), but instead starts with a container for representations to which you can then add Models and then representations (tables/diagrams) based on the at model.  It will create a project with a single, empty Aird (Representations) file. Models/Representations can then be added with the Aird Editor, as desired.
+
+	Creating a <<<ecore>>> Modelling Project is a wizard that goes much further. It creates an <<<ecore>>> model file, genmodel file that wrappers that <<<ecore>>> file, and a Sirius representations file (.aird) file that wrappers the .genmodel file.
+
+
+
+
+*You can use the power of the IDE to simplify the more tedious tasks
+
+**Use the IDE to import the operations that need to be implemented to support an interface.
+
+
+
+
+Why having our implementaion inherit from the MinimalEObjectImpl.Container is potentially problematic.
+
+*The Problem
+
+	As has been described elsewhere in this document, Classes generated by the EMF framework will automatically extend an EMF system object in order to imbue that class with System behaviours. Because Java only allows direct inheritance from a single class, we can not now use the same mechanism to imbue our classes with functionality that we might wish for the object.
+
+	For example, we might want our Class to be a Collection class and say implement the List interface. In normal circumstances, there are a number of ways that we could do this:
+
+		* Have our class directly inherit from one of the java.util.List implementations, such as LinkedList. However, this route is now closed to us as the class is already inheriting from <<MinimalEObjectImpl.Container>>
+
+		* Use a <<Composition>> design (See Effective Java). Here, a LinkedList would be included as a private member of our implementation class. Because our implementation class has to implement List, NOT our component, we still have to implement all the necessary methods in the implementation class. This is essentially a clerical job, which where we write each reuired interface method in terms of a call to the respective method in the LinkedList member. These are known as forwarding methods.   If the interface is relativley small, then this is not too onerous a task, but it is much more tedious if a large interface has to be implemented.
+
+		In these circumstances, the usual technique to use a Forwarding Class. The Forwarding Class provides Forwarding methods for all of the methods in a particular interface. The Wrapper class (as it is known) can then just sub-class the forwarding class, so inheriting all the forwarding methods it needs.
+
+		However, once again this part of the deign pattern is closed to us, becuase we cannot perform the sub-classing. (Although we can still write the forwarding methods direclty)
+
+		* A similar technique would utilize a private nonstatic member class rather than a privcat member on which to 'hang' the class providing the functionality that implements the List (See Effective Java - Template method/simoultaneous multiple inheritance).The advantage of this is that the member class CAN extend some base class and SO is amenable to more customisation than would be possible if we had just hung it off a private member.  Typically we would use this in conjuction with an Skeleton Abstract Classs ( e.g. AbstractList) and the overide any methods we need to when we extend it.
+
+		However, once again we would need to 'forward' calls from our top level class to our nested class, and again we cannot extend a convenient forwarding class to provide this functionality. We would need to write the forwarding methods ourself.
+
+	These last two are established patterns for implementing inheritance-like behaviour vai a form of compositing, so it is a pity that it can't be implemented directly.
+
+
+*Possible Solutions
+
+**Model a forwarding Interface interface and have your classes extend that instead of the underlying interface.
+
+	Consider a class that we wish to model, FruitBasket which we want to be a container for Fruit. We want it to implement the List interface, so we can step through the Fruit it contains just as if it <<wre>> a list. We may wish to pass it to another class which promises to process lists. In other words we want it to behave like a List type.
+
+	Being able to endow 'Typeness' like this on any class we choose is quite a powerful tool, so being able to do this via modelling would be advantageous.
+
+	Note that it is trivial to make a component of our Class behave like a List: we just need to include a List as a memebr attribute. Sometimes that way be sufficient. However here we are making the Class as a whole a List-type.
+
+
+  Take the interface java.util.List as an example. If we model our own Class which implements the List interface directly, as below
+
+			FruitBasket ---> List
+
+	then our class MUST itself implement all the methods in the List interface.
+
+
+			FruitBasket ---> MinimalEObjectImpl.Container   (extend)
+						|
+						---------> List														(implement)
+
+	A standard way of Getting around this would be to use a Forwarding Class (as described above) and inherit from it DIRECTLY.
+
+			FruitBasket ---> com.google.common.collect.ForwardingList ---> List (extend)
+
+	Unfortunately, because ForwardingList is an external CLASS and not an interface, the modelling tool finds it impossible to use. It needs to be free to extend Fruit basket to its own > MinimalEObjectImpl.Container  class, and it can't do this if FruitBasket is extending com.google.common.collect.ForwardingList.
+
+	Ideally we would want to ForwardingList to extend MinimalEObjectImpl.Container  instead.
+
+
+
+			FruitBasket ---> com.google.common.collect.ForwardingList --> MinimalEObjectImpl.Container   (extend)
+																																|
+																																---> List (implement)
+
+	However, ForwardingList is not under our control, so we are not free to amend it. We can however, make our own replacement.
+
+	FruitBasket ---> my.ForwardingList --> MinimalEObjectImpl.Container   (extend)
+																														|
+																														---> List (implement)
+
+	It is much more advantageous to do it this way, rather than let Fruitbasket perform the forwarding itself, because we can re-use the ForwardingList then inconfunctyion with ANY class in out model
+
+	FruitBasket ---> my.ForwardingList --> MinimalEObjectImpl.Container   (extend)
+							|																							|
+							|																							---> List (implement)
+	ToolBox---->|
+							|
+	BookCase--->|
+
+
+
+
+
+*Inheritance of the MinimalEObjectImpl.Container container.
+
+	As far as I can work out, all Classes/Interfaces generated by the EMF Framework will be automatically instrumented with the appropriate functionality for them to work within that framework.
+
+		* all the interfaces will either:
+
+			* directly extend the EObject Interface
+
+			* indirect extend the EObject Interface,  by extending another Interface that itself extends EObject.
+
+			[]
+
+		* all the classes will either:
+
+			* directly extend the MinimalEObjectImpl.Container
+
+			* indirectly extend the MinimalEObjectImpl.Container Class,  by extending a class that itself extends MinimalEObjectImpl.Container.
+
+	Note: MinimalEObjectImpl.Container is the default object that will be extended. There are other Classes available within the Ecore Library that also extend the EObject Object, so could conceivably be used in its stead.
+
+	{{{https://download.eclipse.org/modeling/emf/emf/javadoc/2.5.0/org/eclipse/emf/ecore/package-summary.html}org.eclipse.emf.core}}
+
+
+	Because inheritance works in one direction (children inherit from parents, but parents can't inherit from children), all the code generator needs to do is identify the all the leaf nodes (i.e those classes/interfaces that don't inherit from any other), and use <<THOSE>> to directly extend EObject/MinimalEObjectImpl.Container.
+
+	All other nodes on the model are then guaranteed to inherit the ECore functionality, directly or indirectly, from every leaf node to which it has a route. The generator will choose ONE route to a leaf node and implement it is series of direct 'extends' through the intermediate Class Node. The other inheritance paths will be represented as additional interfaces that are to implemented.
+
+	This is no different from the way the generator resolves {{#Multiple Inheritance}} situations, in general.
+
+
+*Customising the Root (Leaf) Classes that get inherited.
+
+	If necessary you can add your OWN classes/interfaces for Leaf nodes to inherit from. These can only be specified within the  genmodel model / package level. The generation will assume that the packages that you stick in here THEMSELVES extend/inherit from the Ecore bases classes/interfaces EObject,  MinimalEObjectImpl.Container.
+
+
+
+Multiple Inheritance
+
+	In the model, it is perfectly feasible for a class to inherit from MULTIPLE parent classes.
+
+	However, since java does NOT allow multiple inheritance, when the code is generated, the Child class will only directly inherit from ONE of its parents. The other parents it will implement as Interfaces.
+
+	It is the FIRST parent that will be chosen as the class to extend; the others will be represented as interfaces that the child has to implement. Remember, that functionality that is inherited by extension DOESN't Have to be implemented in the child.
+
+
+	So you can change the parent that is implemented by moving the sub-type relationship to the top of the list within the Core Sample Editor.
+
+
+
+
+
+		What we want is out own Forwarding Class that inherits from Ecore, that we can then inherit from
+
+				MinimalEObjectImpl.Container --> ForwardingClass -->ClientClass.
+
+
+
+Modelling a Forwarding Class Notes.
+
+CAREFUL THIS ISNT WORKING AS EXPECTED.
+
+	[[1]] We are writing a ForwardingClass which will implement a External Interface, say List. (We shall ignore the generic nature for now).
+
+	[[1]] External Interfaces (i.e Abstrat interrfaces with an Instance/Class Name), do not get represented in the implementation as a class/interface; they just get extended/implemented by objects that reference them.
+
+	[[1]] However, any operations/attributes in the External Interfaces DO get carried through as STUB operations in whatever classes that choose to use the External Interface.
+
+	[[1]] So, we want to quicky an accurately get all the operations from the Interface into our Representation of it. One way to do this is to leverage the capabilitis of the java IDE.
+
+	[[1]] So generate a quick dummy class implementing the interface in question. Add a single dummy operation (you will use this later) and generate teh code from. If you examine the class implementation in the IDE, it will warn you that it doesn't implement all the methods in the interface and offer to create STUBS for you. Accept the kind offer.
+
+	[[1]] From the dummy implementation we can now use the IDE's refactor capability to pull an Interface out from this dummy implementation. Save the file as something temporary.
+
+	[[1]] Delete the original External List that you created earlier and re-create as a Local List. Generate the files once more. This will create a List Interface file.
+
+	[[1]] Cut and Paste all the operations from the temporary file you created above.
+
+	[[1]] We are now intending to use this file to as a source for our model. To do so the methods in the intterface file will need to be annotated. The dummy operation that you created earlier will have the necessary annotations so just copy them from that.
+
+	[[1]] Save your Files. Then Reload the Ecore model from the Annotated Java.
+
+	[[1]] The list interface should now be generated with all the operations present in it. Note that he data types will have been converted into Ecore Model ddata types, and a few more DataTypes may have been added to support the types held in the List.
+
+
+	Aargh!   Needs more work! The Model that is captured Java --> Ecore does not quite translate back Ecore --> Java in a way that fully compiles. More work needed.
+
+
+*Eclipse Editors
+
+	The eclipse editor provides forwarding method support.
+
+	This is really useful, however it doesn't always generate all the methods that need to be generated...
+	Some methods it just seems to ignore... don't know why.
+
+	Actually, I think it only generates functions that CAN delegate. If you are not getting the full list of functions that you are expecting then look check that you have defined member you are delegating too correctly. Pay particular attention if there Are GEWNERICS involved.
+
+
+
+
+
+
+
+Manually Splitting a Project into Model and Implemention Parts
+
+
+	Can do this several ways:
+
+		One Project:
+
+			One Package/Ecore file covering model and implementation
+
+				Here I guess we would create seperate diagrams for the Model and Implemention Parts????
+
+				There can only be one genmodel, and it would therefore generate all objects in both model and implemention, each time it ran.
+
+
+			Two or more Ecore Files representing Tow or more packages, but BOTH controlled by the same GenModel File.
+
+				Here we generate 2 different packages.
+
+					Each package will be generated each time genmodel is run
+
+					They package direcories will sit under the same overall src directory.
+
+
+			Two or more Ecore Files each with their own genModel File. In theory, each package will control their own package.
+
+				The two packages can now be generated independently, with differeent paramters (NB it is importatnt to specify 'Suppress Interfaces' for both Ecore Models.)
+
+				Once the genmodel file are in place, we can build representations on each mopdel seperately, and we can configure builds of each part of the model seperately too.
+
+
+
+
+
+		Two Projects : one for Model, One for implemention.
+
+
+
+
+
+ Differnt Packages for the Model and Implementation.
+
+
+	The idea of this is to see whether there are any advantages in turning OFF the Interface/Class generation behaviour and doing the modelling explicitly in Classes and Interfaces.
+
+	If you create a model entirely of explicity specified interfaces:
+
+		* These will get implemented Entirely as Interfaces.
+
+		* The 'Leaf' Interfaces will implement EObject
+
+		* Non-Leaf Nodes will implement the interfaces of all other parents.
+
+		* javaDoc will be generatef for all features.
+
+
+	If you generate a model entirely as Classes:
+
+		* These will get imlemented Entirely as Classes
+
+		* The Leaf Classes will extend MinimalEObjectImpl.Container
+
+		* Non-Leaf CLasses will extend their parent Class and implement their modelled Interface
+
+		* javadoc will be generated for all featrues.
+
+		* Any interfaces will still get modelled as interfaces.
+
+
+	The advantages I can see are:
+
+		* Ability to document classes more fully from the model : if classes and interfaces are generated together, then the interfaces get reasonably well documented, but not the classes.
+
+		* Ability to choose your own class names etc.
+
+		* Allows you to model implementation detail etc in the classes (rather than just modelling things at the interface level.)
+
+
+
+
+
+
+
+
+
+Modelling a Builder Class
+
+
+
+Inner Classes
+
+	You cannot represent nested classes/inner classes in Ecore.  The closest the you can get is to model the nested inner class as a Data-type.  This only really works if there is containment reference to that inner class (i.e. it is represented as a attribute in your top lavel class); often that will be the case. If your inner class is just instantiated in a class method, then you can't model it at all.
+
+
+
+
+Synchronising Maven and Eclipse.
+
+	Maven and eclipse each have their own mechanism for resolving dependencies within the projects that they are controlling. If you are relying on Maven to do your building, then, if the search paths are not properly synchronised, have the situation where something compiles and builds fine under maven, but the source you are editing within Eclipse is littered with Red Error indications.
+
+	This is annoying and reduces the effectiveness of the tool.
+
+	The easiest way to sort the majority of these problems is to use the maven eclipse plugin, as follows:
+
+	This will update your eclipse Build Path and add in the eclipse libraries referenced in the POM to the 'Libraries Section' of the Build path. (These also are visible under the References Libraries tree and the Project Explorer).
+
+	These seem to 'disappear' are regular intervals, but can be repaired once more my running the mvn eclipse:eclipse plugin.
+
+---
+	mvn eclipse:eclipse
+---
+
+Enabling Git functionality.
+
+	The way I have been using is to:
+
+	[[1]] use git to init a repository as described in {{{./onGit.htlm}Git Notes.}}
+
+	[[1]] With Eclipse ,  From the Context Menu ( Right Click) select the  Team --> Share Project option.
+
+
+
+
+Modelling Exception
+
+	Have not forund a great way to do this.
+
+		Basically donlt model them : add them directly as classes into into the package and donlt use the tool at all.
+
+		Then add tehm onto the model as DataTypes.

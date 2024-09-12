@@ -1,0 +1,85 @@
+Eclipse Model Generator and JavaDoc.
+
+*Adding Documentation via the Modelling Tool
+
+	Documentation can be added to the diagrams via specific Documentation Elements that you can attach to particular Classes/Interfaces/Relationships/Datatypes etc. To see documentation elements on the diagram editor, you need to have the documentation layer enabled.
+
+	Note: You can attach just one Documentation Elemant only. if you attempt to create a SECOND note attached to a CLASS it will OVERWRITE the first WITHOUT warning!
+
+	Documentation can also be unattached on the diagram (ie.not associated with any particular element), and this will be interpreteted as describing the overall Package that the diagram is modelling.
+
+	Documentation elements can be attached, on the diagram, to the high level objects:
+			Classes
+			DataTypes
+			Enumerations
+			Relationships
+
+	Documentation can be associated with operation/attributes too, but these don't show on the diagram. They can be specified within the <<<properties>>> view available alongside the GUI modelling tool.
+
+
+*Representation within the ecore model and genmodel files.
+
+	Documentation is represented in the <<<ecore>>> model file as  GenModel annotations with the KEY = documentation and VALUES "Whatever documentation is". It will be attached to whatever element of the model that it describes (Package/Class/Operation...)
+
+	It does appear as if documentation can also be attached in the GenModel file too. However, this is a bit obscure, so best not worried about I think. It LOOKS like the documentation from the Ecore File gets copied into the genmodel file. However it CAN be overridden in there, I think. It is this version that makes its way into the code. Don't bother playing with this).
+
+
+**Some notes on annotations generally...
+
+	[[1]] The GenModel map is described by a URL: http://www.eclipse.org/emf/2002/GenModel (which doesn't seem to exist as a browsable thing?)
+
+	[[1]] The Schema specifies what Key --> Value Mappings are valid for that GenModel Map.
+
+	[[1]] The key 'Documentation' is valid within the scheme (with its value being whatever the documentation is). I don't know what other keys are legitimate.
+
+	[[1]] NB KEY is unique you can't have two element with the same key attached to the element.
+
+	[[1]] You cannot make up arbitrary KEYS, they must be drawn from the domain specified by http://www.eclipse.org/emf/2002/GenModel.
+
+*Representation within the generated Code.
+
+	Documentation from the model seems to get primarily represented within the Interface Elements generated from the model. Relatively little get generated in the implementation of the Interface (This assumes the default GenModel setting is in force (not <<<Suppress Interfaces>>>)).
+
+	Documentation gets translated into elements embedded within {{{./onJavaDoc.html}JavaDoc}} comments in the JavaCode. A JavaDoc Formatted Comment will be generated for each element in the model. Amongst other things, this will contain the various EMF annotations that are used to handle mapping JavaCode backwards and forwards into the Ecore modes (@model, @generated etc.) It will also contain some of the standard JavaDoc annotations, and, where it can, it will have attached appropriate elements from the model to those annotations (@see, @return, @parameter etc.).
+
+	Documentation from the model will get included within the JavaDoc comment embedded within specific markers:
+
+---
+	<!-- begin-model-doc-->
+
+		Documentation from the model appears here!
+
+		Custom documentation written in here will be destroyed during regeneration.
+
+	<!--end-model-doc -->
+---
+
+	Because what we are adding is JavaDoc, we can include other syntactically correct annotationis within here, and they will be faithfully reproduced.
+
+	(Note you can stick some annotations in here such as @extends, @inherits etc, which can influence the generational behaviour. So this is a potentially useful thing to know about.???)
+
+
+*Retaining Comments within Generated Code.
+
+	The JavaDoc comment is regenerated each time the model is generated. <<Customisation that you have made to the JavaDoc comment within the java code will be lost UNLESS it is included within the following markers:>>
+
+---
+	<!---begin-user-doc -->
+
+		Custom documentation written in here WILL be retained during regeneration
+
+	<!--end-user-doc -->
+---
+
+	Any standard comments written OUTSIDE of the JavaDoc sections will be retained.
+
+*Generating the Javadoc as HTML
+
+	* From eclipse (with the Java Perspective active)
+			Projects --> Generate Javadoc
+
+	* From the command line
+			$JDK_HOME/bin/javadoc
+
+
+===

@@ -1,0 +1,165 @@
+Securing Client Server Communication
+
+  TLS (Transport Layer Security) and its now-deprecated predecessoror SSL(Secure Sockets Layer) are cryptological protocols used to secure communication over a computer network. It aims to solve the following problems:
+
+    * How can the connection between client and server be secured ( i.e. made private to the 2 parties);
+
+    * How can the identities of the communicating parties be authenticated.
+
+  These are expanded upon below.
+
+
+*Problem 1 - How can communication between client and servers be secured.
+
+  Secure client/server communication is usually secured by encrypted traffic using a combination of Symmetric Key Encryption and Public Key Encryption. Typically, both will be used, with each performing a slightly different role.
+
+
+**Symmetric Key Encryption
+
+  With Symmetric keys, the value used to encode a message is the SAME as the key used to decode it. There are several key algorithms in common use including:
+
+    * AES - Advanced Encryption Standard;
+
+    * Blowfish and its successor TwoFish;
+
+    * Serpent;
+
+  The advantages of Symmetrical Keys are that they take generally take less computation during the encryption/decryption process. The disadvantage is that both parties need access to the same Key. Anyone with access to that shared key can decode/encode messages. The shared key needs to be distributed between parties prior to communication starting, and that distribution pathway itself is liable to intercept etc.
+
+
+**Public Key Encryption.
+
+  Public Key encryption schemes are non-symmetric : the key needed to encrypt a message is NOT THE SAME as the key needed to decrypt it.  What is more, it is not possible to deduce what the decryption key is given knowledge of what the encryption key is.
+
+  Consequently, it is possible (and indeed advantageous) for the encryption key to made generally available. This means ANYONE can use the key to encode messages, but they can ONLY be read by those in possession of the decryption key.
+
+  There are various algorithms in use:
+
+    * RSA (Rivest, Shamir, Adleman) - the most widely used algorithm on the internet.
+
+    * DSA(Digital Signature Algorithm)
+
+    * Elliptic Curve
+
+  Most asymmetric algorithms including RSA have prime numbers at their heart. Given a number n, which is the product of 2 large prime numbers, it is extremely difficult to work out which 2 prime numbers are its factors.
+
+  HOWEVER: A big problem with these schemes is that, even knowing the keys, the process of encryption and decryption is very compute intensive. So  intensive, in fact, that it impractical to use to encrypt all traffic between 2 parties.
+
+  Consequently servers can utilise public key encryption in order to allow client applications to encrypt messages sent to it. All the server need do is to provide its public key as part of the initial handshake with the client. The client can then use that public key to encrypt the messages it wishes to send. Only the server will be able to decrypt those messages.
+
+  However, because RSA is a compute intensive technology, it is not efficient to use it to encode/decode subsequent traffic. Instead, the subsequent communication uses a DIFFERENT, computationally lighter algorithm. This tends to be using some form of symmetric algorithm i.e the SAME key is used to encrypt and decrypt the data.
+
+  The client will determine the KEY to use for this exchange, and send it to the server encrypted via the RSA using the servers public key. Now BOTH servers are aware of the SHARED KEY, aes encrypted communication can proceed between them.
+
+  This is know as setting up a SSL tunnel between the client and server.
+
+
+*Problem 2 - How can the client be certain of the identity of the client it is talking too.
+
+  Having a secure communication between client and server is all well and good, but the client is relying on the server in order to setup the security on the pathway ( via it public/private keypair.). However, what if the server itself is an imposter?
+
+  This is where Certificates come in. An Identity Certificate is digital document used to <<prove the ownership>> of a particular <<public key>>.
+
+  The certificate will include:
+
+    * the public key itself;
+
+    * the 'owner' of the key (the subject);
+
+    * information about the identity of the owner of the key : company name, location, email addresses, country of origin etc;
+
+    * The digital signature of an entity (the issuer), that has verified the veracity of the content of the certificate.
+
+  The subject of the certificate can be various things, but will typically be various ways that a server or group of servers can be identified.
+
+    * the hostname of the server
+
+    * the Ip address of the the server
+
+    * the domain name
+
+  The issuer, a Certificate Authority, will be responsible for ensuring that the <<subject>> of the certificate really <<IS>> owned by the organisation stated in the certificate. This basically involves a number of manual checks to ensure all is well. The certificate will not be endorsed by the CA until those checks are satisfactorily completed.
+
+  The CA indicates that the Certificate is legitimate by <<adding its own digital signature>> to it.
+
+
+  The digital signature is another application of public/private key technology.  The CA will compute a hash value over the content of the certificate submitted to it, and then <<ENCRYPT>> that hash value with its own <<PRIVATE>> key. The computation of the hash value ensures that once the certificate has been signed, its contents <<can not be changed>> in any way without invalidating the signature. It is not possible to forge the signature without access to the Certificate Authority's own private keys.
+
+
+  All the receiver of a signed certificate need do in order to confirm its authenticity is to decode the certificates checksum using the CA's public key and confirm that it matches the checksum of the certificate.
+
+  The Public keys of Certificate Authorities are commonly distributed within various browsers etc, or are otherwise made publicly available.
+
+
+**Certificate Chains and Root Certificates.
+
+  Commonly, teh Certiificate authorities that authenticate certificates, issue multiple certificates in the form of a tree structure. A root-certificate is the top most certificate. By definition the authenticity of this cannot be guaranteed via any other certificates: it has to be self-signed.
+
+  Because of this, additional security measures are deployed to protect this certificate, which includes physical ones. These additional security measures make using it directly quite onerous. Consequently it is used only to sign a relatively small number of secondary certificates.  These, in turn, may be used to sign a further set.
+
+  Eventually one of these intermediate certificates will be use to sign actual certificates submitted for Authentication.
+
+  In order to validate the signature on a certificate, the authenticator will require access to the public key certificates making up the entire certification tree.
+
+
+**Self Signed Certificates.
+
+  Sometimes, the additional security provided by a Certifying Body is unnecessary within the context of a given application (e.g. Development, Test environments etc.).
+
+  In these circumstances, it is possible to use the PRIVATE key corresponding to the PUBLIC key within the certificate to sign the certificate. This is what is known as a self-signed certificate. Because the issuer of the certificate is the only body vouching for its authenticity, it implies an implicit trust of the issuer.
+
+
+*Creating and using Certicates using OpenSSL
+
+  The following briefly describes the process of generating a certificate for use using the openssh tool set. There are other toolsets that can do the job if necessary, and they will have their own syntax. The general principle will be the same however.
+
+**Create the Private Key
+
+  The starting point is to generate the private key, whose corresponding public key we wish to make available in the certificate. Here we wish to use the rsa algorithm and generate keys of 2048 bits in length
+
+---
+  openssl genrsa -out ./key.pem 2048
+---
+  We can examine the content of the key in terms of numbers that have been used to create it using
+
+---
+  openssl rsa -text -in key.pem
+---
+
+**Create a Certificate Signing Request (CSR)
+
+  If we know the private key, we can compute the public key that works with it. Here we generate a Certificate Signing Request. This will create the public key we need, and let us associate it with the resource we wish to use it in conjunction with.
+
+---
+    openssl req -new -key ./key.pem -out CertSigningRequest.csr
+---
+  This generates a new Certificate Signing Request based on the given private key. When used in this form it will prompt you for the Subject information that will be included with the certificate. The most important of these is usually the Common Name, which will be the Domain/Machine/Person associated with the key.
+
+  If necessary, these can usually be included on the command line as parameters.
+
+  Sometimes, however, there are attributes that CANT be specified on the command line. In these, circumstance a configuration file can be prepared, and that supplied on the command line instead.
+
+---
+  openssl req -new -key ./key.pem -extfile ext.txt -out CertSigningRequest.csr
+---
+  The output of this process is a CSR file, whose content can be examined
+
+---
+  openssl req -text -in ca.csr -noout
+---
+
+
+**Sign the Generated CSR
+
+  Normally, the would be CSR would be sent off to a a Certificating body for validating and signing. The process, however, is the same as it would be if you are signing the certificate yourself. Here, we sign the certificate using  the private key whose public counterpart is embedded in the certificate itself: a so called self-signed certificate.
+
+---
+  openssl x509 -req -days 1000 -in ca.csr -signkey ca-key.pem -out ca.crt
+---
+  Here we are generating a certificate which is valid for 1000 days before it expires.
+
+  The output is a X509 certificate, whose content can be examined:
+
+---
+  $openssl x509 -text -in ca.crt -noout
+---

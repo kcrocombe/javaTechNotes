@@ -1,0 +1,44 @@
+OpenClover
+
+*Documentation
+
+**Maven
+
+  {{{https://openclover.org/doc/manual/latest/maven--quick-start-guide.html} The Official Maven QuickStart}}
+
+*Setup
+
+**Maven
+
+
+  The following was added into the Maven Global Configurtation file ( in my case )
+
+  <pluginGroups>
+  <pluginGroup>org.openclover</pluginGroup>
+</pluginGroups>
+
+
+  For the project it is to be used upon the following was edited into the pom:
+
+  <pluginGroups>
+  <pluginGroup>org.openclover</pluginGroup>
+</pluginGroups>
+
+<dependency>
+   <groupId>org.openclover</groupId>
+   <artifactId>clover-maven-plugin</artifactId>
+   <version>4.4.1</version>
+   <type>maven-plugin</type>
+</dependency>
+
+
+mvn clean         - get rid of all compiled code
+mvn clover:setup  - This inserts Intrumentation in the code and then recompiles it
+mvn test          - runs the junit tests configured
+
+mvn -aggregate    - merges
+
+mvn clover:clover - Generates the HTML coverage reports
+
+
+At the moment, things aren't working ; the mvn test step seems to feel that the source code has changes (which it has'nt ) and recompiles it : this overwrites the instumented classes. 

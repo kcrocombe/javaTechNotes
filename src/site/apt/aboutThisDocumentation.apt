@@ -1,0 +1,106 @@
+Introduction
+
+  This documentation has been constructed mainly from a series of plain text files using basic text editors (vi, text edit etc.). Each file has been 'marked up' so that it can be machine processed into HTML and so viewed through a standard Web Browser.
+
+  A variety of markup formats may be used:
+   - APT (Almost Plain Text)
+   - Markdown
+
+  However, mostly the documentation will be marked as APT.
+
+  There is a quick guide to how to markup text using APT {{{./format.html}here}}.
+
+
+  The technology used to render the apt to html is Apache's Doxia Framework. Doxia is a content generation framework which aims to provide facilities for generating static and dynamic content for web-based publishing.
+
+  ( Note: there are other tools that can be used to render APT --> HTML, but we are going to use the Apache tools.)
+
+Rendering tools
+
+    The easiest way to build and maintain the html is by:
+
+    a) structuring the documentation within the context of a Maven project.
+
+    b) using the maven-site-plugin plugin in order to perform and control the build.
+
+
+    The use of maven is described more fully elsewhere.
+
+    It is also possible to build the HTML files manually using the doxia-converter tools. This is described more fully here.
+
+    {{{https://maven.apache.org/plugins/maven-site-plugin/}Maven Site Plugin Documentation}}
+
+Building and Maintaining the documentation using maven.
+
+    As with all maven projects, the starting point is configuring a direcory and pom.xml file to control the build. And,  again as for all maven projects, the easiest way to do this is via a maven archetype. Fortunately, ther is one available on Maven
+
+    mvn archetype:generate
+
+    The specific project archetype we need is: maven-archetype-site.
+
+    Here 'site' refers to the documentation website.
+
+    During creation it will prompt for the value of the parameters it needs. These generally will be known, so it is better to create a little script to create it in batch mode. i.e.
+
+---
+  mvn archetype:generate -B \
+		-DarchetypeGroupId=org.apache.maven.archetypes \
+		-DarchetypeArtifactId=maven-archetype-site \
+		-DarchetypeVersion=1.4 \
+		-DgroupId=uk.co.pegortech \
+		-DartifactId=javaTechnologyNotes \
+		-Dversion=1.0-SNAPSHOT \
+    -Dpackage=uk.org.pegortech
+---
+
+  This will create the javaTechnologyNotes sub-directory, with the necessary project sub-directories and a suitable pom.xml for use with the project.
+
+
+  Full documentation on how to configure and use the plugin is given here https://maven.apache.org/plugins/maven-site-plugin/index.html
+
+  However in general, it is simply a matter of executing:
+
+    mvn site
+
+  As with all maven projects, this will attempt to download any missing dependencies and then build the site from the sources in the various sub-directories
+
+Images
+
+  place in resources directory, or a subdirectory of it. These will be available on the relative pathname under target.
+
+  i.e. resources/image1.png     will be available as ./image1.png
+  i.e. resources/images/image2.png     will be available as ./images/image2.png
+  etc
+
+  The figure should be referenced as below. Note no indentation and the file suffix must be provided( in contrast to what it says in the APT documentation). In theory, you can provide a caption, but in practice I've never seen that work!)
+
+---
+[./images/figure.png]
+---
+
+
+Version Management with git.
+
+
+    {{{./onGit.html}Notes on Using Git}}
+
+Installing and Using the Doxia-Converter
+
+  The Doxia-Converter is a simple jar file which can be used to convert files from the command line.
+
+  The jar file (doxia-converter-1.2-jar-with-dependencies.jar) can be downloaded from here:
+  https://repo.maven.apache.org/maven2/org/apache/maven/doxia/doxia-converter and can be copied into the java CLASSPATH directory. ( e.g. --> /usr/local/doxia-converter)
+
+  It is used:
+
+    java -jar /usr/local/doxia-converter/doxia-converter-1.2-jar-with-dependencies.jar \
+      -from apt \
+      -to xhtml \
+      -in fullPathName/input.apt \
+      -out fullPathName/output.xhtml
+
+  Help is available:
+
+    java -jar /usr/local/doxia-converter/doxia-converter-1.2-jar-with-dependencies.jar -h
+
+    NB. For some reason, the jar file cannot be found using CLASSPATH. The full pathname needs to be given. Don't understand this really.

@@ -1,0 +1,86 @@
+RKT
+
+rkt ( rocket) is the Container runtime developed and packaged by coreOS. There are some difference between rkt and docker:
+
+  * rkt is daemonless. The problem of containers dyinf is the dockerd is restarted does not exist.
+
+  * rkt integrates well with systemd so that containers resources limits can be set easily for containers.
+
+
+  There aer 3 stages of rkt exaecuton
+
+  * Stage 0 : This does image discaover and retrieval. It also sets up teh filesystem  for stages 1 nad 2.
+
+  * Stage 1 : This sets up the executionenvironemnt for the container executon using the filesystem set up be stage 0. Rkt sets up cgroups, networking etc. There are more than implementiation of the the stage1 loader.
+
+
+      - the regular one : which uses systemd
+
+      - the lightweight one : fly
+
+  * Stage2 This is the actual execution of the Cntainer pod and the appliaciton itself.
+
+
+  rkt's execution of pods is divided roughly into three separate stages:
+
+    Stage 0: discovering, fetching, verifying, storing, and compositing of both application (stage2) and stage1 images for execution.
+    Stage 1: execution of the stage1 image from within the composite image prepared by stage0.
+    Stage 2: execution of individual application images within the containment afforded by stage1.
+
+This separation of concerns is reflected in the file-system and layout of the composite image prepared by stage0:
+
+    Stage 0: rkt executable, and the pod manifest created at /var/lib/rkt/pods/prepare/$uuid/pod.
+    Stage 1: stage1.aci, made available at /var/lib/rkt/pods/run/$uuid/stage1 by rkt run.
+    Stage 2: $app.aci, made available at /var/lib/rkt/pods/run/$uuid/stage1/rootfs/opt/stage2/$appname by rkt run, where $appname is the name of the app in the pod manifest.
+
+  The stage1 implementation is what creates the execution environment for the contained applications. This occurs via entrypoints from stage0 on behalf of rkt run and rkt enter. These entrypoints are executable programs located via annotations from within the stage1 ACI manifest, and executed from within the stage1 of a given pod at /var/lib/rkt/pods/$state/$uuid/stage1/rootfs.
+
+  Stage2 is the deployed application image. Stage1 is the vehicle for getting there from stage0. For any given pod instance, stage1 may be replaced by a completely different implementation. This allows users to employ different containment strategies on the same host running the same interchangeable ACIs.
+
+
+  The motivation of the fly feature is to add the ability to run applications with full privileges on the host but still benefit from the image management and discovery from rkt. The Kubernetes kubelet is one candidate for rkt fly.
+
+  n comparison to the default stage1, there is no process manager involved in the stage1. This a visual illustration for the differences in the process tree between the default and the fly stage1:
+
+  stage1-coreos.aci:
+
+  host OS
+    └─ rkt
+      └─ systemd-nspawn
+        └─ systemd
+          └─ chroot
+            └─ user-app1
+
+  stage1-fly.aci:
+
+  host OS
+    └─ rkt
+      └─ chroot
+        └─ user-app1
+
+  The rkt application sets up bind mounts for /dev, /proc, /sys, and the user-provided volumes. In addition to the bind mounts, an additional tmpfs mount is done at /tmp. After the mounts are set up, rkt chroots to the application's RootFS and finally executes the application.
+
+
+  By design, the fly stage1 does not provide the same isolaton and security features as the default stage1.
+
+  Specifically, the following constraints are not available when using the fly stage1:
+
+    network namespace isolation
+    CPU isolators
+    Memory isolators
+    CAPABILITY bounding
+    SELinux
+
+
+
+*RKT - To force garbage collection
+
+    rkt gc --grace-period 0
+
+
+
+  stage 0
+
+  stage 1
+
+  stage 2

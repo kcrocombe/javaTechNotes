@@ -1,0 +1,465 @@
+Red Hat Open Shift
+
+	1) Signed up to the OpenShift Online Free plan as kevin.crocombe@pegortech.co.uk ( usual password).
+
+		There is also the Open Shift origin Product, which I think is just down
+		loaded version of the open shift platform?
+
+
+	2) Downloaded the command line utilities
+
+		( NB requires git and ruby - which were already installed )
+
+
+---
+		gem install rhc
+---
+
+			( gem is a Ruby thing ( I think )
+
+---
+		rhc --version
+			rhc 1.34.2
+---
+
+
+	3) rhc setup
+
+	 Conversation as described below:
+
+---
+
+
+	OpenShift Client Tools (RHC) Setup Wizard
+
+	This wizard will help you upload your SSH keys, set your application namespace,
+	and check that other programs like Git are properly installed.
+
+	If you have your own OpenShift server, you can specify it now. Just hit enter to
+	use the server for OpenShift Online: openshift.redhat.com.
+	Enter the server hostname: |openshift.redhat.com|
+
+	You can add more servers later using 'rhc server'.
+
+	Login to openshift.redhat.com: kevin.crocombe@pegortech.co.uk
+	Password: ******
+
+	OpenShift can create and store a token on disk which allows to you to access the
+	server without using your password. The key is stored in your home directory and
+	should be kept secret.  You can delete the key at any time by running 'rhc
+	logout'.
+	Generate a token now? (yes|no) yes
+	Generating an authorization token for this client ... lasts about 1 month
+
+	Saving configuration to /Users/kevin/.openshift/express.conf ... done
+
+	No SSH keys were found. We will generate a pair of keys for you.
+
+	    Created: /Users/kevin/.ssh/id_rsa.pub
+
+	Your public SSH key must be uploaded to the OpenShift server to access code.
+	Upload now? (yes|no)
+	yes
+
+	Since you do not have any keys associated with your OpenShift account, your new
+	key will be uploaded as the 'default' key.
+
+	Uploading key 'default' ... done
+
+	Checking for git ... found git version 1.8.3.4 (Apple Git-47)
+
+	Checking common problems .. done
+
+	Checking for a domain ... none
+
+	Applications are grouped into domains - each domain has a unique name (called a
+	namespace) that becomes part of your public application URL. You may create your
+	first domain here or leave it blank and use 'rhc create-domain' later. You will
+	not be able to create an application without completing this step.
+
+	Please enter a namespace (letters and numbers only) |<none>|: pegortech
+	Your domain 'pegortech' has been successfully created
+
+	Checking for applications ... none
+
+	Run 'rhc create-app' to create your first application.
+
+	  Do-It-Yourself 0.1                 rhc create-app <app name> diy-0.1
+	  JBoss Application Server 7         rhc create-app <app name> jbossas-7
+	  JBoss Data Virtualization 6        rhc create-app <app name> jboss-dv-6.0.0
+	  JBoss Enterprise Application       rhc create-app <app name> jbosseap-6
+	  Platform 6
+	  JBoss Unified Push Server          rhc create-app <app name>
+	  1.0.0.Beta1                        jboss-unified-push-1
+	  Jenkins Server                     rhc create-app <app name> jenkins-1
+	  Node.js 0.10                       rhc create-app <app name> nodejs-0.10
+	  PHP 5.3                            rhc create-app <app name> php-5.3
+	  PHP 5.4                            rhc create-app <app name> php-5.4
+	  PHP 5.4 with Zend Server 6.1       rhc create-app <app name> zend-6.1
+	  Perl 5.10                          rhc create-app <app name> perl-5.10
+	  Python 2.6                         rhc create-app <app name> python-2.6
+	  Python 2.7                         rhc create-app <app name> python-2.7
+	  Python 3.3                         rhc create-app <app name> python-3.3
+	  Ruby 1.8                           rhc create-app <app name> ruby-1.8
+	  Ruby 1.9                           rhc create-app <app name> ruby-1.9
+	  Ruby 2.0                           rhc create-app <app name> ruby-2.0
+	  Tomcat 6 (JBoss EWS 1.0)           rhc create-app <app name> jbossews-1.0
+	  Tomcat 7 (JBoss EWS 2.0)           rhc create-app <app name> jbossews-2.0
+	  Vert.x 2.1                         rhc create-app <app name> jboss-vertx-2.1
+	  WildFly Application Server         rhc create-app <app name> jboss-wildfly-8
+	  8.2.0.Final
+
+	  You are using 0 of 3 total gears
+	  The following gear sizes are available to you: small
+
+	Your client tools are now configured.
+
+---
+
+
+	4) Essentially this has :
+
+		created some ssh keys for secure maintaining the command line connection
+
+		created a domain : pegortech
+
+
+	5) Checking setting etc.
+
+---
+	bash-3.2# rhc account
+	Login kevin.crocombe@pegortech.co.uk on openshift.redhat.com
+	~~------------------------------------------------------------
+	  ID:                 54eb5d764382ecd6400001b0
+	  Plan:               Free
+	  Gears Used:         0
+	  Gears Allowed:      3
+	  Domains Allowed:    1
+	  Allowed Gear Sizes: small
+	  SSL Certificates:   no
+
+
+	rhc authorization list
+
+	RHC/1.34.2 (from kevinsMac.local on universal.x86_64-darwin13)
+	~~--------------------------------------------------------------
+	  Token:      e69cf123361c6423781158895b54e9493d5fb2059137b4447e63633307c8de64
+	  Scopes:     session
+	  Created:    5:25 PM
+	  Expires In: 30 days
+
+	OpenShift Console (from 77.100.157.134 on Safari)
+	~~-------------------------------------------------
+	  Token:      a4d0ffdce7372203290d18aabc5b7b412a508b5063c85141dbe9d2b78b931c37
+	  Scopes:     session
+	  Created:    5:03 PM
+	  Expires In: 30 days
+---
+
+
+
+	6) Configuration files
+
+---
+		/Users/kevin/.openshift/express.conf
+---
+
+
+		Contents:
+
+	# The default OpenShift server to connect to
+	libra_server=openshift.redhat.com
+
+	# Your OpenShift login name
+	default_rhlogin=kevin.crocombe@pegortech.co.uk
+
+	# If true, the server will attempt to create and use authorization tokens to connect to the server
+	use_authorization_tokens=true
+
+	# The default timeout for network operations
+	#timeout=<integer>
+
+	# If true, certificate errors will be ignored.
+	# WARNING: This may allow others to eavesdrop on your communication with OpenShift.
+	insecure=false
+
+	# The SSL protocol version to use when connecting to this server
+	#ssl_version=<string>
+
+	# A client certificate file for use with your server
+	#ssl_client_cert_file=<path_to_file>
+
+	# The corresponding key for the client certificate
+	#ssl_client_key_file=<path_to_file>
+
+	# A file containing CA one or more certificates
+	#ssl_ca_file=<path_to_file>
+
+
+
+
+	Created a non-scaling application
+
+	1) Showing the available app server cartridges.
+
+---
+		rhc cartridge list
+
+	bash-3.2# rhc cartridge list
+	jbossas-7                JBoss Application Server 7              web
+	jboss-dv-6.0.0 (!)       JBoss Data Virtualization 6             web
+	jbosseap-6 (*)           JBoss Enterprise Application Platform 6 web
+	jboss-unified-push-1 (!) JBoss Unified Push Server 1.0.0.Beta1   web
+	jenkins-1                Jenkins Server                          web
+	nodejs-0.10              Node.js 0.10                            web
+	perl-5.10                Perl 5.10                               web
+	php-5.3                  PHP 5.3                                 web
+	php-5.4                  PHP 5.4                                 web
+	zend-6.1                 PHP 5.4 with Zend Server 6.1            web
+	python-2.6               Python 2.6                              web
+	python-2.7               Python 2.7                              web
+	python-3.3               Python 3.3                              web
+	ruby-1.8                 Ruby 1.8                                web
+	ruby-1.9                 Ruby 1.9                                web
+	ruby-2.0                 Ruby 2.0                                web
+	jbossews-1.0             Tomcat 6 (JBoss EWS 1.0)                web
+	jbossews-2.0             Tomcat 7 (JBoss EWS 2.0)                web
+	jboss-vertx-2.1 (!)      Vert.x 2.1                              web
+	jboss-wildfly-8 (!)      WildFly Application Server 8.2.0.Final  web
+	diy-0.1                  Do-It-Yourself 0.1                      web
+	10gen-mms-agent-0.1      10gen Mongo Monitoring Service Agent    addon
+	cron-1.4                 Cron 1.4                                addon
+	jenkins-client-1         Jenkins Client                          addon
+	mongodb-2.4              MongoDB 2.4                             addon
+	mysql-5.1                MySQL 5.1                               addon
+	mysql-5.5                MySQL 5.5                               addon
+	phpmyadmin-4             phpMyAdmin 4.0                          addon
+	postgresql-8.4           PostgreSQL 8.4                          addon
+	postgresql-9.2           PostgreSQL 9.2                          addon
+	rockmongo-1.1            RockMongo 1.1                           addon
+	switchyard-0             SwitchYard 0.8.0                        addon
+	haproxy-1.4              Web Load Balancer                       addon
+
+	Note: Web cartridges can only be added to new applications.
+
+
+	rhc app create tifosi jboss-wildfly-8
+
+
+	~~-------------------
+	Domain:     pegortech
+	Cartridges: jboss-wildfly-8
+	Gear Size:  default
+	Scaling:    no
+
+	WildFly 8 administrator added.  Please make note of these credentials:
+
+	   Username: adminle57cyH
+	   Password: wzXMf8-1FAfN
+
+	Permanently added 'tifosi-pegortech.rhcloud.com,54.159.68.164' (RSA) to the list of known hosts.
+
+
+	fatal: Could not read from remote repository.
+
+	Please make sure you have the correct access rights and the repository exists.
+	Unable to clone your repository. Called Git with: git clone
+	ssh://54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com/~/git/tifosi.git/
+	"tifosi"
+
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+	1. We were unable to clone your application's git repo - Unable to clone
+	your repository. Called Git with: git clone
+	ssh://54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com/~/git/tifosi.git/
+	"tifosi"
+
+	  Steps to complete your configuration:
+	    1. Clone your git repo
+	      $ rhc git-clone tifosi
+
+	Your application 'tifosi' is now available.
+
+	  URL:        http://tifosi-pegortech.rhcloud.com/
+	  SSH to:     54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com
+	  Git remote: ssh://54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com/~/git/tifosi.git/
+
+
+
+	rhc show-app tifosi
+
+	~~------------------------------------------------------------------------------
+	  Domain:     pegortech
+	  Created:    6:16 PM
+	  Gears:      1 (defaults to small)
+	  Git URL:    ssh://54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com/~/git/tifosi.git/
+	  SSH:        54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com
+	  Deployment: auto (on git push)
+
+	  jboss-wildfly-8 (WildFly Application Server 8.2.0.Final)
+	~~--------------------------------------------------------
+	    From:    https://raw.githubusercontent.com/openshift-cartridges/openshift-wildfly-cartridge/wildfly-8/metadata/manifest.yml
+	    Website: http://www.wildfly.org
+	    Gears:   1 small
+
+	ssh 54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com
+	Permission denied (publickey,gssapi-keyex,gssapi-with-mic).
+
+	 rhc ssh tifosi
+	Connecting to 54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com ...
+	Permission denied (publickey,gssapi-keyex,gssapi-with-mic).
+
+---
+
+	2) The ssh errors were because the ssh certificates were inadvertently  created as root
+	   and I couldn’t read them. Once the ownership was changed from root —> kevin all was good
+
+
+	3) Created a local directory
+
+---
+		/Users/kevin/openShift/tifosi
+---
+
+
+	  Cloned the git repository on the server locally…
+
+---
+		rhc git-clone tifosi
+---
+
+
+	   This pulled the default application from the server. ( It basically just consists of a
+	   simple welcome type web-page.pwd
+
+
+	4) Viewd it by browsing to
+
+		http://tifosi-pegortech.rhcloud.com
+
+
+	5) Checked ssh access
+
+			ssh 54eb6e8ee0b8cdc72d000014@tifosi-pegortech.rhcloud.com
+
+	   The home directory seems to contain
+
+		wildfire directory : containing the wildfire installation
+
+		git directory : containing the git repository for the default ‘Welcome’ tip 				application
+
+
+		app-deployements
+		app-root
+
+				: which I guess are the where the actually app is deployed to…
+
+
+	6)  The server did look to be running :
+
+		ps -ef  showed
+
+		~/wildfly/usr/lib/jvm/jdk1.8.0_05/bin/java
+
+		with various options.
+
+
+
+	7) Checked the important WILDFY env variables…
+
+---
+	JBOSS_HOME=/var/lib/openshift/54eb6e8ee0b8cdc72d000014/wildfly/
+
+
+
+	OPENSHIFT_WILDFLY_LOG_DIR=/var/lib/openshift/54eb6e8ee0b8cdc72d000014/wildfly//logs/
+	OPENSHIFT_WILDFLY_IP=127.8.178.1
+	OPENSHIFT_WILDFLY_CLUSTER_PORT=7600
+	OPENSHIFT_WILDFLY_VERSION=8
+	OPENSHIFT_WILDFLY_USERNAME=adminle57cyH
+	OPENSHIFT_WILDFLY_HTTP_PORT=8080
+	OPENSHIFT_WILDFLY_DIR=/var/lib/openshift/54eb6e8ee0b8cdc72d000014/wildfly/
+	OPENSHIFT_WILDFLY_CLUSTER=
+	OPENSHIFT_WILDFLY_PATH_ELEMENT=/var/lib/openshift/54eb6e8ee0b8cdc72d000014/wildfly/usr/lib/jvm/jdk1.8.0_05/bin:/etc/alternatives/maven-3.0/bin:/var/lib/openshift/54eb6e8ee0b8cdc72d000014/wildfly//bin/tools
+	OPENSHIFT_WILDFLY_IDENT=jboss:wildfly:8:0.0.6
+	OPENSHIFT_WILDFLY_JDK8=/var/lib/openshift/54eb6e8ee0b8cdc72d000014/wildfly/usr/lib/jvm/jdk1.8.0_05
+	OPENSHIFT_WILDFLY_MANAGEMENT_HTTP_PORT=9990
+	OPENSHIFT_WILDFLY_JDK7=/etc/alternatives/java_sdk_1.7.0
+	OPENSHIFT_WILDFLY_PASSWORD=wzXMf8-1FAfN
+---
+
+
+
+	8) The startup script appears to be the one in the bin directory : standalone.sh
+
+		Seems to be started :
+			nohup standalone.sh -b 127.8.178.1 -bmanagement=127.8.178.1 2>&1 > /dev/null &
+
+		This generates a log file in the logs dir
+
+	9) There is a command line tool jboss-cli.sh which looks quite interesting
+
+		It is the simplest way to shutdown the server
+
+			jboss-cli.sh
+
+			connect 127.8.178.1
+
+			shutdown
+
+	10) The client tool creates a uix’y looking shell which might be worth looking at some more.
+
+
+	11) The service can always be restarted via the OpenShift Management page as well.
+
+
+	12) The wildly server also has a management console that can be accessed by browsing the appropriate port. However to do
+	    so remotely, you have to first use port forwarding..
+
+---
+
+		rhc port-forward tifosi
+
+			Checking available ports ... done
+			Forwarding ports ...
+
+			To connect to a service running on OpenShift, use the Local address
+
+			Service Local               OpenShift
+	~~		------- -------------- ---- ----------------
+			java    127.0.0.1:3528  =>  127.8.178.1:3528
+			java    127.0.0.1:8080  =>  127.8.178.1:8080
+			java    127.0.0.1:9990  =>  127.8.178.1:9990
+
+		The console can then be accessed on the LOCAL port.
+---
+
+
+
+
+	13) Adding the mysql database cartridge
+
+---
+	rhc cartridge add mysql-5.5 -a tifosi
+
+	Adding mysql-5.5 to application 'tifosi' ... done
+
+	mysql-5.5 (MySQL 5.5)
+	~~---------------------
+	  Gears:          Located with jboss-wildfly-8
+	  Connection URL: mysql://$OPENSHIFT_MYSQL_DB_HOST:$OPENSHIFT_MYSQL_DB_PORT/
+	  Database Name:  tifosi
+	  Password:       H1aHM9u73qxa
+	  Username:       adminXCncYtu
+
+	MySQL 5.5 database added.  Please make note of these credentials:
+
+	       Root User: adminXCncYtu
+	   Root Password: H1aHM9u73qxa
+	   Database Name: tifosi
+
+	Connection URL: mysql://$OPENSHIFT_MYSQL_DB_HOST:$OPENSHIFT_MYSQL_DB_PORT/
+
+	You can manage your new MySQL database by also embedding phpmyadmin.
+	The phpmyadmin username and password will be the same as the MySQL credentials above.
+---

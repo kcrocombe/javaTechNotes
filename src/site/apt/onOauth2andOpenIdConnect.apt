@@ -1,0 +1,182 @@
+{Some stuff on Oath2 and OpenID Connect}
+
+	There is some good useful stuff on OKTA's website about what these 2 are and how they work, including a
+	good You Tube presentation
+
+		{{https://www.youtube.com/watch?time_continue=32&v=996OiexHze0}}
+
+ of which this is a brief summary:
+
+ Oath2 and OpenId Connect are both PROTOCOLS, not physical products. Various products do exist out there
+ however which DO implement them as Products/services.
+
+	Oath2 and OpenId Connect are not the same thing: OpenId connect is best viewed as an extension to the the Oath2 protocols specifically to deal with Authentication. Oauth2 was primarily designed to deal with Authorisation, i.e. granting controlled, gradations of access to various resources that may be held in different places on the web e.g.
+	*granting access to google contacts to another applications
+	*granting access to facebook posts to third party applications
+	*granting access to linked in data to third party applications
+
+	However it then started to be used for things for which it wasn't designed : eg for just for Authentication. This was considered poor because Oath2 does not define any standard ways of giving back userInformation: Oath2 doesn;t really care who you are, it standardises scopes (i.e. what information you have access to).
+
+	OpenId Connect is an extension to Oath2 designed to standardise in this area:  It adds a standard ID token that must be provided, and provides UserInfo endpoint that can be queried for basic user information.
+
+
+Basics of Oath2 functioning.
+
+	Delegated Authorisation : how can I let a website access MY data WITHOUT giving it my password. In historic times, if you wanted to give an application access to your data held on other services, you would give your password for each of those remote services to the application that wants access to the data. It would then effectively log in as you in order to retrieve that data. There are obvious security concerns about this.
+
+Oath Flows
+
+* Authorization Flow
+
+	When a web app needs access to say your Google data,
+		the app redirects to a Google website ( with a request for access to particular resources)
+		the user logs in AT GOOGLE
+		GOOGLE asks the user whether to grants access to the resources in question
+		IF the user consents the, then Google redirects back to the originating application (callback) with a Token
+		The application can then use that token to query various GOOGLE endpoints to get the info it was seeking
+
+* Terminology
+			Resource Owner  : basically the ordinary end user who owns the data in question ( NB not google, facebook etc)
+			Client : The application seeking access to that resources
+			Authorization Server : The service which speaks to the resource owner and establishes whether access should be granted ( this will be a google, facebook, linkled in or whatever service)
+			Resource Server: This is the service which provides the resources to which access has been granted. Often, but not always this will be the same as the Authorisation Server.
+			Authorisation grant: This is the message/token that indicates that authority has been granted.
+			Redirect URI: This is the point in the Client Application that the Authorization Server will redirect back to.
+			Access Token: The Authorization Grant is EXCHANGED for an Access Token, and this is what is passed to the Resource Server in order to get hold of the resources.
+
+		How these things operate is shown diagrammatically in {{{Figure 1} Figure 1}}
+
+[images/Oauth2CodeFlow.png] {Figure 1} some stuff
+
+		The various permissions that may be granted by the Authorisation Server are known as SCOPES. A user may be granted
+		access to one or more scopes, and these control what resources can be accessed, and what they can DO with resources (read it write it, delete it). Note it can be more than data : e.g. permission to write on a users Facebook wall.
+
+		The Reason why a Authorisation code is exchanged for a Access Token is to enhance security. Oauth2 describes 2 channels:
+
+		* The Back Channel: is a highly secure communication channel typically between 2 ServerSide. (SSL encrypted, SSL etc);
+
+		* The Front Channel is a less secure channel typically between a Browser and a Server. Browers are sort of secure, not so much: any tokens etc stored in the browser are visible anyone able to look at the page source code etc - so are potentially more stealable).
+
+		The browser does not itelf exchange the token: it gets its backend server do do that for it securely. The backend
+		server will present the Authorization Grant to the Authorisation Server along with some Secret known only by itself and that Authorisation Server and recieve an Access Token in return. (The Application Server will have to have registered the Secret with the Authorization Server beforehand).
+
+
+		Implicit Flow
+
+		Note that some applications run entirely in a browser : they do not have a backend server. In these circumstances
+		the Access Token is requested from the Authorization Server Directly, rather than a Authorization grant. This is known as the Implicit Flow
+
+		OKTA provide a nice little Tool which lets you test requesting Access Codes / Tokens etc.
+
+		{{https://oauthdebugger.com/}}
+
+
+* OpenID connect
+
+		This protocol is specifically for Authentication. ( People used to use Oath2 for this too, but it is a bit of a hack). It came about when people started adding Facebook, Google etc button to their app. Everyone was doing it in different ways ( but using Oauth2) : hece the extension to Oath2 known as OpenID Connect.
+
+		OpenID Connect adds some standard things:
+
+			* Standard ID token;
+
+			* a specific UserInfo endpoint for getting more userInformation;
+
+			* a standard set of SCOPES;
+
+			* standardised Implementation.
+
+
+		It has its own flow, but is practically the same as for Oath: the only difference is that you ask for the access token with the openID Scope specified.
+
+		OKTA also have a tool for looking at OpenID Connects:
+
+		{{https://oidcdebugger.com/}}
+
+
+		The Authorisation Grant is in this case, exchanged for an IdToken rather than an AccessToken.
+
+		IdTokens are basically a JSON Web Token ( JWT known as jot)
+
+		These can be pasted into something like
+
+		{{http://jsonwebtoken.io}}
+
+		in order to decode it into something intelligable for debugging purposes etc.
+
+		The tokens are usually 'signed' - so we can verify that tokens have not been tampered with in any way.
+
+
+		So in summary:
+
+			* For Simple login ---> OpenID Connect;
+
+			* Single Sign-On across sites --> OpenID Connect;
+
+			* Mobile App Login   ---> OpenID Connect;
+
+			* Delegated authorization   ---> (OAuth2)
+
+		If you want to grant access to different parts of your app, or grant access to data in other systems, it is Oath2
+		that is used.
+
+
+* OpenId Connect services
+
+			OpenId Connect is a just a protocol ( owned by the OpenId Foundation). There are multiple implemetentations Available for it, and the OpenId Foundation will certify whether a given implementation is compliant or not.
+
+			This can be software
+				- Gluu - Is a certified openSource implementation of OpenId that can downloaded and implemented for free. It
+				runs on Linux and provides SSO, access Management, identity management, social logins.
+
+
+			Or cerified implemetentation:
+
+				* Auth0;
+
+				* Glu;
+
+				* GOOGLE;
+
+				* Amazon Web Services;
+
+				* OKTA;
+
+				* Paypal;
+
+
+			Or service providers. These will typically provide:
+
+				*	Account creation Services;
+
+				* Account Management services;
+
+				* Sign on via Sociual Media providers;
+
+
+* Some OpenId Connect Providers
+
+				* Auth0   ( allows 7000 Active Users, up to 2 social identity providers for free);
+
+			  * Amazon Cognito ( Allows 50,0000 Monthly Active Users ( Ort is that Usages));
+
+				* Okta  ( allows up to 1000 Acitve USers, User managment, 5 OICD client for free);
+
+				* GitLab ( Basic Service - users need to have a GitHub account,bu tbasically free);
+
+				* Google ( Basic Service - will authenticate using a users Google Account, but not setup external ones)
+
+				Note: Facebook is not.
+
+
+====
+
+
+
+
+* Resurrecting an old Oath Project.
+
+	When I was first playing around with Spring a few years ago, I build something that would authenticate using Oath2 reaources against Google.  This was built in the Intellij Tool, and no longer seems to be working out of that installation.
+
+	Am going to try and concentrate on Eclipse, so have decideded to try and get it working again with Eclipse/Maven
+
+	It is a spring boot application

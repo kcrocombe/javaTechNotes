@@ -1,0 +1,184 @@
+Ignition Runs :  lokks for stuff in /usr/lib/ignition,  finds nothing so does nothing
+
+Mounts /usr/share/oem
+
+coreos-cloudinit kicks in
+  i
+
+
+
+  core@e1 /usr/share/oem $ cat *.yml
+  #cloud-config
+  coreos:
+      units:
+        - name: coreos-cloudinit-vagrant-mkdir.service
+          command: start
+          runtime: yes
+          content: |
+            [Service]
+            Type=oneshot
+            ExecStart=/bin/mkdir -p /var/lib/coreos-vagrant
+        - name: coreos-cloudinit-vagrant-user.path
+          command: start
+          runtime: yes
+          content: |
+            [Path]
+            PathExists=/var/lib/coreos-vagrant/vagrantfile-user-data
+            Unit=user-cloudinit@var-lib-coreos\x2dvagrant-vagrantfile\x2duser\x2ddata.service
+      oem:
+        id: vagrant
+        name: Vagrant
+        version-id: 0.0.3
+        home-url: http://www.vagrantup.com/
+        bug-report-url: https://github.com/coreos/coreos-overlay
+
+  ssh_authorized_keys:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
+  core@e1 /usr/share/oem $
+
+
+
+  core@e1 /usr/share/oem/bin $ cat core*
+  #!/bin/bash -e
+
+  ENV="$1"
+
+  if [ -z "$ENV" ]; then
+          echo usage: $0 /etc/environment
+          exit 1
+  fi
+
+  now=$(date +%s)
+  timeout=$(( now + 60 ))
+
+  # just block until cloudinit updates environment
+  while ! grep -qs ^COREOS_PUBLIC_IPV4 "$ENV"; do
+      if [[ $timeout -lt $(date +%s) ]]; then
+          echo "No network configuration provided by Vagrant!" >&2
+          echo "Using localhost, for default public and private IPs" >&2
+          echo "COREOS_PUBLIC_IPV4=127.0.0.1" >> "$ENV"
+          echo "COREOS_PRIVATE_IPV4=127.0.0.1" >> "$ENV"
+          exit
+      fi
+      sleep 0.1
+  done
+
+
+user-cloudinit-proc-cmdline.service
+
+
+Dec 04 09:58:04 localhost systemd[1]: Mounting /usr/share/oem...
+
+
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Checking availability of "local-file"
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Fetching user-data from datasource of type "local-file"
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Fetching meta-data from datasource of type "local-file"
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Parsing user-data as cloud-config
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Merging cloud-config from meta-data and user-data
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Authorized SSH keys for core user
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Writing file to "/etc/oem-release"
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Wrote file to "/etc/oem-release"
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Wrote file /etc/oem-release to filesystem
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Writing unit "coreos-cloudinit-vagrant-mkdir.service" to filesystem
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Writing file to "/run/systemd/system/coreos-cloudinit-vagrant-mkdir.service"
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Wrote file to "/run/systemd/system/coreos-cloudinit-vagrant-mkdir.service"
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Wrote unit "coreos-cloudinit-vagrant-mkdir.service"
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Ensuring runtime unit file "coreos-cloudinit-vagrant-mkdir.service" is unmasked
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 /run/systemd/system/coreos-cloudinit-vagrant-mkdir.service is not null or empty, refusing to unmask
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Writing unit "coreos-cloudinit-vagrant-user.path" to filesystem
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Writing file to "/run/systemd/system/coreos-cloudinit-vagrant-user.path"
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Wrote file to "/run/systemd/system/coreos-cloudinit-vagrant-user.path"
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Wrote unit "coreos-cloudinit-vagrant-user.path"
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Ensuring runtime unit file "coreos-cloudinit-vagrant-user.path" is unmasked
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 /run/systemd/system/coreos-cloudinit-vagrant-user.path is not null or empty, refusing to unmask
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Ensuring runtime unit file "etcd.service" is unmasked
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Ensuring runtime unit file "etcd2.service" is unmasked
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Ensuring runtime unit file "fleet.service" is unmasked
+Dec 04 09:58:15 localhost coreos-cloudinit[660]: 2019/12/04 09:58:15 Ensuring runtime unit file "locksmithd.service" is unmasked
+Dec 04 09:58:17 localhost coreos-cloudinit[660]: 2019/12/04 09:58:17 Calling unit command "start" on "coreos-cloudinit-vagrant-mkdir.service"
+Dec 04 09:58:17 localhost systemd[1]: Starting coreos-cloudinit-vagrant-mkdir.service...
+Dec 04 09:58:17 localhost systemd[1]: coreos-cloudinit-vagrant-mkdir.service: Succeeded.
+Dec 04 09:58:17 localhost coreos-cloudinit[660]: 2019/12/04 09:58:17 Result of "start" on "coreos-cloudinit-vagrant-mkdir.service": done
+Dec 04 09:58:17 localhost coreos-cloudinit[660]: 2019/12/04 09:58:17 Calling unit command "start" on "coreos-cloudinit-vagrant-user.path"
+Dec 04 09:58:17 localhost systemd[1]: Started coreos-cloudinit-vagrant-mkdir.service.
+Dec 04 09:58:17 localhost systemd[1]: Started coreos-cloudinit-vagrant-user.path.
+Dec 04 09:58:17 localhost coreos-cloudinit[660]: 2019/12/04 09:58:17 Result of "start" on "coreos-cloudinit-vagrant-user.path": done
+Dec 04 09:58:17 localhost systemd[1]: Started Load cloud-config from /usr/share/oem/cloud-config.yml.
+Dec 04 09:58:20 localhost systemd[1]: Starting Load cloud-config from /var/tmp/hostname.yml...
+Dec 04 09:58:20 localhost coreos-cloudinit[1112]: 2019/12/04 09:58:20 Checking availability of "local-file"
+Dec 04 09:58:20 localhost coreos-cloudinit[1112]: 2019/12/04 09:58:20 Fetching user-data from datasource of type "local-file"
+Dec 04 09:58:20 localhost coreos-cloudinit[1112]: 2019/12/04 09:58:20 Fetching meta-data from datasource of type "local-file"
+Dec 04 09:58:20 localhost coreos-cloudinit[1112]: 2019/12/04 09:58:20 Parsing user-data as cloud-config
+Dec 04 09:58:20 localhost coreos-cloudinit[1112]: 2019/12/04 09:58:20 Merging cloud-config from meta-data and user-data
+Dec 04 09:58:21 e1 coreos-cloudinit[1112]: 2019/12/04 09:58:21 Set hostname to e1
+Dec 04 09:58:21 e1 coreos-cloudinit[1112]: 2019/12/04 09:58:21 Ensuring runtime unit file "etcd.service" is unmasked
+Dec 04 09:58:21 e1 coreos-cloudinit[1112]: 2019/12/04 09:58:21 Ensuring runtime unit file "etcd2.service" is unmasked
+Dec 04 09:58:21 e1 coreos-cloudinit[1112]: 2019/12/04 09:58:21 Ensuring runtime unit file "fleet.service" is unmasked
+Dec 04 09:58:21 e1 coreos-cloudinit[1112]: 2019/12/04 09:58:21 Ensuring runtime unit file "locksmithd.service" is unmasked
+Dec 04 09:58:22 e1 systemd[1]: Starting Load cloud-config from /var/tmp/networks.yml...
+Dec 04 09:58:22 e1 coreos-cloudinit[1187]: 2019/12/04 09:58:22 Checking availability of "local-file"
+Dec 04 09:58:22 e1 coreos-cloudinit[1187]: 2019/12/04 09:58:22 Fetching user-data from datasource of type "local-file"
+Dec 04 09:58:22 e1 coreos-cloudinit[1187]: 2019/12/04 09:58:22 Fetching meta-data from datasource of type "local-file"
+Dec 04 09:58:22 e1 coreos-cloudinit[1187]: 2019/12/04 09:58:22 Parsing user-data as cloud-config
+Dec 04 09:58:22 e1 coreos-cloudinit[1187]: 2019/12/04 09:58:22 Merging cloud-config from meta-data and user-data
+Dec 04 09:58:22 e1 coreos-cloudinit[1187]: 2019/12/04 09:58:22 Writing file to "/etc/environment"
+Dec 04 09:58:22 e1 coreos-cloudinit[1187]: 2019/12/04 09:58:22 Wrote file to "/etc/environment"
+Dec 04 09:58:22 e1 coreos-cloudinit[1187]: 2019/12/04 09:58:22 Wrote file /etc/environment to filesystem
+Dec 04 09:58:22 e1 coreos-cloudinit[1187]: 2019/12/04 09:58:22 Writing unit "50-vagrant1.network" to filesystem
+Dec 04 09:58:22 e1 coreos-cloudinit[1187]: 2019/12/04 09:58:22 Writing file to "/etc/systemd/network/50-vagrant1.network"
+Dec 04 09:58:22 e1 coreos-cloudinit[1187]: 2019/12/04 09:58:22 Wrote file to "/etc/systemd/network/50-vagrant1.network"
+Dec 04 09:58:22 e1 coreos-cloudinit[1187]: 2019/12/04 09:58:22 Wrote unit "50-vagrant1.network"
+Dec 04 09:58:22 e1 coreos-cloudinit[1187]: 2019/12/04 09:58:22 Ensuring runtime unit file "etcd.service" is unmasked
+Dec 04 09:58:22 e1 coreos-cloudinit[1187]: 2019/12/04 09:58:22 Ensuring runtime unit file "etcd2.service" is unmasked
+Dec 04 09:58:22 e1 coreos-cloudinit[1187]: 2019/12/04 09:58:22 Ensuring runtime unit file "fleet.service" is unmasked
+Dec 04 09:58:22 e1 coreos-cloudinit[1187]: 2019/12/04 09:58:22 Ensuring runtime unit file "locksmithd.service" is unmasked
+Dec 04 09:58:23 e1 coreos-cloudinit[1187]: 2019/12/04 09:58:23 Restarting systemd-networkd
+Dec 04 09:58:23 e1 coreos-cloudinit[1187]: 2019/12/04 09:58:23 Restarted systemd-networkd (done)
+Dec 04 09:58:25 e1 systemd[1]: Starting Load cloud-config from /var/lib/coreos-vagrant/vagrantfile-user-data...
+Dec 04 09:58:25 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:25 Checking availability of "local-file"
+Dec 04 09:58:25 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:25 Fetching user-data from datasource of type "local-file"
+Dec 04 09:58:25 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:25 line 6: warning: deprecated key "etcd2" (etcd2 is no longer shipped in Container Linux)
+Dec 04 09:58:25 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:25 Fetching meta-data from datasource of type "local-file"
+Dec 04 09:58:25 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:25 Parsing user-data as cloud-config
+Dec 04 09:58:25 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:25 Merging cloud-config from meta-data and user-data
+Dec 04 09:58:25 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:25 Writing file to "/etc/coreos/update.conf"
+Dec 04 09:58:25 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:25 Wrote file to "/etc/coreos/update.conf"
+Dec 04 09:58:25 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:25 Wrote file /etc/coreos/update.conf to filesystem
+Dec 04 09:58:25 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:25 Updated /etc/environment
+Dec 04 09:58:25 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:25 Ensuring runtime unit file "etcd.service" is unmasked
+Dec 04 09:58:25 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:25 Writing drop-in unit "20-cloudinit.conf" to filesystem
+Dec 04 09:58:25 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:25 Writing file to "/run/systemd/system/etcd2.service.d/20-cloudinit.conf"
+Dec 04 09:58:25 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:25 Wrote file to "/run/systemd/system/etcd2.service.d/20-cloudinit.conf"
+Dec 04 09:58:25 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:25 Wrote drop-in unit "20-cloudinit.conf"
+Dec 04 09:58:25 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:25 Ensuring runtime unit file "etcd2.service" is unmasked
+Dec 04 09:58:25 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:25 Ensuring runtime unit file "fleet.service" is unmasked
+Dec 04 09:58:25 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:25 Ensuring runtime unit file "locksmithd.service" is unmasked
+Dec 04 09:58:25 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:25 Masking unit file "locksmithd.service"
+Dec 04 09:58:25 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:25 Calling unit command "start" on "etcd2.service"
+Dec 04 09:58:26 e1 coreos-cloudinit[1266]: 2019/12/04 09:58:26 Failed to apply cloud-config: Unit etcd2.service not found.
+Dec 04 09:58:26 e1 systemd[1]: user-cloudinit@var-lib-coreos\x2dvagrant-vagrantfile\x2duser\x2ddata.service: Main process exited, code=exited, status=1/FAILURE
+Dec 04 09:58:26 e1 systemd[1]: user-cloudinit@var-lib-coreos\x2dvagrant-vagrantfile\x2duser\x2ddata.service: Failed with result 'exit-code'.
+Dec 04 09:58:26 e1 systemd[1]: Failed to start Load cloud-config from /var/lib/coreos-vagrant/vagrantfile-user-data.
+
+
+==> c1: Waiting for machine to boot. This may take a few minutes...
+    c1: SSH address: 127.0.0.1:2200
+    c1: SSH username: core
+    c1: SSH auth method: private key
+    c1: Warning: Connection reset. Retrying...
+    c1: Warning: Connection reset. Retrying...
+==> c1: Machine booted and ready!
+==> c1: Setting hostname...
+==> c1: Configuring and enabling network interfaces...
+==> c1: Running provisioner: file...
+    c1: ssl/kube-apiserver-172.17.4.101.tar => /tmp/ssl.tar
+==> c1: Running provisioner: shell...
+    c1: Running: inline script
+==> c1: Running provisioner: file...
+    c1: #<File:0x0000000101522c70> => /tmp/coreos-kube-options.env
+==> c1: Running provisioner: shell...
+    c1: Running: inline script
+==> c1: Running provisioner: file...
+    c1: /Users/kevin/dvl/gitReps/coreos-kubernetes/multi-node/generic/controller-install.sh => /tmp/vagrantfile-user-data
+==> c1: Running provisioner: shell...
+    c1: Running: inline script

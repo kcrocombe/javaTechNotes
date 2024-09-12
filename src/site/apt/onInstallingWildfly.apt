@@ -1,0 +1,54 @@
+Installing Wildfly
+
+  Created a local installation of wildfly
+
+  	1) created a wildfire user to own the installation
+
+  	2) Down loaded v8.20 and unzipped it /opt/wildfly/server/8.0.2
+
+  	3) Created a app-root and app-deployment directory directories to mirror the way openShift has been
+  	   set up.
+
+  	4)
+
+  	cat .bashrc
+  	export JBOSS_HOME=/opt/wildfly/server/8.2.0
+
+  	export PATH=$PATH:$JBOSS_HOME/bin
+
+
+
+  	bash-3.2# cat /etc/launchd.conf
+  	export MAVEN_HOME=/opt/maven/3.2.5
+  	export JBOSS_HOME=/opt/wildfly/server/8.2.0
+
+  	export PATH=$PATH:$MAVEN_HOME/bin:$JBOSS_HOME/bin
+
+
+  	add-user.sh
+
+  	What type of user do you wish to add?
+  	 a) Management User (mgmt-users.properties)
+
+
+  	Enter the details of the new user to add.
+  	Using realm 'ManagementRealm' as discovered from the existing property files.
+  	Username : admin
+  	Password :
+
+  	What groups do you want this user to belong to? (Please enter a comma separated list, or leave blank for none)[  ]:
+  	About to add user 'admin' for realm 'ManagementRealm'
+
+  	Added user 'admin' to file '/opt/wildfly/server/8.2.0/standalone/configuration/mgmt-users.properties'
+  	Added user 'admin' to file '/opt/wildfly/server/8.2.0/domain/configuration/mgmt-users.properties'
+  	Added user 'admin' with groups  to file '/opt/wildfly/server/8.2.0/standalone/configuration/mgmt-groups.properties'
+  	Added user 'admin' with groups  to file '/opt/wildfly/server/8.2.0/domain/configuration/mgmt-groups.properties'
+
+  	Is this new user going to be used for one AS process to connect to another AS process?
+  	yes
+
+  	To represent the user add the followingk to the server-identities definition <secret value="bWR1azEx" />
+
+
+
+  	http://127.0.0.1:9990/

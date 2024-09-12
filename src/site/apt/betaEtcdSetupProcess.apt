@@ -1,0 +1,189 @@
+
+coreos-cloudinit  reads /usr/share/oem/cloud-config.yml...
+
+            #cloud-config
+            coreos:
+              units:
+                - name: coreos-cloudinit-vagrant-mkdir.service
+                  command: start
+                  runtime: yes
+                  content: |
+                    [Service]
+                    Type=oneshot
+                    ExecStart=/bin/mkdir -p /var/lib/coreos-vagrant
+                - name: coreos-cloudinit-vagrant-user.path
+                  command: start
+                  runtime: yes
+                  content: |
+                    [Path]
+                    PathExists=/var/lib/coreos-vagrant/vagrantfile-user-data
+                    Unit=user-cloudinit@var-lib-coreos\x2dvagrant-vagrantfile\x2duser\x2ddata.service
+              oem:
+                id: vagrant
+                name: Vagrant
+                version-id: 0.0.3
+                home-url: http://www.vagrantup.com/
+                bug-report-url: https://github.com/coreos/coreos-overlay
+
+            ssh_authorized_keys:
+            - ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
+
+
+
+Creates file /run/systemd/system/coreos-cloudinit-vagrant-mkdir.service
+
+            [Service]
+            Type=oneshot
+            ExecStart=/bin/mkdir -p /var/lib/coreos-vagrant
+...and enables it as a service
+
+Creates file /run/systemd/system/coreos-cloudinit-vagrant-user.path
+            PathExists=/var/lib/coreos-vagrant/vagrantfile-user-data
+            Unit=user-cloudinit@var-lib-coreos\x2dvagrant-vagrantfile\x2duser\x2ddata.service
+...and enables it as a service
+
+CoreOs starts service coreos-cloudinit-vagrant-user.path
+    --> which  creates /var/lib/coreos-vagrant
+
+
+cloudinit starts service coreos-cloudinit-vagrant-user.path
+    This service has a dependency on path /var/lib/coreos-vagrant/vagrantfile-user-data, which does not
+    yet exist...so presumably it waits....
+
+
+The file vagrantfile-user-data is injected by Vagrant late in the initial boot cycle iniitally to /tmp and
+then to /var/lib/coreos-vagrant
+
+This then permits unit
+    user-cloudinit@var-lib-coreos\x2dvagrant-vagrantfile\x2duser\x2ddata.service
+
+to be activated
+
+  /usr/lib64/systemd/system/user-cloudinit@.service  (presumably var-lib-coreos\x2dvagrant-vagrantfile\x2duser\x2ddata is passed as a parameter??. I think the x2d stuff is just an escape character sequence ==> var/lib/coreos-vagrant/vagrant-user-data)
+
+            Description=Load cloud-config from %f
+            Requires=coreos-setup-environment.service
+            After=coreos-setup-environment.service
+            After=system-config.target
+            Before=user-config.target
+            ConditionFileNotEmpty=%f
+
+            [Service]
+            Type=oneshot
+            TimeoutSec=10min
+            RemainAfterExit=yes
+            EnvironmentFile=-/etc/environment
+            ExecStart=/usr/bin/coreos-cloudinit --from-file=%f
+
+Note that this is dependednt on the coreos-setup-environment.service service.
+
+
+          [Unit]
+          Description=Modifies /etc/environment for CoreOS
+          RequiresMountsFor=/usr/share/oem
+          ConditionPathExists=/usr/share/oem/bin/coreos-setup-environment
+
+          [Service]
+          Type=oneshot
+          RemainAfterExit=yes
+          ExecStart=/usr/share/oem/bin/coreos-setup-environment /etc/environment
+
+          [Install]
+          WantedBy=multi-user.target
+
+
+All /usr/share/oem/bin/coreos-setup-environment does is kick off and then sleep waiting for teh /etc/environment file to be updated with the COREOS*IPV variables idicating the machines ip address. ( This stuff is injected by vagrant once the box is booted.)
+
+So while it is sleeping, /usr/bin/coreos-cloudinit gets on processing the /var/lib/coreos-vagrant/vagrantfile-user-data.
+
+On the etc server, vagrantfile-user-data is a yaml file, which is specifically geared to coreos-cloudinit. I looks like this:
+
+
+---
+  #cloud-config
+
+  coreos:
+    update:
+      reboot-strategy: "off"
+
+    etcd2:
+      name: {{ETCD_NODE_NAME}}
+      initial-cluster: {{ETCD_INITIAL_CLUSTER}}
+      advertise-client-urls: http://$private_ipv4:2379
+      listen-client-urls: http://0.0.0.0:2379
+      initial-advertise-peer-urls: http://$private_ipv4:2380
+      listen-peer-urls: http://$private_ipv4:2380
+
+    units:
+
+    - name: etcd2.service
+      command: start
+---
+
+
+
+
+  As part of its setup of etcd, to create 2 additional yaml files:
+
+    /var/tmp/hostname.yml
+
+          #cloud-config
+          hostname: e1
+
+    /var/tmp/networks.yml
+
+        #cloud-config
+        write_files:
+          - path: /etc/environment
+            content: |
+              COREOS_PUBLIC_IPV4=172.17.4.51
+              COREOS_PRIVATE_IPV4=172.17.4.51
+        coreos:
+            units:
+              - name: 50-vagrant1.network
+                runtime: no
+                content: |
+                  [Match]
+                  Name=eth1
+
+                  [Network]
+                  Address=172.17.4.51/24
+
+These are then ALSO then processed by cloud-coreos...
+
+
+Once the enviornment and network are in place, cloud-coreos can configure
+
+etc2d and its dependent service fleet...
+
+
+
+
+
+
+=================
+
+
+
+On the Stable release...
+
+  There is no /usr/share/oem/cloud-congig.yml or /usr/share/oem/bin/coreos-setup-environment
+
+  Dec 28 14:08:35 localhost kernel: sd 1:0:0:0: [sdb] 3000 512-byte logical blocks: (1.54 MB/1.46 MiB)
+  Dec 28 14:08:35 localhost kernel: sd 1:0:0:0: [sdb] Write Protect is off
+  Dec 28 14:08:35 localhost kernel: sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+  Dec 28 14:08:35 localhost kernel: sd 1:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+  Dec 28 14:08:35 localhost kernel:  sdb: sdb1
+  Dec 28 14:08:35 localhost kernel: sd 1:0:0:0: [sdb] Attached SCSI disk
+
+sudo journalctl -u ignition*
+
+  Can see
+
+      core user being created and ssh key neing set
+
+      hostname being set
+
+      etcd-member service being set up
+
+      flannel service being set up

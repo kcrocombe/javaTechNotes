@@ -1,0 +1,59 @@
+Ecore Model Properties - Attributes
+
+
+	Default seems to be Ordered, Unique, Changeable.
+
+*Unsettable
+	This causes additional functions to be generated in the implemented class that are geared toward the possiblity that the attribute in question will not have a value. So, as well as the usual getAttribute() and setAttribute(), we get:
+
+			unsetAttribute()
+
+			isSetAttribute()
+
+*Changeable
+	When unset, this prevents the function  setAttributAe() from being generated.
+
+
+*Unique
+	Indicates whether the same value can occur for more than one Object within the Class
+	Although it does not seem to affect any generated code in the Class itself, it does set the @model attribute Unique=false in the Interface
+
+
+*Volatile
+	When set, no storage will be allocated for the field i.e. <<NO FIELD WILL BE GENERATED>>. Instead, just the get() and set() methods are created. These are completely empty functions for the user to implement as desired.
+
+	This is generally used for fields that are simply derived from other fields in the object.
+
+*Derived
+	Similar to volatile in concept, I think, except that a field, getters() and setters() are generated. Could not find any difference in the code so generated, but I suspect it might be present in any generated code that saves the object to Disk etc.   I suspect the field will not be included.
+
+	However it does not seem to effect anything in the code.
+	Although it does not seem to affect any generated code in the Class itself, it does set the @model attribute derived=true in the Interface
+
+*Transient
+	This does not seem to effect anything in the generated code in any way.
+	Although it does not seem to affect any generated code in the Class itself, it does set the @model attribute transient=true in the Interface
+
+*ID
+	This only seems to have relevance for objects that sit in Containers (Set, List etc). It determines whether the attribute can be used to uniquely identify the object WITHIN that container.
+
+	Although it does not seem to affect any generated code in the Class itself, it does set the @model attribute Id=true in the Interface
+
+*With each of the above...
+
+	With each of the above, the generated class  XxxxPackageImpl is also impacted, with the Boolean flags set or cleared as appropriate. Don't quite know what that does yet.
+
+---
+	FitStatsPackageImpl.java
+
+		initEAttribute(
+				getDecoderClient_MainFactory(),
+				this.getMainFactory(),
+				"mainFactory",
+				null,
+				0,
+				1,
+				DecoderClient.class,
+				!IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED
+			);
+---
